@@ -2892,103 +2892,74 @@
   html.day-mode .s-empty          { color: #4a7898 !important; }
   html.day-mode .s-dot            { border-color: rgba(0,0,0,0.18) !important; }
 
-/* ══════════════════════════════════════════════════════════════════
-   MOBILE & TABLET RESPONSIVE — works on phones ≥320px and tablets
-   ══════════════════════════════════════════════════════════════════ */
-
-/* Prevent text selection and callouts on touch */
+/* ══ MOBILE & TABLET RESPONSIVE ══════════════════════════════════ */
 * { -webkit-tap-highlight-color: transparent; }
 body { -webkit-text-size-adjust: 100%; }
-
-/* Touch-scrollable navigation bars — NOT menubar (would clip dropdowns) */
-#bayNav,
-#hcNav,
-#rowSelWrap,
-#platNav {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-/* toolbar-scroll needs overflow visible on desktop so dropdowns show,
-   but on touch we allow horizontal scroll via wrapper */
-@media (pointer: coarse) {
-  .toolbar-scroll {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-}
-.toolbar-scroll::-webkit-scrollbar,
-#menubar::-webkit-scrollbar { display: none; }
-
-/* Touch-friendly minimum hit targets (44×44px WCAG AA) */
-@media (pointer: coarse) {
-  .btn, .menu-btn, .dd-action,
-  .bay-tab, .row-tag, button,
-  .tg-btn, .view-btn {
-    min-height: 36px !important;
-    min-width: 36px !important;
-    padding: 6px 10px !important;
-    font-size: 10px !important;
-  }
-  /* Larger toolbar height */
-  .toolbar { height: 48px !important; }
-  .titlebar { height: 52px !important; }
-  /* Bay selector tabs */
-  .bay-tab { min-width: 44px !important; font-size: 11px !important; }
-  /* Floating panel handles easier to grab */
-  [id$="Handle"], [id$="handle"] { min-height: 40px !important; }
-  /* Dropdowns full-width on small screens */
-  .dropdown { min-width: 220px !important; }
-  .dd-action { padding: 10px 14px !important; font-size: 10px !important; min-height: 40px !important; }
-  /* Modal close buttons */
-  .panel-close-btn { min-width: 40px !important; min-height: 40px !important; }
-}
-
-/* Small phone (<600px): collapse title bar, hide less-critical items */
-@media (max-width: 599px) {
-  .titlebar { height: 44px !important; }
-  /* Hide long text labels, keep icons/short labels */
-  .tb-vessel-name { font-size: 9px !important; max-width: 120px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tb-view-ctx { display: none !important; }
-  /* Status bar compact */
-  .statusbar { font-size: 7px !important; height: 20px !important; }
-  .sb-item .label { display: none !important; }
-  /* Full-width modals */
-  #lbEditorBox, #subStatsBox, #lbStatsBox {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-  }
-  #lbEditorOverlay, #subStatsModal, #lbStatsOverlay {
-    padding: 0 !important;
-    align-items: flex-end !important;
-  }
-  /* Floating panels stay on screen */
-  #lbPalette, #lbEyePlacerPal, #floatPal, #fpal {
-    max-height: 60vh !important;
-    overflow-y: auto !important;
-  }
-  /* LB configure modal */
-  #lbEditorBox { height: 100vh !important; max-height: 100vh !important; }
-}
-
-/* Tablet (600–1024px): slightly larger touch targets, keep most UI */
-@media (min-width: 600px) and (max-width: 1024px) and (pointer: coarse) {
-  .toolbar { height: 44px !important; }
-  .btn { font-size: 9px !important; padding: 5px 10px !important; }
-}
-
-/* Canvas touch — allow pinch-zoom and pan without page scroll */
-#vp, #lbCanvas, #lbOvCanvas, #rsSchematic {
-  touch-action: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* Prevent pull-to-refresh interfering with canvas drag */
 html, body { overscroll-behavior: none; }
+#vp, #lbCanvas, #lbOvCanvas, #rsSchematic { touch-action: none; -webkit-user-select: none; user-select: none; }
+#bayNav, #hcNav, #rowSelWrap, #platNav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+#bayNav::-webkit-scrollbar, #hcNav::-webkit-scrollbar { display: none; }
+
+/* Hamburger button */
+#mobileMenuBtn {
+  display: none; align-items: center; justify-content: center;
+  width: 44px; height: 40px; background: transparent;
+  border: none; border-right: 1px solid #1a3a5a;
+  cursor: pointer; color: #7ab0d0; font-size: 22px; flex-shrink: 0; padding: 0;
+}
+#mobileMenuBtn:active { background: #1a5080; color: #fff; }
+
+/* Slide-in drawer */
+#mobileMenuDrawer {
+  position: fixed; top: 0; left: 0;
+  width: min(320px, 88vw); height: 100vh;
+  background: #0d2236; border-right: 2px solid #2a90d0;
+  z-index: 99999; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  display: flex; flex-direction: column;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.8);
+  transform: translateX(-110%); transition: transform 0.22s ease;
+}
+#mobileMenuDrawer.open { transform: translateX(0); }
+#mobileMenuOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99998; }
+#mobileMenuOverlay.open { display: block; }
+
+/* Drawer internals */
+.mob-drawer-hdr { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #1a5080; background: #071420; flex-shrink: 0; }
+.mob-drawer-hdr span { font-family: 'IBM Plex Mono',monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.2em; color: #5eb8ff; }
+.mob-close-btn { background: transparent; border: none; color: #7ab0d0; font-size: 22px; cursor: pointer; padding: 4px 10px; line-height: 1; }
+.mob-section { font-family: 'IBM Plex Mono',monospace; font-size: 7px; letter-spacing: 0.22em; color: #3a7090; text-transform: uppercase; padding: 10px 16px 4px; border-top: 1px solid #0f2a3e; margin-top: 2px; flex-shrink: 0; }
+.mob-action { display: flex; align-items: center; width: 100%; padding: 13px 20px; background: transparent; border: none; border-bottom: 1px solid #0f2a3e; color: #c8daea; font-family: 'IBM Plex Mono',monospace; font-size: 10px; letter-spacing: 0.06em; text-align: left; cursor: pointer; gap: 10px; flex-shrink: 0; }
+.mob-action:active { background: #1a4060; color: #fff; }
+.mob-action.mob-danger { color: #e05050; }
+.mob-action.mob-green { color: #00c068; }
+.mob-action.mob-amber { color: #e0a000; }
+.mob-sep { height: 1px; background: #1a4060; margin: 4px 0; flex-shrink: 0; }
+
+/* Phone layout */
+@media (max-width: 767px) {
+  #mobileMenuBtn { display: flex !important; }
+  .menubar { display: none !important; }
+  .titlebar { height: 44px !important; }
+  .tb-cell { padding: 0 8px !important; }
+  .toolbar { height: 44px !important; overflow: visible !important; }
+  .toolbar-scroll { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .toolbar-fixed { overflow-x: auto !important; -webkit-overflow-scrolling: touch; max-width: 60vw; }
+  .btn { min-height: 34px !important; font-size: 9px !important; padding: 4px 8px !important; }
+  #btnOV, #btnBV, #btnSeals, #btnLB { padding: 4px 8px !important; font-size: 8px !important; }
+  .bay-tab { min-width: 40px !important; height: 34px !important; font-size: 10px !important; }
+  #floatPal, #lbEyePlacerPal, #lbPalette, #hddPlacerPal,
+  #ventPlacerPal, #flexipadPlacerPal, #rpPlacerPal, #hcStopPlacerPal
+  { max-height: 55vh !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+  #lbEditorOverlay > div, #lbStatsOverlay > div, #subStatsModal > div
+  { width: 100vw !important; max-width: 100vw !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .menu-btn { font-size: 8px !important; padding: 0 10px !important; }
+  .btn { min-height: 32px !important; font-size: 9px !important; }
+  .toolbar, .toolbar-scroll, #menubar { overflow: visible !important; }
+}
 </style>
 <style id="hcDynStyle">.btn.hc1-on{color:#a050dc!important;border-color:#a050dc!important;background:rgba(160,80,220,0.12)!important;}.btn.hc2-on{color:#a050dc!important;border-color:#a050dc!important;background:rgba(160,80,220,0.12)!important;}.btn.hc3-on{color:#a050dc!important;border-color:#a050dc!important;background:rgba(160,80,220,0.12)!important;}.btn.hc4-on{color:#a050dc!important;border-color:#a050dc!important;background:rgba(160,80,220,0.12)!important;}</style><style>
     #floatVentPlaceBtn { transition: all 0.15s; }
@@ -3336,7 +3307,7 @@ html, body { overscroll-behavior: none; }
     <span id="statusLine2" style="font-size:8px;font-weight:600;color:#5a90b8;letter-spacing:0.12em;">OVERVIEW — ALL BAYS</span>
   </div>
   <div class="tb-cell" style="padding:0 10px;border-left:1px solid #122030;border-right:none;min-width:0;display:flex;align-items:center;gap:6px;">
-    <span id="fileSaveIndicator" title="Unsaved changes" class="unsaved">
+    <span id="fileSaveIndicator" title="Unsaved changes">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- Floppy disk body -->
         <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" fill="#c07010" stroke="#c07010" stroke-width="0"></rect>
@@ -3390,6 +3361,7 @@ html, body { overscroll-behavior: none; }
 
 <!-- TOOLBAR -->
 <div class="toolbar">
+  <button id="mobileMenuBtn" onclick="openMobileMenu()" aria-label="Menu">☰</button>
   <div class="toolbar-scroll">
     <div class="menubar no-bay-mode" id="menubar">
 
@@ -4658,7 +4630,7 @@ html, body { overscroll-behavior: none; }
   <div id="zoomIndicator">100%</div>
 
   <!-- ── Floating save icon — top-left corner of canvas ── -->
-  <div id="floatSaveBtn" onclick="fileSave()" title="Save file (Ctrl+S)" style="position: absolute; top: 0px; left: 10px; z-index: 200; width: 38px; height: 38px; border-radius: 8px; background: rgba(8, 18, 32, 0.92); border: 1.5px solid rgb(58, 122, 170); display: flex; align-items: center; justify-content: center; cursor: grab; transition: 0.15s; opacity: 0.35; box-shadow: rgba(0, 0, 0, 0.6) 0px 2px 12px;">
+  <div id="floatSaveBtn" onclick="fileSave()" title="Save file (Ctrl+S)" style="position: absolute; top: 0px; left: 10px; z-index: 200; width: 38px; height: 38px; border-radius: 8px; background: rgba(8, 18, 32, 0.92); border: 1.5px solid rgb(58, 122, 170); display: flex; align-items: center; justify-content: center; cursor: grab; transition: 0.15s; opacity: 0.72; box-shadow: rgba(0, 0, 0, 0.6) 0px 2px 12px;">
     <svg width="22" height="22" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       <!-- Floppy disk body -->
       <rect x="1" y="1" width="14" height="14" rx="2" fill="#5eb8ff"></rect>
@@ -5159,7 +5131,7 @@ html, body { overscroll-behavior: none; }
   </div>
 
   <!-- ── Unsaved dot on float save icon ── -->
-  <div id="floatSaveDot" style="position: absolute; top: 8px; left: 36px; z-index: 201; width: 8px; height: 8px; border-radius: 50%; background: rgb(224, 80, 80); border: 1.5px solid rgb(6, 14, 26); display: block; pointer-events: none;"></div>
+  <div id="floatSaveDot" style="position: absolute; top: 8px; left: 36px; z-index: 201; width: 8px; height: 8px; border-radius: 50%; background: rgb(224, 80, 80); border: 1.5px solid rgb(6, 14, 26); display: none; pointer-events: none;"></div>
 
 
   <!-- FLOATING COLOR PALETTE -->
@@ -20746,84 +20718,6 @@ vp.addEventListener('wheel',e=>{
   if(typeof window._showZoomIndicator==='function') window._showZoomIndicator();
 },{passive:false});
 
-/* ── TOUCH: pinch-to-zoom + single-finger pan on main canvas ── */
-(function(){
-  let _touches = [];
-  let _lastPinchD = 0;
-  let _lastPinchMX = 0, _lastPinchMY = 0;
-  let _touchPanX = 0, _touchPanY = 0;
-  let _touchMoved = false;
-
-  vp.addEventListener('touchstart', function(e){
-    e.preventDefault();
-    _touches = Array.from(e.touches);
-    _touchMoved = false;
-    if(_touches.length === 2){
-      _lastPinchD  = Math.hypot(_touches[1].clientX-_touches[0].clientX, _touches[1].clientY-_touches[0].clientY);
-      _lastPinchMX = (_touches[0].clientX+_touches[1].clientX)/2;
-      _lastPinchMY = (_touches[0].clientY+_touches[1].clientY)/2;
-    } else if(_touches.length === 1){
-      _touchPanX = _touches[0].clientX;
-      _touchPanY = _touches[0].clientY;
-    }
-  },{passive:false});
-
-  vp.addEventListener('touchmove', function(e){
-    e.preventDefault();
-    const ts = Array.from(e.touches);
-    if(ts.length === 2 && _touches.length >= 2){
-      const d  = Math.hypot(ts[1].clientX-ts[0].clientX, ts[1].clientY-ts[0].clientY);
-      const mx = (ts[0].clientX+ts[1].clientX)/2;
-      const my = (ts[0].clientY+ts[1].clientY)/2;
-      const rect = vp.getBoundingClientRect();
-      const cx = mx - rect.left, cy = my - rect.top;
-      if(_lastPinchD > 0){
-        const f = d / _lastPinchD;
-        const newZ = Math.max(0.07, Math.min(7, zoom * f));
-        panX = cx + (panX - cx) * (newZ / zoom);
-        panY = cy + (panY - cy) * (newZ / zoom);
-        // Also pan by finger movement
-        const dpx = mx - _lastPinchMX, dpy = my - _lastPinchMY;
-        panX += dpx; panY += dpy;
-        zoom = newZ;
-      }
-      _lastPinchD  = d;
-      _lastPinchMX = mx; _lastPinchMY = my;
-      _touchMoved  = true;
-      draw();
-    } else if(ts.length === 1){
-      const dx = ts[0].clientX - _touchPanX;
-      const dy = ts[0].clientY - _touchPanY;
-      if(Math.abs(dx)>3||Math.abs(dy)>3) _touchMoved = true;
-      panX += dx; panY += dy;
-      _touchPanX = ts[0].clientX;
-      _touchPanY = ts[0].clientY;
-      draw();
-    }
-    _touches = ts;
-  },{passive:false});
-
-  vp.addEventListener('touchend', function(e){
-    e.preventDefault();
-    const remaining = Array.from(e.touches);
-    // Single tap (no movement) = treat as click
-    if(!_touchMoved && _touches.length === 1 && remaining.length === 0){
-      const t = e.changedTouches[0];
-      const rect = vp.getBoundingClientRect();
-      const synth = { clientX:t.clientX, clientY:t.clientY, button:0,
-        target:e.target, ctrlKey:false, altKey:false,
-        preventDefault:()=>{}, stopPropagation:()=>{} };
-      if(typeof handleClick==='function') handleClick(synth);
-    }
-    _touches = remaining;
-    if(_touches.length < 2) _lastPinchD = 0;
-    if(_touches.length === 1){
-      _touchPanX = _touches[0].clientX;
-      _touchPanY = _touches[0].clientY;
-    }
-  },{passive:false});
-})();
-
 vp.addEventListener('mousedown', e => {
   if(e.button === 1) e.preventDefault();
 }, {passive:false});
@@ -31315,86 +31209,14 @@ async function exportRubberSealsPDF() {
 </div>
 
 <!-- ── ACCOUNT PANEL ── -->
-<div id="accountOverlay" style="display: none; position: fixed; inset: 0px; background: rgba(4, 12, 22, 0.85); z-index: 3000; align-items: center; justify-content: center;">
+<div id="accountOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;">
   <div id="accountPanel" class="fm-panel">
     <div class="fm-header">
       <span class="fm-title">👤 ACCOUNT</span>
       <button class="bc-close" onclick="closeAccountPanel()">✕ CLOSE</button>
     </div>
     <div class="fm-body">
-      <div id="acctView"><div style="display: flex; align-items: center; gap: 12px; padding: 10px 0px 14px; border-bottom: 1px solid rgb(30, 58, 84); margin-bottom: 14px;">
-        <div class="acct-avatar" style="background:#5eb8ff1a;border:2px solid #5eb8ff;color:#5eb8ff;font-size:13px;">SU</div>
-        <div style="flex:1;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#ddeeff;">Super User</div>
-          <div style="font-size:8px;color:#5eb8ff;letter-spacing:0.1em;margin-top:2px;">⚡ SUPER USER — FULL ACCESS</div>
-        </div>
-        <button class="acct-btn acct-danger" onclick="_acctLogout()">⏻ LOG OUT</button></div><div style="font-size: 8px; letter-spacing: 0.18em; color: rgb(90, 158, 192); text-transform: uppercase; margin-bottom: 8px;">ACCOUNTS</div><div data-acct-scroll="1" style="max-height: 378px; overflow: hidden auto; scrollbar-width: thin; scrollbar-color: rgb(45, 127, 193) rgba(10, 30, 50, 0.4); margin-bottom: 2px; padding-right: 2px;"><div class="acct-list-item">
-        <div class="acct-avatar" style="background:#00a05033;border:2px solid #00a050;color:#00a050;width:32px;height:32px;font-size:12px;box-shadow:0 0 8px #00a05044;">JB</div>
-        <div style="flex:1;">
-          <div style="font-size:10px;font-weight:700;color:#c8e4f8;letter-spacing:0.08em;">Josef Buchabner</div>
-          
-        </div>
-        <button class="acct-btn" style="padding:4px 10px;font-size:8px;" onclick="_acctLogin(0)">LOG IN</button>
-        <button class="acct-btn acct-danger" style="padding:4px 8px;font-size:8px;" onclick="_acctDelete(0)">✕</button></div><div class="acct-list-item">
-        <div class="acct-avatar" style="background:#00a05033;border:2px solid #00a050;color:#00a050;width:32px;height:32px;font-size:12px;box-shadow:0 0 8px #00a05044;">UK</div>
-        <div style="flex:1;">
-          <div style="font-size:10px;font-weight:700;color:#c8e4f8;letter-spacing:0.08em;">Ulises Kinen</div>
-          
-        </div>
-        <button class="acct-btn" style="padding:4px 10px;font-size:8px;" onclick="_acctLogin(1)">LOG IN</button>
-        <button class="acct-btn acct-danger" style="padding:4px 8px;font-size:8px;" onclick="_acctDelete(1)">✕</button></div><div class="acct-list-item">
-        <div class="acct-avatar" style="background:#c0701033;border:2px solid #c07010;color:#c07010;width:32px;height:32px;font-size:12px;box-shadow:0 0 8px #c0701044;">CL</div>
-        <div style="flex:1;">
-          <div style="font-size:10px;font-weight:700;color:#c8e4f8;letter-spacing:0.08em;">Christian LÖffler</div>
-          
-        </div>
-        <button class="acct-btn" style="padding:4px 10px;font-size:8px;" onclick="_acctLogin(2)">LOG IN</button>
-        <button class="acct-btn acct-danger" style="padding:4px 8px;font-size:8px;" onclick="_acctDelete(2)">✕</button></div><div class="acct-list-item">
-        <div class="acct-avatar" style="background:#8030b033;border:2px solid #8030b0;color:#8030b0;width:32px;height:32px;font-size:12px;box-shadow:0 0 8px #8030b044;">SL</div>
-        <div style="flex:1;">
-          <div style="font-size:10px;font-weight:700;color:#c8e4f8;letter-spacing:0.08em;">Sandra Löffler</div>
-          
-        </div>
-        <button class="acct-btn" style="padding:4px 10px;font-size:8px;" onclick="_acctLogin(3)">LOG IN</button>
-        <button class="acct-btn acct-danger" style="padding:4px 8px;font-size:8px;" onclick="_acctDelete(3)">✕</button></div></div><div class="acct-sep" style="margin: 14px 0px 10px;"></div><div class="acct-sep" style="margin: 4px 0px 14px;"></div><div style="font-size: 8px; letter-spacing: 0.18em; color: rgb(122, 184, 216); text-transform: uppercase; margin-bottom: 12px;">LOGIN SETTINGS</div><div style="display: flex; align-items: center; gap: 14px; padding: 10px 14px; border: 1px solid rgb(42, 82, 120); background: rgba(15, 40, 65, 0.5); margin-bottom: 6px;">
-      <div style="flex:1;">
-        <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:#c8e4f8;text-transform:uppercase;">Login Required</div>
-        <div style="font-size:8px;color:#6a9ab8;letter-spacing:0.06em;margin-top:3px;line-height:1.5;">
-          When disabled, the app opens directly without any login prompt.<br>
-          A <span style="color:#40c870;font-weight:700;">DIRECT ACCESS</span> button appears on the login screen.
-        </div>
-      </div>
-      <div id="lgToggleSwitch" onclick="_toggleLoginRequired()" style="
-        flex-shrink:0;
-        width:44px;height:24px;border-radius:12px;cursor:pointer;
-        position:relative;
-        background:#1a5a30;
-        border:1.5px solid #40c870;
-        transition:all 0.2s;
-      ">
-        <div style="
-          position:absolute;top:3px;
-          left:22px;
-          width:16px;height:16px;border-radius:50%;
-          background:#40c870;
-          transition:left 0.2s, background 0.2s;
-          box-shadow:0 1px 4px rgba(0,0,0,0.4);
-        "></div>
-      </div>
-      <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:#40c870;min-width:28px;">ON</span></div><div style="font-size: 8px; letter-spacing: 0.07em; color: rgb(90, 138, 170); padding: 2px 4px; margin-bottom: 10px; line-height: 1.5;">Login is currently required. Only Super User can disable it.</div><div class="acct-sep" style="margin: 4px 0px 14px;"></div><div style="font-size: 8px; letter-spacing: 0.18em; color: rgb(122, 184, 216); text-transform: uppercase; margin-bottom: 10px;">ADD ACCOUNT</div><div class="acct-form" id="acctCreateForm">
-    <div class="acct-field">
-      <label class="acct-label">Display Name</label>
-      <input class="acct-input" id="acctNewName" type="text" placeholder="e.g. John Smith" maxlength="32" autocomplete="off">
-    </div>
-    <div class="acct-field">
-      <label class="acct-label">Password (optional)</label>
-      <input class="acct-input" id="acctNewPass" type="password" placeholder="Leave blank for no password" maxlength="64" autocomplete="new-password">
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="acct-btn" onclick="_acctCreate()">＋ CREATE ACCOUNT</button>
-      <span id="acctMsg" class="acct-msg"></span>
-      <span id="acctErr" class="acct-err"></span>
-    </div></div></div>
+      <div id="acctView"></div>
     </div>
   </div>
 </div>
@@ -55328,6 +55150,140 @@ function _lbCopyEyesToAllBridges(){
   if(st){ st.style.color='#00c860'; st.textContent=msg; setTimeout(function(){ st.textContent=''; },3000); }
 }
 
+</script>
+
+<!-- ══ MOBILE MENU DRAWER ══ -->
+<div id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+<div id="mobileMenuDrawer">
+  <div class="mob-drawer-hdr">
+    <span>MENU</span>
+    <button class="mob-close-btn" onclick="closeMobileMenu()">✕</button>
+  </div>
+
+  <div class="mob-section">VIEW</div>
+  <button class="mob-action" onclick="setView('ov');closeMobileMenu()">⊞ &nbsp;OVERVIEW</button>
+  <button class="mob-action" onclick="setView('bay');closeMobileMenu()">⬡ &nbsp;BAY VIEW</button>
+  <button class="mob-action mob-amber" onclick="setView('lb');closeMobileMenu()">⬡ &nbsp;LASHING BRIDGES</button>
+
+  <div class="mob-section">FILE</div>
+  <button class="mob-action mob-green" onclick="closeMobileMenu();document.getElementById('mbFile')&amp;&amp;document.getElementById('mbFile').click()">📂 &nbsp;FILE MENU</button>
+
+  <div class="mob-section">BAY SETTINGS</div>
+  <button class="mob-action" onclick="closeMobileMenu();document.getElementById('mbBaySet')&amp;&amp;document.getElementById('mbBaySet').click()">⚙ &nbsp;BAY SETTINGS</button>
+
+  <div class="mob-section">HC EDIT</div>
+  <button class="mob-action" onclick="closeMobileMenu();document.getElementById('mbHcEdit')&amp;&amp;document.getElementById('mbHcEdit').click()">✏ &nbsp;HC EDIT</button>
+
+  <div class="mob-section">VIEW OPTIONS</div>
+  <button class="mob-action" onclick="closeMobileMenu();document.getElementById('mbView')&amp;&amp;document.getElementById('mbView').click()">👁 &nbsp;VIEW OPTIONS</button>
+
+  <div class="mob-section">TOOLS</div>
+  <button class="mob-action" onclick="closeMobileMenu();document.getElementById('mbTools')&amp;&amp;document.getElementById('mbTools').click()">🔧 &nbsp;TOOLS</button>
+
+  <div class="mob-section">HC FITTINGS</div>
+  <button class="mob-action" onclick="closeMobileMenu();document.getElementById('mbHcFit')&amp;&amp;document.getElementById('mbHcFit').click()">⚓ &nbsp;HC FITTINGS</button>
+
+  <div class="mob-section">STATISTICS</div>
+  <button class="mob-action" onclick="closeMobileMenu();document.getElementById('mbStats')&amp;&amp;document.getElementById('mbStats').click()">📊 &nbsp;STATISTICS</button>
+
+  <div class="mob-section">EXPORT</div>
+  <button class="mob-action" onclick="closeMobileMenu();document.getElementById('mbExport')&amp;&amp;document.getElementById('mbExport').click()">⬆ &nbsp;EXPORT</button>
+
+  <div class="mob-sep"></div>
+
+  <div class="mob-section">QUICK ACTIONS</div>
+  <button class="mob-action" onclick="closeMobileMenu();typeof toggleFpal==='function'&amp;&amp;toggleFpal()">🎨 &nbsp;PALETTE</button>
+  <button class="mob-action" onclick="closeMobileMenu();typeof undo==='function'&amp;&amp;undo()">↩ &nbsp;UNDO</button>
+  <button class="mob-action" onclick="closeMobileMenu();typeof redo==='function'&amp;&amp;redo()">↪ &nbsp;REDO</button>
+
+  <div class="mob-sep"></div>
+
+  <div class="mob-section">DISPLAY MODE</div>
+  <button class="mob-action" onclick="closeMobileMenu();setDayMode&amp;&amp;setDayMode()">☀ &nbsp;DAY MODE</button>
+  <button class="mob-action" onclick="closeMobileMenu();setDarkMode&amp;&amp;setDarkMode()">🌙 &nbsp;DARK MODE</button>
+</div>
+
+<script>
+// ── Mobile menu open/close ────────────────────────────────────────
+function openMobileMenu(){
+  document.getElementById('mobileMenuDrawer').classList.add('open');
+  document.getElementById('mobileMenuOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu(){
+  document.getElementById('mobileMenuDrawer').classList.remove('open');
+  document.getElementById('mobileMenuOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  // Close any open desktop dropdowns that may have opened
+  if(typeof closeMenus === 'function') closeMenus();
+}
+// Close on Escape
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeMobileMenu();
+});
+</script>
+
+<script>
+// ── Touch pinch-zoom + pan for main bay canvas ───────────────────
+(function(){
+  var vp2 = document.getElementById('vp');
+  if(!vp2) return;
+  var _t = [], _pd = 0, _pmx = 0, _pmy = 0, _px = 0, _py = 0, _moved = false;
+
+  vp2.addEventListener('touchstart', function(e){
+    e.preventDefault();
+    _t = Array.from(e.touches); _moved = false;
+    if(_t.length===2){
+      _pd  = Math.hypot(_t[1].clientX-_t[0].clientX, _t[1].clientY-_t[0].clientY);
+      _pmx = (_t[0].clientX+_t[1].clientX)/2;
+      _pmy = (_t[0].clientY+_t[1].clientY)/2;
+    } else if(_t.length===1){ _px=_t[0].clientX; _py=_t[0].clientY; }
+  },{passive:false});
+
+  vp2.addEventListener('touchmove', function(e){
+    e.preventDefault();
+    var ts = Array.from(e.touches);
+    if(ts.length===2 && _t.length>=2){
+      var d  = Math.hypot(ts[1].clientX-ts[0].clientX, ts[1].clientY-ts[0].clientY);
+      var mx = (ts[0].clientX+ts[1].clientX)/2;
+      var my = (ts[0].clientY+ts[1].clientY)/2;
+      var rect = vp2.getBoundingClientRect();
+      var cx = mx-rect.left, cy = my-rect.top;
+      if(_pd>0){
+        var f = d/_pd;
+        var newZ = Math.max(0.07,Math.min(7,zoom*f));
+        panX = cx+(panX-cx)*(newZ/zoom);
+        panY = cy+(panY-cy)*(newZ/zoom);
+        panX += mx-_pmx; panY += my-_pmy;
+        zoom = newZ;
+      }
+      _pd=d; _pmx=mx; _pmy=my; _moved=true; draw();
+    } else if(ts.length===1){
+      var dx=ts[0].clientX-_px, dy=ts[0].clientY-_py;
+      if(Math.abs(dx)>3||Math.abs(dy)>3) _moved=true;
+      panX+=dx; panY+=dy; _px=ts[0].clientX; _py=ts[0].clientY; draw();
+    }
+    _t=ts;
+  },{passive:false});
+
+  vp2.addEventListener('touchend', function(e){
+    e.preventDefault();
+    var rem = Array.from(e.touches);
+    if(!_moved && _t.length===1 && rem.length===0){
+      var t2=e.changedTouches[0];
+      var rect=vp2.getBoundingClientRect();
+      // Synthesise a mouseup-like click at canvas coords
+      var mx2=t2.clientX, my2=t2.clientY;
+      // Fire as mousedown+mouseup sequence so click handlers catch it
+      ['mousedown','mouseup','click'].forEach(function(ev){
+        var s=new MouseEvent(ev,{clientX:mx2,clientY:my2,bubbles:true,cancelable:true,button:0});
+        vp2.dispatchEvent(s);
+      });
+    }
+    _t=rem; if(_t.length<2) _pd=0;
+    if(_t.length===1){ _px=_t[0].clientX; _py=_t[0].clientY; }
+  },{passive:false});
+})();
 </script>
 
 </body></html>
