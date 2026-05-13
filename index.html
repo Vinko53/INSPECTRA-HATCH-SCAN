@@ -2918,6 +2918,9 @@
 body { -webkit-text-size-adjust: 100%; }
 html, body { overscroll-behavior: none; }
 #vp, #lbCanvas, #lbOvCanvas, #rsSchematic { touch-action: none; -webkit-user-select: none; user-select: none; }
+/* Overlay buttons inside #vp must receive touch events normally */
+#ovRotateBtn, #ovRotateBtnEl { touch-action: auto !important; pointer-events: auto !important; }
+#vp > div { pointer-events: auto; }
 #bayNav, #hcNav, #rowSelWrap, #platNav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 #bayNav::-webkit-scrollbar, #hcNav::-webkit-scrollbar { display: none; }
 
@@ -3172,18 +3175,38 @@ html {
 
 /* Prevent callout menu on long press (iOS) */
 #vp, #lbCanvas, #lbOvCanvas, #rsSchematic,
-#mobileMenuBtn, .mob-group-hdr {
+#mobileMenuBtn, .mob-group-hdr,
+#layersPal, #lashEyePlacerPal, #hcStopPlacerPal, #hcStopManipPal,
+#flexipadPlacerPal, #flexipadManipPal, #rpPlacerPal, #rpManipPal,
+#ventPlacerPal, #hddPlacerPal, #cranePal, #hcManipPal, #hcShapePal,
+#floatPal, #floatShp, #objManipPal, #omPanel, #lbEyePlacerPal, #lbPalette,
+#floatSaveBtn, #floatLayersBtn, #floatBayCopyBtn, #floatSmartGridBtn,
+#floatHcShapeBtn, #floatHcManipBtn, #floatMarkToolBtn, #floatMarkLegendBtn,
+#dropFile, #dropSettings, #dropEdit, #dropView, #dropTools,
+#dropObjects, #dropStats, #dropExport,
+#lbDropSettings, #lbDropFittings, #lbDropStats, #lbDropExport {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
+  user-select: none;
 }
+/* Restore text selection inside inputs/selects */
+input, select, textarea { -webkit-user-select: text !important; user-select: text !important; }
 
-/* Fix iOS Safari 100vh bug — use -webkit-fill-available */
-body {
-  min-height: -webkit-fill-available;
-}
+/* Fix iOS Safari 100vh bug — use dvh with fallback */
+/* dvh = dynamic viewport height (accounts for Safari toolbar) */
 html {
-  height: -webkit-fill-available;
+  height: 100%;
+  height: 100dvh;
 }
+body {
+  height: 100%;
+  height: 100dvh;
+  /* overflow:hidden keeps the app from scrolling as a page */
+  overflow: hidden !important;
+}
+/* Use CSS custom property for reliable height */
+:root { --app-height: 100vh; }
+body { height: var(--app-height) !important; overflow: hidden !important; }
 
 /* iOS input zoom prevention — keep font-size ≥16px on inputs */
 input[type="number"],
@@ -9070,6 +9093,19 @@ const LAYERS = [
 function layerOn(id){ const l=LAYERS.find(x=>x.id===id); return l ? l.on : true; }
 
 let layersVisible = false;
+// ── Clamp a floating panel to visible screen on mobile ─────────────────────
+function _clampPalToScreen(x, y, elId){
+  if(window.innerWidth >= 768) return {x:x, y:y};
+  var el = document.getElementById(elId);
+  var w = el ? (el.offsetWidth  || 260) : 260;
+  var h = el ? (el.offsetHeight || 200) : 200;
+  var nx = Math.max(4, Math.min(window.innerWidth  - w - 4, x));
+  var ny = Math.max(50, Math.min(window.innerHeight - h - 4, y));
+  // If original x was off-screen reset to right edge
+  if(x > window.innerWidth - 50) nx = Math.max(4, window.innerWidth - w - 8);
+  return {x:nx, y:ny};
+}
+
 let layersPalX = 420, layersPalY = 16;
 
 function layersRender(){
@@ -9106,8 +9142,9 @@ function showLayers(){
   _closeAllPanels();
   const el = document.getElementById('layersPal');
   el.style.display = 'block';
-  el.style.left = layersPalX + 'px';
-  el.style.top  = layersPalY + 'px';
+  var _clp = _clampPalToScreen(layersPalX, layersPalY, 'layersPal');
+  layersPalX = _clp.x; layersPalY = _clp.y;
+  el.style.left = layersPalX + 'px'; el.style.top  = layersPalY + 'px';
   layersVisible = true;
   const btn = document.getElementById('btnLayers');
   if(btn){ btn.classList.add('on'); btn.style.color='#c070ff'; btn.style.borderColor='#c070ff'; btn.style.background='rgba(144,80,224,0.18)'; }
@@ -9150,8 +9187,9 @@ function _initLayersDrag(){
     if(!dragging) return;
     layersPalX = e.clientX - ox;
     layersPalY = e.clientY - oy;
-    el.style.left = layersPalX + 'px';
-    el.style.top  = layersPalY + 'px';
+    var _clp = _clampPalToScreen(layersPalX, layersPalY, 'layersPal');
+  layersPalX = _clp.x; layersPalY = _clp.y;
+  el.style.left = layersPalX + 'px'; el.style.top  = layersPalY + 'px';
   });
   document.addEventListener('mouseup', () => {
     if(dragging){ dragging = false; handle.style.cursor = 'grab'; }
@@ -10461,8 +10499,9 @@ function showHcStopManip(){
   const el=document.getElementById('hcStopManipPal');
   if(!el) return;
   el.style.display='block';
-  el.style.left=hcStopManipPalX+'px';
-  el.style.top=hcStopManipPalY+'px';
+  var _clp = _clampPalToScreen(hcStopManipPalX, hcStopManipPalY, 'hcStopManipPal');
+  hcStopManipPalX = _clp.x; hcStopManipPalY = _clp.y;
+  el.style.left = hcStopManipPalX + 'px'; el.style.top  = hcStopManipPalY + 'px';
   hcStopManipVisible=true;
   const btn=document.getElementById('btnHcStopManip');
   if(btn){btn.classList.add('on');btn.style.color='#5eb8ff';btn.style.borderColor='#5eb8ff';}
@@ -56089,76 +56128,60 @@ function _lbCopyEyesToAllBridges(){
     <button class="mob-close-btn" onclick="closeMobileMenu()">✕</button>
   </div>
 
-  <!-- VIEW (always expanded, no toggle) -->
+  <!-- VIEW -->
   <div class="mob-section" style="border-top:none;margin-top:0;">VIEW</div>
-  <button class="mob-action" onclick="setView('ov');closeMobileMenu()">⊞ &nbsp;OVERVIEW — ALL BAYS</button>
-  <button class="mob-action" onclick="setView('bay');closeMobileMenu()">⬡ &nbsp;BAY VIEW</button>
-  <button class="mob-action mob-amber" onclick="setView('lb');closeMobileMenu()">⬡ &nbsp;LASHING BRIDGES</button>
+  <button class="mob-action" onclick="setView('ov');closeMobileMenu()">⊞  OVERVIEW — ALL BAYS</button>
+  <button class="mob-action" onclick="setView('bay');closeMobileMenu()">⬡  BAY VIEW</button>
+  <button class="mob-action mob-amber" onclick="setView('lb');closeMobileMenu()">⬡  LASHING BRIDGES</button>
 
-  <!-- Collapsible groups -->
+  <!-- FILE -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>📂 &nbsp;FILE</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>📂  FILE</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <button class="mob-action" onclick="closeMobileMenu();fileNew&&fileNew()">⬜ &nbsp;NEW — EMPTY SKETCH</button>
-      <button class="mob-action mob-green" onclick="closeMobileMenu();fileOpen&&fileOpen()">📂 &nbsp;OPEN…</button>
-      <button class="mob-action mob-green" onclick="closeMobileMenu();fileSave&&fileSave()">💾 &nbsp;SAVE</button>
-      <button class="mob-action" onclick="closeMobileMenu();fileSaveAs&&fileSaveAs()">💾 &nbsp;SAVE AS…</button>
-      <button class="mob-action" onclick="closeMobileMenu();fileExportFull&&fileExportFull()">⬆ &nbsp;EXPORT FULL DATA (JSON)</button>
-      <button class="mob-action" onclick="closeMobileMenu();fileImport&&fileImport()">⬇ &nbsp;IMPORT DATA FILE</button>
-      <div class="mob-sub-sep"></div>
-      <button class="mob-action" onclick="closeMobileMenu();openVesselStatic&&openVesselStatic()">⛴ &nbsp;VESSEL STATIC SETTINGS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openProjectNumber&&openProjectNumber()">🗂 &nbsp;PROJECT NUMBER</button>
-      <div class="mob-sub-sep"></div>
-      <button class="mob-action" onclick="closeMobileMenu();openAccountPanel&&openAccountPanel()">👤 &nbsp;ACCOUNT</button>
-      <button class="mob-action" onclick="closeMobileMenu();openLicencePanel&&openLicencePanel()">🔑 &nbsp;LICENCE & SUBSCRIPTION</button>
-      <button class="mob-action" onclick="closeMobileMenu();openOptionsPanel&&openOptionsPanel()">⚙ &nbsp;OPTIONS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openAboutPanel&&openAboutPanel()">ℹ &nbsp;ABOUT</button>
+      <div class="mob-sub-label">SKETCH</div>
+      <button class="mob-action" onclick="closeMobileMenu();fileNew&&fileNew()">⬜  NEW — EMPTY SKETCH</button>
+      <div class="mob-sub-label">PROJECT FILE</div>
+      <button class="mob-action mob-green" onclick="closeMobileMenu();fileOpen&&fileOpen()">📂  OPEN…</button>
+      <button class="mob-action mob-green" onclick="closeMobileMenu();fileSave&&fileSave()">💾  SAVE</button>
+      <button class="mob-action" onclick="closeMobileMenu();fileSaveAs&&fileSaveAs()">💾  SAVE AS…</button>
+      <div class="mob-sub-label">DATA EXCHANGE</div>
+      <button class="mob-action" onclick="closeMobileMenu();fileExportFull&&fileExportFull()">⬆  EXPORT FULL DATA (JSON)</button>
+      <button class="mob-action" onclick="closeMobileMenu();fileImport&&fileImport()">⬇  IMPORT DATA FILE</button>
+      <div class="mob-sub-label">VESSEL</div>
+      <button class="mob-action" onclick="closeMobileMenu();openVesselStatic&&openVesselStatic()">⛴  VESSEL STATIC SETTINGS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openProjectNumber&&openProjectNumber()">🗂  PROJECT NUMBER</button>
+      <div class="mob-sub-label">USER</div>
+      <button class="mob-action" onclick="closeMobileMenu();openAccountPanel&&openAccountPanel()">👤  ACCOUNT</button>
+      <button class="mob-action" onclick="closeMobileMenu();openLicencePanel&&openLicencePanel()">🔑  LICENCE &amp; SUBSCRIPTION</button>
+      <button class="mob-action" onclick="closeMobileMenu();openOptionsPanel&&openOptionsPanel()">⚙  OPTIONS</button>
+      <div class="mob-sub-label">SOFTWARE</div>
+      <button class="mob-action" onclick="closeMobileMenu();openAboutPanel&&openAboutPanel()">ℹ  ABOUT</button>
     </div>
   </div>
 
+  <!-- BAY SETTINGS -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>⚙ &nbsp;BAY SETTINGS</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>⚙  BAY SETTINGS</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <!-- Vessel config inputs -->
-      <div style="display:flex;align-items:center;gap:8px;padding:12px 20px 10px;border-bottom:1px solid #0f2a3e;flex-wrap:wrap;">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:0.15em;color:#3a7090;text-transform:uppercase;width:100%;margin-bottom:4px;">VESSEL CONFIGURATION</div>
-        <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#7ab0d0;letter-spacing:0.1em;">BAYS</label>
-        <input type="number" min="1" max="30" value="1"
-          style="width:52px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
-            background:#0a1828;color:#5eb8ff;border:1px solid #1e4a74;border-radius:3px;
-            padding:5px 6px;text-align:center;"
-          oninput="var el=document.getElementById('cfgBays');if(el){el.value=this.value;el.dispatchEvent(new Event('change'));}"
-          onfocus="this.value=document.getElementById('cfgBays')?document.getElementById('cfgBays').value:this.value"
-          id="mobCfgBays">
-        <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#7ab0d0;letter-spacing:0.1em;margin-left:8px;">ROWS/SIDE</label>
-        <input type="number" min="1" max="15" value="1"
-          style="width:52px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
-            background:#0a1828;color:#5eb8ff;border:1px solid #1e4a74;border-radius:3px;
-            padding:5px 6px;text-align:center;"
-          oninput="var el=document.getElementById('cfgRows');if(el){el.value=this.value;el.dispatchEvent(new Event('change'));}"
-          onfocus="this.value=document.getElementById('cfgRows')?document.getElementById('cfgRows').value:this.value"
-          id="mobCfgRows">
+      <div class="mob-sub-label">VESSEL CONFIG</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 20px 10px;flex-wrap:wrap;border-bottom:1px solid #0f2a3e;">
+        <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#7ab0d0;">BAYS</label>
+        <input type="number" min="1" max="30" id="mobCfgBays"
+          style="width:52px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;background:#0a1828;color:#5eb8ff;border:1px solid #1e4a74;border-radius:3px;padding:5px 6px;text-align:center;"
+          oninput="var e=document.getElementById('cfgBays');if(e){e.value=this.value;e.dispatchEvent(new Event('change'));}">
+        <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#7ab0d0;margin-left:8px;">ROWS/SIDE</label>
+        <input type="number" min="1" max="15" id="mobCfgRows"
+          style="width:52px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;background:#0a1828;color:#5eb8ff;border:1px solid #1e4a74;border-radius:3px;padding:5px 6px;text-align:center;"
+          oninput="var e=document.getElementById('cfgRows');if(e){e.value=this.value;e.dispatchEvent(new Event('change'));}">
       </div>
-      <button class="mob-action" onclick="closeMobileMenu();openSameBaysPanel&&openSameBaysPanel()">⇄ &nbsp;SAME BAYS — SISTER BAY GROUPS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openPerBayRows&&openPerBayRows()">⊞ &nbsp;MANUAL ROW SELECTION PER BAY</button>
-      <button class="mob-action" onclick="closeMobileMenu();openBayLineSelector&&openBayLineSelector()">≡ &nbsp;LINE SELECTOR PER BAY</button>
-      <button class="mob-action" onclick="closeMobileMenu();openBayNameTool&&openBayNameTool()">✎ &nbsp;BAY NAMING TOOL</button>
-      <button class="mob-action" onclick="closeMobileMenu();openBayCopyTool&&openBayCopyTool()">⧉ &nbsp;BAY COPY TOOL</button>
-      <button class="mob-action" onclick="closeMobileMenu();openPlatMgr&&openPlatMgr()">▤ &nbsp;PLATFORM MANAGER</button>
-      <button class="mob-action" onclick="closeMobileMenu();openPlatCopyTool&&openPlatCopyTool()">⧉ &nbsp;PLATFORM COPY TOOL</button>
-
-      <!-- Centre Row -->
+      <button class="mob-action" onclick="closeMobileMenu();openSameBaysPanel&&openSameBaysPanel()">⇄  SAME BAYS — SISTER BAY GROUPS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openPerBayRows&&openPerBayRows()">⊞  MANUAL ROW SELECTION FOR EACH BAY</button>
+      <button class="mob-action" onclick="closeMobileMenu();openBayLineSelector&&openBayLineSelector()">≡  LINE SELECTOR FOR EACH BAY</button>
       <div class="mob-sub-label">CENTRE ROW (R00)</div>
       <div style="display:flex;gap:6px;padding:6px 16px 8px;border-bottom:1px solid #0f2a3e;">
-        <button class="btn" style="flex:1;font-size:9px;padding:7px 4px;text-align:center;" onclick="setCenter&&setCenter(true)">SHOW</button>
-        <button class="btn" style="flex:1;font-size:9px;padding:7px 4px;text-align:center;" onclick="setCenter&&setCenter(false)">HIDE</button>
+        <button class="btn" style="flex:1;font-size:9px;padding:7px 4px;" onclick="setCenter&&setCenter(true)">SHOW</button>
+        <button class="btn" style="flex:1;font-size:9px;padding:7px 4px;" onclick="setCenter&&setCenter(false)">HIDE</button>
       </div>
-
-      <!-- Foundation Lines -->
       <div class="mob-sub-label">FOUNDATION LINES</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:8px 16px 10px;border-bottom:1px solid #0f2a3e;">
         <button class="btn view-on" disabled style="font-size:9px;padding:7px 2px;">LINE 1</button>
@@ -56170,8 +56193,11 @@ function _lbCopyEyesToAllBridges(){
         <button class="btn" style="font-size:9px;padding:7px 2px;" onclick="autoSwitchBay&&autoSwitchBay();toggleLine2Bot&&toggleLine2Bot()">LINE 7</button>
         <button class="btn view-on" disabled style="font-size:9px;padding:7px 2px;">LINE 8</button>
       </div>
-
-      <!-- Default Foundation -->
+      <div class="mob-sub-label">UTILITIES</div>
+      <button class="mob-action" onclick="closeMobileMenu();openBayNameTool&&openBayNameTool()">✎  BAY NAMING TOOL</button>
+      <button class="mob-action" onclick="closeMobileMenu();openBayCopyTool&&openBayCopyTool()">⧉  BAY COPY TOOL</button>
+      <button class="mob-action" onclick="closeMobileMenu();openPlatMgr&&openPlatMgr()">▤  PLATFORM MANAGER</button>
+      <button class="mob-action" onclick="closeMobileMenu();openPlatCopyTool&&openPlatCopyTool()">⧉  PLATFORM COPY TOOL</button>
       <div class="mob-sub-label">DEFAULT FOUNDATION</div>
       <div style="display:flex;flex-wrap:wrap;gap:5px;padding:8px 16px 8px;border-bottom:1px solid #0f2a3e;">
         <button class="btn view-on" style="font-size:9px;padding:7px 10px;" onclick="setDefaultFndType&&setDefaultFndType('double');applyDefaultToCurrent&&applyDefaultToCurrent(true)">DBL</button>
@@ -56184,8 +56210,6 @@ function _lbCopyEyesToAllBridges(){
         <button class="btn" style="font-size:9px;padding:7px 10px;white-space:nowrap;" onclick="setDefaultFndType&&setDefaultFndType('dbl_elg_edges');applyDefaultToCurrent&&applyDefaultToCurrent(true)">DBL+ELG⊕</button>
         <button class="btn" style="font-size:9px;padding:7px 10px;color:#ffb060;border-color:#7a4010;" onclick="applyDefaultsToAll&&applyDefaultsToAll()">⟳ ALL BAYS</button>
       </div>
-
-      <!-- Default Color -->
       <div class="mob-sub-label">DEFAULT COLOR</div>
       <div style="display:flex;flex-wrap:wrap;gap:5px;padding:8px 16px 12px;">
         <button class="btn" style="font-size:9px;padding:7px 10px;border-color:#a01818;" onclick="setDefaultFndColor&&setDefaultFndColor('red');applyDefaultToCurrent&&applyDefaultToCurrent(true)"><span style="color:#ff4444;">●</span> RED</button>
@@ -56198,132 +56222,177 @@ function _lbCopyEyesToAllBridges(){
     </div>
   </div>
 
+  <!-- HC EDIT -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>✏ &nbsp;HC EDIT</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>✏  HC EDIT</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHcShapeEditor&&toggleHcShapeEditor()">⬡ &nbsp;HC SHAPE EDITOR — FREE POLYGON</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHcManip&&toggleHcManip()">⬡ &nbsp;HC MANIPULATOR — SELECT & EDIT</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();openHcNameTool&&openHcNameTool()">⬡ &nbsp;HC NAMING TOOL</button>
-      <button class="mob-action mob-danger" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();clearFnds&&clearFnds()">⌫ &nbsp;CLEAR ALL FOUNDATIONS</button>
-      <button class="mob-action mob-danger" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();clearHcBay&&clearHcBay()">⌫ &nbsp;CLEAR HC — CURRENT BAY</button>
+      <button class="mob-action mob-danger" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();clearFnds&&clearFnds()">⌫  CLEAR ALL FOUNDATIONS</button>
+      <div class="mob-sub-label">HC CREATOR</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;padding:8px 16px 10px;border-bottom:1px solid #0f2a3e;">
+        <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(0)">NONE</button>
+        <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(1)">HC·1</button>
+        <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(2)">HC·2</button>
+        <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(3)">HC·3</button>
+        <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(4)">HC·4</button>
+        <button class="btn mob-danger" style="font-size:10px;padding:7px 10px;color:#e05050;border-color:#a02020;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(7)">⌫ DEL</button>
+        <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();toggleEditHC&&toggleEditHC()">✎ HC</button>
+      </div>
+      <div class="mob-sub-label">HC COLOR</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 16px 10px;border-bottom:1px solid #0f2a3e;">
+        <button class="btn" style="font-size:9px;padding:5px 8px;background:rgba(0,0,0,0);color:#606060;border-color:#404040;border-style:dashed;" onclick="setHcColor&&setHcColor('none')">NON</button>
+        <button class="btn" style="font-size:9px;padding:5px 8px;color:#dc2828;border-color:#a02020;" onclick="setHcColor&&setHcColor('red')">RED</button>
+        <button class="btn" style="font-size:9px;padding:5px 8px;color:#18b450;border-color:#108040;" onclick="setHcColor&&setHcColor('green')">GRN</button>
+        <button class="btn" style="font-size:9px;padding:5px 8px;color:#1e78ff;border-color:#0040c0;" onclick="setHcColor&&setHcColor('blue')">BLU</button>
+        <button class="btn" style="font-size:9px;padding:5px 8px;color:#8090a0;border-color:#607080;" onclick="setHcColor&&setHcColor('white')">WHT</button>
+        <button class="btn" style="font-size:9px;padding:5px 8px;color:#646e7d;border-color:#404850;" onclick="setHcColor&&setHcColor('gray')">GRY</button>
+        <button class="btn" style="font-size:9px;padding:5px 8px;color:#dcc000;border-color:#a09000;" onclick="setHcColor&&setHcColor('yellow')">YEL</button>
+        <button class="btn" style="font-size:9px;padding:5px 8px;color:#f08c14;border-color:#b06010;" onclick="setHcColor&&setHcColor('orange')">ORG</button>
+        <button class="btn" style="font-size:9px;padding:5px 8px;color:#a050dc;border-color:#7030a0;" onclick="setHcColor&&setHcColor('purple')">PRP</button>
+      </div>
+      <button class="mob-action mob-danger" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();clearHcBay&&clearHcBay()">⌫  CLEAR HC — CURRENT BAY</button>
+      <div class="mob-sub-label">HATCH COVER DRAWING</div>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHcShapeEditor&&toggleHcShapeEditor()">⬡  HC SHAPE EDITOR — FREE POLYGON</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHcManip&&toggleHcManip()">⬡  HC MANIPULATOR — SELECT &amp; EDIT SHAPES</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();openHcNameTool&&openHcNameTool()">⬡  HC NAMING TOOL</button>
     </div>
   </div>
 
+  <!-- VIEW OPTIONS -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>👁 &nbsp;VIEW OPTIONS</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>👁  VIEW OPTIONS</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <button class="mob-action" onclick="closeMobileMenu();toggleGrid&&toggleGrid()">⊟ &nbsp;TOGGLE GRID LINES</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleOverlayGrid&&toggleOverlayGrid()">⊞ &nbsp;TOGGLE PLACEMENT GRID</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleFxpPlacementGrid&&toggleFxpPlacementGrid()">▣ &nbsp;FLEXIPAD PLACEMENT GRID</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleSmartGrid&&toggleSmartGrid()">⊞ &nbsp;SMART GRID</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleMarks&&toggleMarks()">◎ &nbsp;TOGGLE MARKINGS</button>
-      <button class="mob-action" onclick="closeMobileMenu();setTransCenter&&setTransCenter(true)">| &nbsp;SHOW CENTRE LINE</button>
-      <button class="mob-action" onclick="closeMobileMenu();toggleFndTypes&&toggleFndTypes()">Aa &nbsp;FOUNDATION TYPE LABELS</button>
-      <button class="mob-action" onclick="closeMobileMenu();toggleCustomHeights&&toggleCustomHeights()">↕ &nbsp;CUSTOM HEIGHTS DISPLAY</button>
+      <div class="mob-sub-label">DISPLAY</div>
+      <button class="mob-action" onclick="closeMobileMenu();toggleGrid&&toggleGrid()">⊟  TOGGLE GRID LINES</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleOverlayGrid&&toggleOverlayGrid()">⊞  SHOW PLACEMENT GRID</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleFxpPlacementGrid&&toggleFxpPlacementGrid()">▣  SHOW FLEXIPAD PLACEMENT GRID</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof toggleRpPlacementGrid==='function'&&toggleRpPlacementGrid()">⊞  SHOW RESTING PAD PLACEMENT GRID</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleSmartGrid&&toggleSmartGrid()">⊞  SHOW SMART GRID</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleMarks&&toggleMarks()">◎  TOGGLE MARKINGS</button>
+      <div class="mob-sub-label">TRANSVERSAL CENTRE LINE</div>
+      <div style="display:flex;gap:6px;padding:6px 16px 8px;border-bottom:1px solid #0f2a3e;">
+        <button class="btn" style="flex:1;font-size:9px;padding:7px;" onclick="setTransCenter&&setTransCenter(true)">SHOW</button>
+        <button class="btn" style="flex:1;font-size:9px;padding:7px;" onclick="setTransCenter&&setTransCenter(false)">HIDE</button>
+      </div>
+      <div class="mob-sub-label">FOUNDATION TYPE DISPLAY</div>
+      <button class="mob-action" onclick="closeMobileMenu();toggleFndTypes&&toggleFndTypes()">Aa  TYPE LABELS ON/OFF</button>
+      <button class="mob-action" onclick="closeMobileMenu();toggleCustomHeights&&toggleCustomHeights()">↕  CUSTOM HEIGHTS ON/OFF</button>
+      <div class="mob-sub-label">LABEL FIELD</div>
+      <div style="padding:6px 16px 10px;border-bottom:1px solid #0f2a3e;">
+        <select onchange="setFndLabelField&&setFndLabelField(this.value)"
+          style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;background:#0a1828;color:#5eb8ff;border:1px solid #1e4a74;border-radius:3px;padding:7px 10px;">
+          <option value="code">CODE</option>
+          <option value="type">TYPE NAME</option>
+          <option value="size">SIZE</option>
+          <option value="manufacturer">MANUFACTURER</option>
+          <option value="ovrWidth">OVR WIDTH</option>
+          <option value="cc">C/C</option>
+          <option value="ovrLength">OVR LENGTH</option>
+          <option value="height">HEIGHT</option>
+          <option value="material">MATERIAL</option>
+          <option value="other">OTHER / NOTES</option>
+        </select>
+      </div>
     </div>
   </div>
 
+  <!-- TOOLS -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>🔧 &nbsp;TOOLS</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>🔧  TOOLS</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleAssignMode&&toggleAssignMode()">⊕ &nbsp;ASSIGN TYPE TO FOUNDATION</button>
-      <button class="mob-action" onclick="closeMobileMenu();openObjEditor&&openObjEditor()">⊞ &nbsp;FOUNDATION TYPES LIBRARY</button>
-      <div class="mob-sub-sep"></div>
-      <button class="mob-action" onclick="closeMobileMenu();toggleMarkTool&&toggleMarkTool()">◈ &nbsp;MARKING TOOL</button>
-      <button class="mob-action" onclick="closeMobileMenu();openMarkLegend&&openMarkLegend()">☰ &nbsp;MARK LEGEND LIBRARY</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHeightMode&&toggleHeightMode()">↕ &nbsp;CUSTOM FOUNDATION HEIGHT</button>
-      <div class="mob-sub-sep"></div>
-      <button class="mob-action" onclick="closeMobileMenu();toggleCraneTool&&toggleCraneTool()">⚓ &nbsp;CRANE TOOL</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleOccupiedTool&&toggleOccupiedTool()">▨ &nbsp;OCCUPIED ROW TOOL</button>
-      <button class="mob-action mob-danger" onclick="closeMobileMenu();clearOccupiedRows&&clearOccupiedRows()">⌫ &nbsp;CLEAR OCCUPIED ROWS</button>
-      <div class="mob-sub-sep"></div>
-      <button class="mob-action" onclick="closeMobileMenu();openAccomMgr&&openAccomMgr()">⬛ &nbsp;ACCOMMODATION & ENGINE BLOCK MANAGER</button>
-      <button class="mob-action" onclick="closeMobileMenu();toggleDimTool&&toggleDimTool()">⬛ &nbsp;DIMENSIONS TOOL</button>
-      <button class="mob-action" onclick="closeMobileMenu();toggleMeasureTool&&toggleMeasureTool()">◎ &nbsp;MEASURE TOOL</button>
+      <div class="mob-sub-label">FOUNDATION LIBRARY</div>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleAssignMode&&toggleAssignMode()">⊕  ASSIGN TYPE TO FOUNDATION</button>
+      <button class="mob-action" onclick="closeMobileMenu();openObjEditor&&openObjEditor()">⊞  FOUNDATION TYPES LIBRARY</button>
+      <div class="mob-sub-label">MARKS AT HC</div>
+      <button class="mob-action" onclick="closeMobileMenu();toggleMarkTool&&toggleMarkTool()">◈  MARKING TOOL — PLACE SYMBOLS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openMarkLegend&&openMarkLegend()">☰  MARK LEGEND — SHAPE LIBRARY</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHeightMode&&toggleHeightMode()">↕  CUSTOM FOUNDATION HEIGHT</button>
+      <div class="mob-sub-label">CRANE</div>
+      <button class="mob-action" onclick="closeMobileMenu();toggleCraneTool&&toggleCraneTool()">⌖  CRANE TOOL — PLACE CRANE SYMBOL</button>
+      <div class="mob-sub-label">OCCUPIED ROWS</div>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleOccupiedTool&&toggleOccupiedTool()">▨  OCCUPIED ROW TOOL — MARK CARGO PRESENCE</button>
+      <button class="mob-action mob-danger" onclick="closeMobileMenu();clearOccupiedRows&&clearOccupiedRows()">⌫  CLEAR OCCUPIED ROWS — CURRENT BAY / PLATFORM</button>
+      <div class="mob-sub-label">ACCOMMODATION</div>
+      <button class="mob-action" onclick="closeMobileMenu();openAccomMgr&&openAccomMgr()">⬛  ACCOMMODATION &amp; ENGINE BLOCK MANAGER</button>
+      <div class="mob-sub-label">ANALYSIS</div>
+      <button class="mob-action" onclick="closeMobileMenu();toggleDimTool&&toggleDimTool()">⬛  DIMENSIONS — ENTER HC SIDE LENGTHS</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof toggleShowAllDims==='function'&&toggleShowAllDims()">⬛  MANUAL DIMENSIONS — ON / OFF</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof toggleShowAutoDims==='function'&&toggleShowAutoDims()">⬛  AUTO DIMENSIONS — ON / OFF</button>
+      <button class="mob-action" onclick="closeMobileMenu();toggleMeasureTool&&toggleMeasureTool()">◎  MEASURE — POINT TO POINT / AREA</button>
     </div>
   </div>
 
+  <!-- HC FITTINGS -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>⚓ &nbsp;HC FITTINGS</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>⚓  HC FITTINGS</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
       <div class="mob-sub-label">LASHING EYES</div>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleLashEyePlacer&&toggleLashEyePlacer()">◎ &nbsp;PLACE LASHING EYE</button>
-      <button class="mob-action" onclick="closeMobileMenu();openLashEyeLib&&openLashEyeLib()">◎ &nbsp;LASHING EYE LIBRARY</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleLashEyeAssignMode&&toggleLashEyeAssignMode()">⊕ &nbsp;ASSIGN TYPE TO LASHING EYE</button>
-      <button class="mob-action mob-danger" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof _clearLashingEyes==='function'&&_clearLashingEyes()">✕ &nbsp;CLEAR LASHING EYES</button>
-      <div class="mob-sub-sep"></div>
-      <div class="mob-sub-label">STOPPERS & BEARING</div>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHcStopPlacer&&toggleHcStopPlacer()">⊗ &nbsp;PLACE HC STOPPER</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleFlexipadPlacer&&toggleFlexipadPlacer()">▣ &nbsp;PLACE FLEXIPAD</button>
-      <button class="mob-action" onclick="closeMobileMenu();openFxpLib&&openFxpLib()">▣ &nbsp;FLEXIPAD LIBRARY</button>
-      <button class="mob-action mob-danger" onclick="closeMobileMenu();clearFlexipadsBay&&clearFlexipadsBay()">⌫ &nbsp;CLEAR FLEXIPADS — CURRENT BAY</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleRpPlacer&&toggleRpPlacer()">⊞ &nbsp;PLACE RESTING PAD</button>
-      <button class="mob-action" onclick="closeMobileMenu();openRpLib&&openRpLib()">⊞ &nbsp;RESTING PAD LIBRARY</button>
-      <button class="mob-action mob-danger" onclick="closeMobileMenu();clearRpBay&&clearRpBay()">⌫ &nbsp;CLEAR RESTING PADS — CURRENT BAY</button>
-      <div class="mob-sub-sep"></div>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleLashEyePlacer&&toggleLashEyePlacer()">◎  PLACE LASHING EYE</button>
+      <button class="mob-action" onclick="closeMobileMenu();openLashEyeLib&&openLashEyeLib()">◎  LASHING EYE LIBRARY</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleLashEyeAssignMode&&toggleLashEyeAssignMode()">⊕  ASSIGN TYPE TO LASHING EYE</button>
+      <button class="mob-action mob-danger" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof _clearLashingEyes==='function'&&_clearLashingEyes()">✕  CLEAR LASHING EYES</button>
+      <div class="mob-sub-label">HC STOPPERS</div>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHcStopPlacer&&toggleHcStopPlacer()">⊗  PLACE HC STOPPER</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof toggleHcStopManip==='function'&&toggleHcStopManip()">⊗  HC STOPPER MANIPULATOR</button>
+      <div class="mob-sub-label">HC BEARING SYSTEM — FLEXIPADS</div>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleFlexipadPlacer&&toggleFlexipadPlacer()">▣  PLACE FLEXIPAD</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof toggleFlexipadAssignMode==='function'&&toggleFlexipadAssignMode()">▣  ASSIGN TYPE TO FLEXIPAD</button>
+      <button class="mob-action" onclick="closeMobileMenu();openFxpLib&&openFxpLib()">▣  FLEXIPAD LIBRARY — TYPE CATALOGUE</button>
+      <button class="mob-action mob-danger" onclick="closeMobileMenu();clearFlexipadsBay&&clearFlexipadsBay()">⌫  CLEAR FLEXIPADS — CURRENT BAY</button>
+      <div class="mob-sub-label">RESTING PADS</div>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleRpPlacer&&toggleRpPlacer()">⊞  PLACE RESTING PAD</button>
+      <button class="mob-action" onclick="closeMobileMenu();openRpLib&&openRpLib()">⊞  RESTING PAD LIBRARY</button>
+      <button class="mob-action mob-danger" onclick="closeMobileMenu();clearRpBay&&clearRpBay()">⌫  CLEAR RESTING PADS — CURRENT BAY</button>
       <div class="mob-sub-label">OTHER FITTINGS</div>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleVentPlacer&&toggleVentPlacer()">◈ &nbsp;PLACE VENTILATOR</button>
-      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHddPlacer&&toggleHddPlacer()">⊕ &nbsp;PLACE HOLD-DOWN DEVICE</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleVentPlacer&&toggleVentPlacer()">◈  PLACE VENTILATOR</button>
+      <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHddPlacer&&toggleHddPlacer()">⊕  PLACE HOLD-DOWN DEVICE</button>
     </div>
   </div>
 
+  <!-- STATISTICS -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>📊 &nbsp;STATISTICS</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>📊  STATISTICS</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <button class="mob-action" onclick="closeMobileMenu();openStatsModal&&openStatsModal()">⬡ &nbsp;GENERAL STATISTICS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('foundations')">⬡ &nbsp;CONTAINER FOUNDATIONS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('lashing')">⬡ &nbsp;LASHING EYES</button>
-      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('stoppers')">⬡ &nbsp;HC STOPPERS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('resting')">⬡ &nbsp;RESTING PADS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('flexipads')">⬡ &nbsp;FLEXIPADS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('ventilators')">⬡ &nbsp;VENTILATORS</button>
-      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('holddowns')">⬡ &nbsp;HOLD-DOWN DEVICES</button>
+      <button class="mob-action" onclick="closeMobileMenu();openStatsModal&&openStatsModal()">⬡  GENERAL STATISTICS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('foundations')">⬡  CONTAINER FOUNDATIONS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('lashing')">⬡  LASHING EYES</button>
+      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('stoppers')">⬡  HC STOPPERS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('resting')">⬡  RESTING PADS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('flexipads')">⬡  FLEXIPADS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('ventilators')">⬡  VENTILATORS</button>
+      <button class="mob-action" onclick="closeMobileMenu();openSubStats&&openSubStats('holddowns')">⬡  HOLD-DOWN DEVICES</button>
     </div>
   </div>
 
+  <!-- EXPORT -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>⬆ &nbsp;EXPORT</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>⬆  EXPORT</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <button class="mob-action" onclick="closeMobileMenu();exportAllBaysPDF&&exportAllBaysPDF()">⬆ &nbsp;EXPORT PDF — ALL BAYS (A4)</button>
-      <button class="mob-action" onclick="closeMobileMenu();exportLegendPDF&&exportLegendPDF()">⬆ &nbsp;EXPORT PDF — LEGEND</button>
-      <button class="mob-action" onclick="closeMobileMenu();exportFndTypesPDF&&exportFndTypesPDF()">⬆ &nbsp;EXPORT PDF — FOUNDATION TYPES</button>
-      <button class="mob-action" onclick="closeMobileMenu();exportLashEyeLibPDF&&exportLashEyeLibPDF()">⬆ &nbsp;EXPORT PDF — LASHING EYE LIBRARY</button>
-      <button class="mob-action" onclick="closeMobileMenu();exportMarkLegendPDF&&exportMarkLegendPDF()">⬆ &nbsp;EXPORT PDF — MARK LEGEND</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof exportAllBaysPDF==='function'&&exportAllBaysPDF()">⬆  EXPORT PDF — ALL BAYS (A4)</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof exportLegendPDF==='function'&&exportLegendPDF()">⬆  EXPORT PDF — LEGEND</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof exportFndTypesPDF==='function'&&exportFndTypesPDF()">⬆  EXPORT PDF — FOUNDATION TYPES</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof exportLashEyeLibPDF==='function'&&exportLashEyeLibPDF()">⬆  EXPORT PDF — LASHING EYE LIBRARY</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof exportMarkLegendPDF==='function'&&exportMarkLegendPDF()">⬆  EXPORT PDF — MARK LEGEND</button>
     </div>
   </div>
 
+  <!-- QUICK ACTIONS -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>↩ &nbsp;QUICK ACTIONS</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>↩  QUICK ACTIONS</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <button class="mob-action" onclick="closeMobileMenu();typeof undo==='function'&&undo()">↩ &nbsp;UNDO</button>
-      <button class="mob-action" onclick="closeMobileMenu();typeof redo==='function'&&redo()">↪ &nbsp;REDO</button>
-      <button class="mob-action" onclick="closeMobileMenu();typeof toggleFpal==='function'&&toggleFpal()">🎨 &nbsp;PALETTE</button>
-      <button class="mob-action mob-amber" onclick="closeMobileMenu();typeof _lbOpenOverlay==='function'&&_lbOpenOverlay()">⬡ &nbsp;LASHING BRIDGES</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof undoStep==='function'&&undoStep()">↩  UNDO</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof redoStep==='function'&&redoStep()">↪  REDO</button>
+      <button class="mob-action" onclick="closeMobileMenu();typeof toggleFpal==='function'&&toggleFpal()">🎨  PALETTE</button>
+      <button class="mob-action mob-amber" onclick="closeMobileMenu();typeof _lbOpenOverlay==='function'&&_lbOpenOverlay()">⬡  LASHING BRIDGES</button>
     </div>
   </div>
 
+  <!-- DISPLAY MODE -->
   <div class="mob-group">
-    <button class="mob-group-hdr" onclick="mobToggle(this)">
-      <span>🎨 &nbsp;DISPLAY MODE</span><span class="mob-arrow">▶</span>
-    </button>
+    <button class="mob-group-hdr" onclick="mobToggle(this)"><span>🎨  DISPLAY MODE</span><span class="mob-arrow">▶</span></button>
     <div class="mob-group-body">
-      <button class="mob-action" onclick="closeMobileMenu();document.documentElement.classList.remove('day-mode','gray-panels')">🌙 &nbsp;DARK MODE</button>
-      <button class="mob-action" onclick="closeMobileMenu();document.documentElement.classList.add('day-mode');document.documentElement.classList.remove('gray-panels')">☀ &nbsp;DAY MODE</button>
-      <button class="mob-action" onclick="closeMobileMenu();document.documentElement.classList.add('gray-panels');document.documentElement.classList.remove('day-mode')">🔲 &nbsp;GRAY PANELS</button>
+      <button class="mob-action" onclick="closeMobileMenu();document.documentElement.classList.remove('day-mode','gray-panels')">🌙  DARK MODE</button>
+      <button class="mob-action" onclick="closeMobileMenu();document.documentElement.classList.add('day-mode');document.documentElement.classList.remove('gray-panels')">☀  DAY MODE</button>
+      <button class="mob-action" onclick="closeMobileMenu();document.documentElement.classList.add('gray-panels');document.documentElement.classList.remove('day-mode')">🔲  GRAY PANELS</button>
     </div>
   </div>
 
@@ -56332,15 +56401,44 @@ function _lbCopyEyesToAllBridges(){
 
 <script>
 var _mobMenuTs = 0;
+// ── iOS Safari viewport height fix ────────────────────────────────────────
+// Updates --app-height CSS var to actual visible viewport height
+// This accounts for Safari's dynamic toolbar appearing/disappearing
+(function(){
+  function setAppHeight(){
+    var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--app-height', h + 'px');
+    // Also resize the main canvas to fit
+    var vp2 = document.getElementById('vp');
+    var canvas2 = document.getElementById('c');
+    if(vp2 && canvas2){
+      var rect = vp2.getBoundingClientRect();
+      if(rect.width > 0 && rect.height > 0){
+        if(canvas2.width !== rect.width || canvas2.height !== rect.height){
+          canvas2.width  = rect.width;
+          canvas2.height = rect.height;
+          if(typeof draw === 'function') draw();
+        }
+      }
+    }
+  }
+  setAppHeight();
+  window.addEventListener('resize', setAppHeight);
+  window.addEventListener('orientationchange', function(){
+    setTimeout(setAppHeight, 200); // wait for orientation to complete
+    setTimeout(setAppHeight, 600); // second pass for slow devices
+  });
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', setAppHeight);
+    window.visualViewport.addEventListener('scroll', setAppHeight);
+  }
+})();
 function openMobileMenu(){
   var now = Date.now();
-  if(now - _mobMenuTs < 500) return; // prevent double-tap open
+  if(now - _mobMenuTs < 500) return;
   _mobMenuTs = now;
   document.getElementById('mobileMenuDrawer').classList.add('open');
   document.getElementById('mobileMenuOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
-  document.body.style.position='fixed';
-  document.body.style.width='100%';
   var b=document.getElementById('cfgBays'), r=document.getElementById('cfgRows');
   var mb=document.getElementById('mobCfgBays'), mr=document.getElementById('mobCfgRows');
   if(b&&mb) mb.value=b.value;
@@ -56349,9 +56447,6 @@ function openMobileMenu(){
 function closeMobileMenu(){
   document.getElementById('mobileMenuDrawer').classList.remove('open');
   document.getElementById('mobileMenuOverlay').classList.remove('open');
-  document.body.style.overflow='';
-  document.body.style.position='';
-  document.body.style.width='';
   if(typeof closeMenus==='function') closeMenus();
 }
 var _mobToggleTs = 0;
@@ -56383,6 +56478,11 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
   function addTouchDrag(el){
     if(!el || el._touchDragInited) return;
     el._touchDragInited = true;
+
+    // Suppress iOS text selection callout on this element
+    el.style.webkitUserSelect = 'none';
+    el.style.userSelect = 'none';
+    el.style.webkitTouchCallout = 'none';
 
     var _timer = null;
     var _dragging = false;
@@ -56434,6 +56534,12 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
       var t = e.touches[0];
       startLongPress(t.clientX, t.clientY);
     }, {passive: true});
+
+    // Block context menu triggered by long press
+    el.addEventListener('contextmenu', function(e){
+      e.preventDefault();
+      return false;
+    });
 
     el.addEventListener('touchmove', function(e){
       if(!_dragging){ cancelLongPress(); return; }
@@ -56500,6 +56606,11 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
   if(!vp2) return;
   var _t=[],_pd=0,_pmx=0,_pmy=0,_px=0,_py=0,_moved=false,_lastTap=0;
   vp2.addEventListener('touchstart',function(e){
+    // Pass through touches on overlay buttons (rotate btn etc.)
+    if(e.target && e.target !== vp2 && e.target.tagName !== 'CANVAS' &&
+       e.target.closest && e.target.closest('button,a,[onclick]')){
+      return;
+    }
     e.preventDefault();
     _t=Array.from(e.touches); _moved=false;
     if(_t.length===2){
