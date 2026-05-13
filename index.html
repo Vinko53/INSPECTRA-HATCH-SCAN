@@ -2951,6 +2951,12 @@ html, body { overscroll-behavior: none; }
 .mob-section { font-family: 'IBM Plex Mono',monospace; font-size: 7px; letter-spacing: 0.22em; color: #3a7090; text-transform: uppercase; padding: 10px 16px 4px; border-top: 1px solid #0f2a3e; margin-top: 2px; flex-shrink: 0; }
 .mob-action { display: flex; align-items: center; width: 100%; padding: 13px 20px; background: transparent; border: none; border-bottom: 1px solid #0f2a3e; color: #c8daea; font-family: 'IBM Plex Mono',monospace; font-size: 10px; letter-spacing: 0.06em; text-align: left; cursor: pointer; gap: 10px; flex-shrink: 0; }
 .mob-action:active { background: #1a4060; color: #fff; }
+.mob-group-hdr:active { background: #1a3a5a; }
+/* Slight visual delay on active state — reduces accidental triggers on iOS */
+.mob-action, .mob-group-hdr {
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.08s ease;
+}
 .mob-action.mob-danger { color: #e05050; }
 .mob-action.mob-green { color: #00c068; }
 .mob-action.mob-amber { color: #e0a000; }
@@ -3109,9 +3115,9 @@ html.gray-panels .mob-group.mob-open .mob-group-hdr { background: #98bcd4; color
 
 /* ══ iOS / iPadOS SPECIFIC ════════════════════════════════════════ */
 
-/* Remove 300ms tap delay on all interactive elements */
-a, button, [onclick], input, select, textarea, label {
-  touch-action: manipulation;
+/* Remove 300ms tap delay only on canvas — keep natural feel on buttons/menus */
+#vp, #lbCanvas, #lbOvCanvas, #rsSchematic {
+  touch-action: none;
 }
 
 /* Prevent iOS Safari rubber-band bounce on body */
@@ -56325,14 +56331,16 @@ function _lbCopyEyesToAllBridges(){
 </div>
 
 <script>
+var _mobMenuTs = 0;
 function openMobileMenu(){
+  var now = Date.now();
+  if(now - _mobMenuTs < 500) return; // prevent double-tap open
+  _mobMenuTs = now;
   document.getElementById('mobileMenuDrawer').classList.add('open');
   document.getElementById('mobileMenuOverlay').classList.add('open');
-  // iOS: prevent body scroll when drawer is open
   document.body.style.overflow='hidden';
   document.body.style.position='fixed';
   document.body.style.width='100%';
-  // Sync vessel config inputs with current values
   var b=document.getElementById('cfgBays'), r=document.getElementById('cfgRows');
   var mb=document.getElementById('mobCfgBays'), mr=document.getElementById('mobCfgRows');
   if(b&&mb) mb.value=b.value;
@@ -56346,14 +56354,17 @@ function closeMobileMenu(){
   document.body.style.width='';
   if(typeof closeMenus==='function') closeMenus();
 }
+var _mobToggleTs = 0;
 function mobToggle(hdr){
+  var now = Date.now();
+  if(now - _mobToggleTs < 300) return; // debounce
+  _mobToggleTs = now;
   var grp=hdr.parentElement;
   var body=grp.querySelector('.mob-group-body');
   var open=grp.classList.toggle('mob-open');
   if(open){
     body.style.maxHeight = body.scrollHeight + 'px';
   } else {
-    // Force repaint then collapse
     body.style.maxHeight = body.scrollHeight + 'px';
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){ body.style.maxHeight = '0'; });
@@ -56362,16 +56373,126 @@ function mobToggle(hdr){
 }
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobileMenu(); });
 
+// ── Touch long-press drag for floating panels and dropdowns ────────────────
+// Attach to any element with data-touch-drag="true" or class mob-draggable
+// Long-press (500ms) activates drag mode — then drag to reposition
+(function(){
+  var LONG_PRESS_MS = 480;
+  var DRAG_THRESHOLD = 6;
+
+  function addTouchDrag(el){
+    if(!el || el._touchDragInited) return;
+    el._touchDragInited = true;
+
+    var _timer = null;
+    var _dragging = false;
+    var _startX, _startY, _startL, _startT;
+    var _origCursor = '';
+
+    function startLongPress(cx, cy){
+      _timer = setTimeout(function(){
+        _timer = null;
+        _dragging = true;
+        _startX = cx; _startY = cy;
+        _startL = parseInt(el.style.left) || el.offsetLeft || 0;
+        _startT = parseInt(el.style.top)  || el.offsetTop  || 0;
+        // Ensure element is absolutely positioned
+        if(getComputedStyle(el).position === 'static'){
+          el.style.position = 'fixed';
+        }
+        el.style.transition = 'none';
+        el.style.opacity = '0.88';
+        el.style.zIndex  = '99995';
+        el.style.boxShadow = '0 8px 32px rgba(0,0,0,0.7)';
+        // Haptic feedback if available
+        if(navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_MS);
+    }
+
+    function cancelLongPress(){
+      if(_timer){ clearTimeout(_timer); _timer = null; }
+    }
+
+    function endDrag(el){
+      _dragging = false;
+      el.style.opacity = '';
+      el.style.boxShadow = '';
+      // Save position to localStorage
+      try{
+        var key = 'mob_pos_' + (el.id || el.className.split(' ')[0]);
+        localStorage.setItem(key, JSON.stringify({
+          left: parseInt(el.style.left)||0,
+          top:  parseInt(el.style.top)||0
+        }));
+      }catch(e){}
+    }
+
+    el.addEventListener('touchstart', function(e){
+      if(e.touches.length !== 1) return;
+      cancelLongPress();
+      if(_dragging) return;
+      var t = e.touches[0];
+      startLongPress(t.clientX, t.clientY);
+    }, {passive: true});
+
+    el.addEventListener('touchmove', function(e){
+      if(!_dragging){ cancelLongPress(); return; }
+      e.preventDefault();
+      e.stopPropagation();
+      var t = e.touches[0];
+      var dx = t.clientX - _startX;
+      var dy = t.clientY - _startY;
+      var vw = window.innerWidth, vh = window.innerHeight;
+      var w = el.offsetWidth, h = el.offsetHeight;
+      var newL = Math.max(0, Math.min(vw - w, _startL + dx));
+      var newT = Math.max(0, Math.min(vh - h, _startT + dy));
+      el.style.left = newL + 'px';
+      el.style.top  = newT + 'px';
+    }, {passive: false});
+
+    el.addEventListener('touchend', function(e){
+      cancelLongPress();
+      if(_dragging){ endDrag(el); e.preventDefault(); }
+    }, {passive: false});
+
+    el.addEventListener('touchcancel', function(){
+      cancelLongPress();
+      if(_dragging) endDrag(el);
+    });
+  }
+
+  // Apply to floating panels after DOM ready
+  function attachDragToFloaters(){
+    var ids = [
+      'floatPal','floatShp','objManipPal','hcManipPal','hcShapePal',
+      'layersPal','floatSaveBtn','floatLayersBtn','lashEyePlacerPal',
+      'hcStopPlacerPal','hcStopManipPal','flexipadPlacerPal','flexipadManipPal',
+      'rpPlacerPal','rpManipPal','ventPlacerPal','hddPlacerPal',
+      'lbEyePlacerPal','lbPalette','floatBayCopyBtn','floatSmartGridBtn',
+      'floatHcShapeBtn','floatHcManipBtn','floatMarkToolBtn','floatMarkLegendBtn',
+      'cranePal','floatHeightToolBtn','floatObjEditorBtn',
+      'dropFile','dropSettings','dropEdit','dropView','dropTools',
+      'dropObjects','dropStats','dropExport',
+      'rsDropSettings','rsDropExport','rsDropStats',
+      'lbDropSettings','lbDropFittings','lbDropStats','lbDropExport'
+    ];
+    ids.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) addTouchDrag(el);
+    });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', attachDragToFloaters);
+  } else {
+    setTimeout(attachDragToFloaters, 800);
+  }
+})();
+
 // ── iOS: prevent Safari native pinch/zoom interfering with canvas ──
 document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
 document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
 document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {passive:false});
-
-// ── iOS: prevent double-tap zoom on buttons and toolbar ──
-document.querySelectorAll('button,.btn,.mob-action,.mob-group-hdr,.bay-tab')
-  .forEach(function(el){
-    el.addEventListener('touchend', function(e){ e.preventDefault(); e.target.click(); }, {passive:false});
-  });
 
 // ── Touch pinch-zoom + pan for main bay canvas ───────────────────
 (function(){
