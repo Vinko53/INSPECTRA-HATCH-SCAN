@@ -2953,6 +2953,60 @@ html, body { overscroll-behavior: none; }
 .mob-action.mob-amber { color: #e0a000; }
 .mob-sep { height: 1px; background: #1a4060; margin: 4px 0; flex-shrink: 0; }
 
+/* ── Collapsible accordion groups ── */
+.mob-group { flex-shrink: 0; }
+.mob-group-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 14px 18px;
+  background: #0f2236;
+  border: none; border-top: 1px solid #1a3a52; border-bottom: 1px solid #0a1828;
+  color: #90b8d8;
+  font-family: 'IBM Plex Mono',monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer; text-align: left;
+}
+.mob-group-hdr:active { background: #1a3a5a; }
+.mob-group-hdr span:first-child { flex: 1; }
+.mob-arrow {
+  font-size: 8px; color: #2a6080;
+  transition: transform 0.2s ease;
+  margin-left: 8px;
+}
+.mob-group-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.28s ease;
+  background: #071828;
+}
+.mob-group.mob-open .mob-group-hdr {
+  background: #142840;
+  color: #5eb8ff;
+  border-bottom-color: #1a4a6a;
+}
+.mob-group.mob-open .mob-arrow { color: #5eb8ff; transform: rotate(90deg); }
+.mob-sub-label {
+  font-family: 'IBM Plex Mono',monospace; font-size: 7px;
+  letter-spacing: 0.22em; color: #2a6080; text-transform: uppercase;
+  padding: 9px 20px 3px; flex-shrink: 0;
+}
+.mob-sub-sep { height: 1px; background: #0f2a3e; flex-shrink: 0; }
+
+/* Day mode */
+html.day-mode .mob-group-hdr { background: #ccdce8; color: #2a5070; border-top-color: #b0c8dc; border-bottom-color: #a8c0d4; }
+html.day-mode .mob-group-hdr:active { background: #b0ccdd; }
+html.day-mode .mob-group-body { background: #daeaf4; }
+html.day-mode .mob-group.mob-open .mob-group-hdr { background: #b8d0e6; color: #0a3a7a; border-bottom-color: #90b8d8; }
+html.day-mode .mob-group.mob-open .mob-arrow { color: #0a5aaa; }
+html.day-mode .mob-arrow { color: #7aaac8; }
+html.day-mode .mob-sub-label { color: #5a88aa; }
+html.day-mode .mob-sub-sep { background: #c0d0e0; }
+
+/* Gray panels */
+html.gray-panels .mob-group-hdr { background: #c0d0dc; color: #1a3a5a; border-top-color: #a8bccb; }
+html.gray-panels .mob-group-body { background: #ccdae6; }
+html.gray-panels .mob-group.mob-open .mob-group-hdr { background: #a8c0d4; color: #0a2a5a; }
+
 /* Phone layout */
 @media (max-width: 767px) {
   #mobileMenuBtn { display: flex !important; }
@@ -4845,6 +4899,11 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
+    <!-- Unsaved dot — top-right corner badge -->
+    <div id="floatSaveDot" style="position:absolute;top:-3px;right:-3px;z-index:1;
+      width:9px;height:9px;border-radius:50%;
+      background:#e05050;border:1.5px solid #060e1a;
+      display:none;pointer-events:none;"></div>
     <svg width="22" height="22" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       <!-- Floppy disk body -->
       <rect x="1" y="1" width="14" height="14" rx="2" fill="#5eb8ff"/>
@@ -5626,13 +5685,6 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
       <line x1="15" y1="6"  x2="12" y2="9"  stroke="#e04040" stroke-width="1.4" stroke-linecap="round"/>
     </svg>
   </div>
-
-  <!-- ── Unsaved dot on float save icon ── -->
-  <div id="floatSaveDot" style="position:absolute;top:8px;left:8px;z-index:201;
-    width:8px;height:8px;border-radius:50%;
-    background:#e05050;border:1.5px solid #060e1a;
-    display:none;pointer-events:none;"></div>
-
 
   <!-- FLOATING COLOR PALETTE -->
   <div id="floatPal" class="fpal" style="display:none">
@@ -38237,13 +38289,7 @@ function _syncFabMenuLabels(){
   }
 
   function syncSaveDot(){
-    const btn = document.getElementById('floatSaveBtn');
-    const dot = document.getElementById('floatSaveDot');
-    if(!btn || !dot) return;
-    const t = parseInt(btn.style.top)  || 10;
-    const l = parseInt(btn.style.left) || 10;
-    dot.style.top  = (t - 2) + 'px';
-    dot.style.left = (l + 26) + 'px';
+    // dot is now inside floatSaveBtn — no position sync needed
   }
 
   function makeDraggable(id, onMoved){
@@ -56202,12 +56248,18 @@ function closeMobileMenu(){
   if(typeof closeMenus==='function') closeMenus();
 }
 function mobToggle(hdr){
-  var grp = hdr.parentElement;
-  var body = grp.querySelector('.mob-group-body');
-  var arrow = hdr.querySelector('.mob-arrow');
-  var open = grp.classList.toggle('mob-open');
-  arrow.textContent = open ? '▼' : '▶';
-  body.style.maxHeight = open ? body.scrollHeight + 'px' : '0';
+  var grp=hdr.parentElement;
+  var body=grp.querySelector('.mob-group-body');
+  var open=grp.classList.toggle('mob-open');
+  if(open){
+    body.style.maxHeight = body.scrollHeight + 'px';
+  } else {
+    // Force repaint then collapse
+    body.style.maxHeight = body.scrollHeight + 'px';
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ body.style.maxHeight = '0'; });
+    });
+  }
 }
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobileMenu(); });
 
