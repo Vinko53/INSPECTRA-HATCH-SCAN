@@ -56645,17 +56645,41 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
       // Double-tap detection (≤320ms between taps)
       if(now - (_lastTap||0) < 320){
         _lastTap=0;
-        // Toggle between overview and bay view
         if(typeof viewMode!=='undefined' && typeof setView==='function'){
           if(viewMode==='ov') setView('bay');
           else setView('ov');
         }
       } else {
         _lastTap=now;
-        // Single tap — fire as click
+        // Fire synthetic events — target the canvas element for edit modes
+        // that check e.target === canvas (markTool, craneTool etc.)
+        var target = document.getElementById('c') || vp2;
+
+        // For mark tool and crane tool: call placement functions directly
+        // (bypass e.target===canvas guard which may still fail)
+        if(typeof editMarkMode !== 'undefined' && editMarkMode &&
+           typeof viewMode !== 'undefined' && viewMode !== 'ov'){
+          var rect_vp = vp2.getBoundingClientRect();
+          var sx = t2.clientX - rect_vp.left;
+          var sy = t2.clientY - rect_vp.top;
+          if(typeof markOnMouseDown === 'function') markOnMouseDown(sx, sy);
+          if(typeof markOnMouseUp   === 'function') markOnMouseUp(sx, sy, false);
+          return;
+        }
+        if(typeof editCraneMode !== 'undefined' && editCraneMode){
+          var rect_vp2 = vp2.getBoundingClientRect();
+          var sx2 = t2.clientX - rect_vp2.left;
+          var sy2 = t2.clientY - rect_vp2.top;
+          if(typeof craneOnMouseDown === 'function') craneOnMouseDown(sx2, sy2);
+          if(typeof craneOnMouseUp   === 'function') craneOnMouseUp(sx2, sy2, false);
+          return;
+        }
+
         ['mousedown','mouseup','click'].forEach(function(ev){
-          var s=new MouseEvent(ev,{clientX:t2.clientX,clientY:t2.clientY,bubbles:true,cancelable:true,button:0});
-          vp2.dispatchEvent(s);
+          var s=new MouseEvent(ev,{clientX:t2.clientX,clientY:t2.clientY,
+            bubbles:true,cancelable:true,button:0,
+            view:window});
+          target.dispatchEvent(s);
         });
       }
     }
