@@ -938,6 +938,8 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh;
+    height: var(--app-height, 100vh);
     overflow: hidden;
     cursor: default;
   }
@@ -1854,6 +1856,7 @@
     position: relative;
     overflow: hidden;
     cursor: crosshair;
+    min-height: 0; /* critical for flex children to shrink correctly */
   }
   .viewport.grab { cursor: grab; }
   .viewport.grabbing { cursor: grabbing; }
@@ -10052,7 +10055,11 @@ function showLashEyePlacer(){
   _lashEyeColorBrush = 'black';
   if(viewMode !== 'bay') setView('bay');
   const el = document.getElementById('lashEyePlacerPal');
-  if(el){ el.style.display='block'; el.style.left=lashEyePlacerPalX+'px'; el.style.top=lashEyePlacerPalY+'px'; }
+  if(el){
+    var _clp = _clampPalToScreen(lashEyePlacerPalX, lashEyePlacerPalY, 'lashEyePlacerPal');
+    lashEyePlacerPalX = _clp.x; lashEyePlacerPalY = _clp.y;
+    el.style.display='block'; el.style.left=lashEyePlacerPalX+'px'; el.style.top=lashEyePlacerPalY+'px';
+  }
   const btn = document.getElementById('btnLashEyePlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#5eb8ff'; btn.style.borderColor='#5eb8ff'; }
   const _fle = document.getElementById('floatLashEyeBtn');
@@ -10486,7 +10493,7 @@ function showHcStopPlacer(){
   hcStopMode = true;
   if(viewMode!=='bay') setView('bay');
   const el = document.getElementById('hcStopPlacerPal');
-  if(el){ el.style.display='block'; el.style.left=hcStopPlacerPalX+'px'; el.style.top=hcStopPlacerPalY+'px'; }
+  if(el){ {var _clp=_clampPalToScreen(hcStopPlacerPalX,hcStopPlacerPalY,'hcStopPlacerPal');hcStopPlacerPalX=_clp.x;hcStopPlacerPalY=_clp.y;}el.style.display='block'; el.style.left=hcStopPlacerPalX+'px'; el.style.top=hcStopPlacerPalY+'px'; }
   const btn = document.getElementById('btnHcStopPlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#ffdd44'; btn.style.borderColor='#ffdd44'; }
   const _fsp = document.getElementById('floatHcStopPlaceBtn');
@@ -11337,7 +11344,7 @@ function showRpPlacer(){
   deactivateAllTools('rpPlace');
   rpMode=true;
   const el=document.getElementById('rpPlacerPal'); if(!el) return;
-  el.style.display='block'; el.style.left=_rpPlacerPalX+'px'; el.style.top=_rpPlacerPalY+'px';
+  {var _clp=_clampPalToScreen(_rpPlacerPalX,_rpPlacerPalY,'rpPlacerPal');_rpPlacerPalX=_clp.x;_rpPlacerPalY=_clp.y;}el.style.display='block'; el.style.left=_rpPlacerPalX+'px'; el.style.top=_rpPlacerPalY+'px';
   rpPlacerSyncUI(); rpDrawPreview(); _initRpPlacerDrag();
   const fab=document.getElementById('floatRpPlaceBtn');
   if(fab){fab.classList.add('fshp-on');fab.style.opacity='1';}
@@ -11361,7 +11368,7 @@ function toggleRpPlacer(){ rpMode?hideRpPlacer():showRpPlacer(); }
 function showRpManip(){
   rpManipVisible=true;
   const el=document.getElementById('rpManipPal'); if(!el) return;
-  el.style.display='block'; el.style.left=_rpManipPalX+'px'; el.style.top=_rpManipPalY+'px';
+  {var _clp=_clampPalToScreen(_rpManipPalX,_rpManipPalY,'rpManipPal');_rpManipPalX=_clp.x;_rpManipPalY=_clp.y;}el.style.display='block'; el.style.left=_rpManipPalX+'px'; el.style.top=_rpManipPalY+'px';
   rpManipSyncUI(); _initRpManipDrag();
   const fab=document.getElementById('floatRpManipBtn');
   if(fab){fab.classList.add('fshp-on');fab.style.opacity='1';}
@@ -13345,7 +13352,7 @@ function showFlexipadPlacer(){
   fxpMode=true;
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('flexipadPlacerPal');
-  if(el){ el.style.display='block'; el.style.left=fxpPlacerPalX+'px'; el.style.top=fxpPlacerPalY+'px'; }
+  if(el){ {var _clp=_clampPalToScreen(fxpPlacerPalX,fxpPlacerPalY,'flexipadPlacerPal');fxpPlacerPalX=_clp.x;fxpPlacerPalY=_clp.y;}el.style.display='block'; el.style.left=fxpPlacerPalX+'px'; el.style.top=fxpPlacerPalY+'px'; }
   const btn=document.getElementById('btnFlexipadPlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#60d890'; btn.style.borderColor='#60d890'; }
   const fab=document.getElementById('floatFxpPlaceBtn');
@@ -13416,7 +13423,7 @@ function fxpPlacerSyncUI(){
 function showFlexipadManip(){
   const el=document.getElementById('flexipadManipPal');
   if(!el) return;
-  el.style.display='block'; el.style.left=fxpManipPalX+'px'; el.style.top=fxpManipPalY+'px';
+  {var _clp=_clampPalToScreen(fxpManipPalX,fxpManipPalY,'flexipadManipPal');fxpManipPalX=_clp.x;fxpManipPalY=_clp.y;}el.style.display='block'; el.style.left=fxpManipPalX+'px'; el.style.top=fxpManipPalY+'px';
   fxpManipVisible=true;
   const btn=document.getElementById('btnFlexipadManip');
   if(btn){ btn.classList.add('on'); btn.style.color='#5eb8ff'; btn.style.borderColor='#5eb8ff'; }
@@ -25241,7 +25248,7 @@ function showVentPlacer(){
   ventMode=true;
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('ventPlacerPal');
-  if(el){ el.style.display='block'; el.style.left=_ventPalX+'px'; el.style.top=_ventPalY+'px'; }
+  if(el){ {var _clp=_clampPalToScreen(_ventPalX,_ventPalY,'ventPlacerPal');_ventPalX=_clp.x;_ventPalY=_clp.y;}el.style.display='block'; el.style.left=_ventPalX+'px'; el.style.top=_ventPalY+'px'; }
   const btn=document.getElementById('btnVentPlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#5eb8ff'; btn.style.borderColor='#5eb8ff'; }
   const fab=document.getElementById('floatVentPlaceBtn');
@@ -25753,7 +25760,7 @@ function showHddPlacer(){
   hddMode=true;
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('hddPlacerPal');
-  if(el){ el.style.display='block'; el.style.left=_hddPalX+'px'; el.style.top=_hddPalY+'px'; }
+  if(el){ {var _clp=_clampPalToScreen(_hddPalX,_hddPalY,'hddPlacerPal');_hddPalX=_clp.x;_hddPalY=_clp.y;}el.style.display='block'; el.style.left=_hddPalX+'px'; el.style.top=_hddPalY+'px'; }
   const btn=document.getElementById('btnHddPlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#f0a030'; btn.style.borderColor='#f0a030'; }
   const fab=document.getElementById('floatHddPlaceBtn');
@@ -29785,7 +29792,7 @@ function showHcManip(){
   hcmVisible=true;
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('hcManipPal');
-  el.style.display='block'; el.style.left=hcmPalX+'px'; el.style.top=hcmPalY+'px';
+  {var _clp=_clampPalToScreen(hcmPalX,hcmPalY,'hcManipPal');hcmPalX=_clp.x;hcmPalY=_clp.y;}el.style.display='block'; el.style.left=hcmPalX+'px'; el.style.top=hcmPalY+'px';
   const btn=document.getElementById('btnHcManip');
   if(btn) btn.classList.add('dd-active-tool');
   const _fhcm = document.getElementById('floatHcManipBtn');
@@ -56438,32 +56445,48 @@ function _lbCopyEyesToAllBridges(){
 
 <script>
 var _mobMenuTs = 0;
-// ── iOS Safari viewport height fix ────────────────────────────────────────
-// Updates --app-height CSS var to actual visible viewport height
-// This accounts for Safari's dynamic toolbar appearing/disappearing
+// ── Viewport height fix — fires repeatedly to catch Safari toolbar ──
 (function(){
   function setAppHeight(){
-    var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    var h = (window.visualViewport ? window.visualViewport.height : 0)
+            || window.innerHeight
+            || document.documentElement.clientHeight;
     document.documentElement.style.setProperty('--app-height', h + 'px');
-    // Also resize the main canvas to fit
-    var vp2 = document.getElementById('vp');
-    var canvas2 = document.getElementById('c');
-    if(vp2 && canvas2){
-      var rect = vp2.getBoundingClientRect();
-      if(rect.width > 0 && rect.height > 0){
-        if(canvas2.width !== rect.width || canvas2.height !== rect.height){
-          canvas2.width  = rect.width;
-          canvas2.height = rect.height;
-          if(typeof draw === 'function') draw();
-        }
+    document.body.style.height = h + 'px';
+    // Resize canvas to match
+    var vpEl = document.getElementById('vp');
+    var cv   = document.getElementById('c');
+    if(vpEl && cv){
+      var used = 0;
+      ['titlebar','.titlebar'].forEach(function(s){
+        var el = document.querySelector(s); if(el) used += el.offsetHeight;
+      });
+      var tr = document.querySelector('.toolbar');
+      var br = document.querySelector('#baySelBar,#bayNavWrap,[id*="bayNav"]');
+      var sb = document.getElementById('statusBar');
+      if(tr) used += tr.offsetHeight;
+      if(br) used += br.offsetHeight;
+      if(sb) used += sb.offsetHeight;
+      var vpH = Math.max(100, h - used);
+      vpEl.style.height = vpH + 'px';
+      vpEl.style.flex   = 'none';
+      if(cv.width  !== Math.round(vpEl.offsetWidth) ||
+         cv.height !== Math.round(vpH)){
+        cv.width  = Math.round(vpEl.offsetWidth);
+        cv.height = Math.round(vpH);
+        if(typeof draw === 'function') draw();
       }
     }
   }
+  // Fire immediately and repeatedly — catches Safari toolbar appearing/hiding
   setAppHeight();
+  [50, 150, 300, 600, 1000, 1500].forEach(function(t){ setTimeout(setAppHeight, t); });
   window.addEventListener('resize', setAppHeight);
   window.addEventListener('orientationchange', function(){
-    setTimeout(setAppHeight, 200); // wait for orientation to complete
-    setTimeout(setAppHeight, 600); // second pass for slow devices
+    [200, 500, 1000].forEach(function(t){ setTimeout(setAppHeight, t); });
+  });
+  document.addEventListener('DOMContentLoaded', function(){
+    [0, 100, 300, 600].forEach(function(t){ setTimeout(setAppHeight, t); });
   });
   if(window.visualViewport){
     window.visualViewport.addEventListener('resize', setAppHeight);
@@ -56653,7 +56676,15 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
     if(_t.length===2){
       _pd=Math.hypot(_t[1].clientX-_t[0].clientX,_t[1].clientY-_t[0].clientY);
       _pmx=(_t[0].clientX+_t[1].clientX)/2; _pmy=(_t[0].clientY+_t[1].clientY)/2;
-    } else if(_t.length===1){ _px=_t[0].clientX; _py=_t[0].clientY; }
+    } else if(_t.length===1){
+      _px=_t[0].clientX; _py=_t[0].clientY;
+      // Crane tool: call mousedown to grab handle or select crane
+      if(typeof editCraneMode!=='undefined' && editCraneMode){
+        var rCr=vp2.getBoundingClientRect();
+        if(typeof craneOnMouseDown==='function')
+          craneOnMouseDown(_t[0].clientX-rCr.left, _t[0].clientY-rCr.top);
+      }
+    }
   },{passive:false});
   vp2.addEventListener('touchmove',function(e){
     e.preventDefault();
@@ -56669,13 +56700,33 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
     } else if(ts.length===1){
       var dx=ts[0].clientX-_px, dy=ts[0].clientY-_py;
       if(Math.abs(dx)>3||Math.abs(dy)>3) _moved=true;
-      panX+=dx; panY+=dy; _px=ts[0].clientX; _py=ts[0].clientY; draw();
+      // Crane tool: route drag to craneOnMouseMove instead of panning
+      if(typeof editCraneMode!=='undefined' && editCraneMode &&
+         typeof craneDragMode!=='undefined' && craneDragMode!==null){
+        var rCr=vp2.getBoundingClientRect();
+        if(typeof craneOnMouseMove==='function')
+          craneOnMouseMove(ts[0].clientX-rCr.left, ts[0].clientY-rCr.top);
+      } else {
+        panX+=dx; panY+=dy;
+      }
+      _px=ts[0].clientX; _py=ts[0].clientY; draw();
     }
     _t=ts;
   },{passive:false});
   vp2.addEventListener('touchend',function(e){
     e.preventDefault();
     var rem=Array.from(e.touches);
+    // Crane tool: end drag on touchend
+    if(_moved && typeof editCraneMode!=='undefined' && editCraneMode &&
+       typeof craneDragMode!=='undefined' && craneDragMode!==null){
+      var t3=e.changedTouches[0];
+      var rCr3=vp2.getBoundingClientRect();
+      if(typeof craneOnMouseUp==='function')
+        craneOnMouseUp(t3.clientX-rCr3.left, t3.clientY-rCr3.top, true);
+      _t=rem; if(_t.length<2) _pd=0;
+      if(_t.length===1){ _px=_t[0].clientX; _py=_t[0].clientY; }
+      return;
+    }
     if(!_moved&&_t.length===1&&rem.length===0){
       var t2=e.changedTouches[0];
       var now=Date.now();
@@ -56710,6 +56761,76 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           if(typeof craneOnMouseDown === 'function') craneOnMouseDown(sx2, sy2);
           if(typeof craneOnMouseUp   === 'function') craneOnMouseUp(sx2, sy2, false);
           return;
+        }
+        // Flexipad, resting pad, vent, hold-down — direct placement
+        if(typeof viewMode !== 'undefined' && viewMode === 'bay'){
+          var rect_vp3 = vp2.getBoundingClientRect();
+          var sx3 = t2.clientX - rect_vp3.left;
+          var sy3 = t2.clientY - rect_vp3.top;
+          if(typeof fxpMode !== 'undefined' && fxpMode){
+            // Force draw to compute snap grid at touch position
+            if(typeof lmx !== 'undefined'){
+              var prevLmxF = lmx, prevLmyF = lmy;
+              lmx = sx3; lmy = sy3;
+              if(typeof draw === 'function') draw();
+              if(typeof fxpHandleClick === 'function') fxpHandleClick(sx3, sy3);
+              lmx = prevLmxF; lmy = prevLmyF;
+            } else {
+              if(typeof fxpHandleClick === 'function') fxpHandleClick(sx3, sy3);
+            }
+            return;
+          }
+          if(typeof rpMode !== 'undefined' && rpMode){
+            // Force mousemove update to compute snap grid at touch position
+            // (snap grid is computed during draw, requires mouse position state)
+            if(typeof lmx !== 'undefined'){
+              var prevLmx = lmx, prevLmy = lmy;
+              lmx = sx3; lmy = sy3;
+              if(typeof draw === 'function') draw();
+              // Now snap state is computed — call the handler
+              if(typeof rpHandleClick === 'function') rpHandleClick(sx3, sy3);
+              lmx = prevLmx; lmy = prevLmy;
+            } else {
+              if(typeof rpHandleClick === 'function') rpHandleClick(sx3, sy3);
+            }
+            return;
+          }
+          if(typeof ventMode !== 'undefined' && ventMode){
+            if(typeof lmx !== 'undefined'){
+              var prevLmxV = lmx, prevLmyV = lmy;
+              lmx = sx3; lmy = sy3;
+              if(typeof draw === 'function') draw();
+              if(typeof ventHandleClick === 'function') ventHandleClick(sx3, sy3);
+              lmx = prevLmxV; lmy = prevLmyV;
+            } else {
+              if(typeof ventHandleClick === 'function') ventHandleClick(sx3, sy3);
+            }
+            return;
+          }
+          if(typeof hddMode !== 'undefined' && hddMode){
+            if(typeof lmx !== 'undefined'){
+              var prevLmxH = lmx, prevLmyH = lmy;
+              lmx = sx3; lmy = sy3;
+              if(typeof draw === 'function') draw();
+              if(typeof hddHandleClick === 'function') hddHandleClick(sx3, sy3, false);
+              lmx = prevLmxH; lmy = prevLmyH;
+            } else {
+              if(typeof hddHandleClick === 'function') hddHandleClick(sx3, sy3, false);
+            }
+            return;
+          }
+          if(typeof hcStopMode !== 'undefined' && hcStopMode){
+            if(typeof lmx !== 'undefined'){
+              var prevLmxS = lmx, prevLmyS = lmy;
+              lmx = sx3; lmy = sy3;
+              if(typeof draw === 'function') draw();
+              if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
+              lmx = prevLmxS; lmy = prevLmyS;
+            } else {
+              if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
+            }
+            return;
+          }
         }
 
         ['mousedown','mouseup','click'].forEach(function(ev){
