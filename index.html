@@ -2978,7 +2978,7 @@ html, body { overscroll-behavior: none; }
   border: none; border-top: 1px solid #1e4a6a; border-bottom: 1px solid #091e30;
   color: #8ec8e8;
   font-family: 'IBM Plex Mono',monospace;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer; text-align: left;
 }
@@ -3009,7 +3009,7 @@ html, body { overscroll-behavior: none; }
 .mob-sub-sep { height: 1px; background: #0f2a3e; flex-shrink: 0; }
 
 /* Day mode */
-html.day-mode .mob-group-hdr { background: #b8d0e6; color: #0a3060; border-top-color: #90b8d8; border-bottom-color: #a0c0d8; font-size: 11px; }
+html.day-mode .mob-group-hdr { background: #b8d0e6; color: #0a3060; border-top-color: #90b8d8; border-bottom-color: #a0c0d8; font-size: 13px; }
 html.day-mode .mob-group-hdr:active { background: #a0bcd8; }
 html.day-mode .mob-group-body { background: #daeaf4; }
 html.day-mode .mob-group.mob-open .mob-group-hdr { background: #a0c4e0; color: #062050; border-bottom-color: #7aaac8; }
@@ -3019,7 +3019,7 @@ html.day-mode .mob-sub-label { color: #5a88aa; }
 html.day-mode .mob-sub-sep { background: #c0d0e0; }
 
 /* Gray panels */
-html.gray-panels .mob-group-hdr { background: #b0c4d4; color: #0a2a4a; border-top-color: #98b0c4; font-size: 11px; }
+html.gray-panels .mob-group-hdr { background: #b0c4d4; color: #0a2a4a; border-top-color: #98b0c4; font-size: 13px; }
 html.gray-panels .mob-group-body { background: #ccdae6; }
 html.gray-panels .mob-group.mob-open .mob-group-hdr { background: #98bcd4; color: #081830; }
 
@@ -3073,6 +3073,37 @@ html.gray-panels .mob-group.mob-open .mob-group-hdr { background: #98bcd4; color
   #btnOV, #btnBV, #btnSeals, #btnLB { padding: 3px 7px !important; font-size: 8px !important; }
   .bay-tab { min-width: 40px !important; height: 32px !important; font-size: 10px !important; }
 
+  /* ── Bay selection bar — mobile sliding ribbon ── */
+  #bayNav, #hcNav {
+    height: 40px !important;
+    padding: 0 4px !important;
+    gap: 4px !important;
+  }
+  /* Scrollable ribbon — hide label on small screens to save space */
+  #bayNav .baynav-label, #hcNav .baynav-label {
+    display: none !important;
+  }
+  /* Bay tabs touch-friendly */
+  .bay-tab {
+    min-width: 44px !important;
+    height: 32px !important;
+    font-size: 10px !important;
+    padding: 0 8px !important;
+    flex-shrink: 0 !important;
+  }
+  /* Arrow buttons touch-friendly */
+  #bayNav .nav-arr, #hcNav .nav-arr {
+    min-width: 36px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+    padding: 0 6px !important;
+  }
+  /* Momentum scroll on bay ribbon */
+  .bay-scroll {
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-type: x proximity !important;
+  }
   /* Floating panels */
   #floatPal, #lbEyePlacerPal, #lbPalette, #hddPlacerPal,
   #ventPlacerPal, #flexipadPlacerPal, #rpPlacerPal, #hcStopPlacerPal
@@ -3251,7 +3282,7 @@ body, button, input, select {
 /* 14. iPad — larger touch targets */
 @media (min-width: 768px) and (pointer: coarse) {
   .mob-action { padding: 15px 22px !important; font-size: 11px !important; }
-  .mob-group-hdr { padding: 16px 20px !important; font-size: 12px !important; }
+  .mob-group-hdr { padding: 16px 20px !important; font-size: 14px !important; }
   #mobileMenuDrawer { width: min(380px, 88vw) !important; }
   .btn { min-height: 36px !important; }
   .toolbar { height: 46px !important; }
@@ -3346,17 +3377,28 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 #loginOverlay {
   position: fixed;
   inset: 0;
+  /* Use var(--app-height) so it matches actual visible area on iOS Safari */
+  height: var(--app-height, 100vh);
   z-index: 99999;
   background: radial-gradient(ellipse at 50% 40%, #1a3a5a 0%, #0f2540 45%, #081828 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'IBM Plex Mono', monospace;
+  /* Block all touch events from reaching app behind */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Account for safe areas on iPhone/iPad notch */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  box-sizing: border-box;
 }
 #loginCard {
   width: min(420px, 92vw);
-  max-height: calc(100vh - 40px);
+  /* Use dynamic height — accounts for iOS Safari toolbar */
+  max-height: min(calc(var(--app-height, 100vh) - 60px), 90vh);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: #2d7fc1 transparent;
   background: #070f1c;
@@ -3368,6 +3410,9 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
   flex-direction: column;
   gap: 0;
   box-sizing: border-box;
+  /* Ensure it's always fully on screen */
+  position: relative;
+  touch-action: auto;
 }
 #loginLogo {
   display: flex;
@@ -7927,6 +7972,27 @@ function rotateOverview(){
   syncOvRotateBtn();
   resetView();
 }
+
+// Direct touch handler for rotate button — bypasses vp touch-action:none
+(function(){
+  function _attachRotateTouch(){
+    var btn = document.getElementById('ovRotateBtnEl');
+    var wrap = document.getElementById('ovRotateBtn');
+    [btn, wrap].forEach(function(el){
+      if(!el) return;
+      el.addEventListener('touchend', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        rotateOverview();
+      }, {passive: false});
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', _attachRotateTouch);
+  } else {
+    setTimeout(_attachRotateTouch, 600);
+  }
+})();
 function syncOvRotateBtn(){
   const labels = ['0°','90°','180°','270°'];
   const angles = ['0deg','90deg','180deg','270deg'];
@@ -9126,14 +9192,28 @@ function layerOn(id){ const l=LAYERS.find(x=>x.id===id); return l ? l.on : true;
 let layersVisible = false;
 // ── Clamp a floating panel to visible screen on mobile ─────────────────────
 function _clampPalToScreen(x, y, elId){
+  // Always try to restore saved position first (works on both mobile and desktop)
+  try {
+    var saved = localStorage.getItem('mob_pos_' + elId);
+    if(saved){
+      var pos = JSON.parse(saved);
+      if(pos && typeof pos.left === 'number' && typeof pos.top === 'number'){
+        x = pos.left; y = pos.top;
+      }
+    }
+  } catch(e){}
+  // On desktop — just return (possibly restored) coordinates without clamping
   if(window.innerWidth >= 768) return {x:x, y:y};
+  // On mobile — clamp to visible screen
   var el = document.getElementById(elId);
   var w = el ? (el.offsetWidth  || 260) : 260;
   var h = el ? (el.offsetHeight || 200) : 200;
-  var nx = Math.max(4, Math.min(window.innerWidth  - w - 4, x));
-  var ny = Math.max(50, Math.min(window.innerHeight - h - 4, y));
-  // If original x was off-screen reset to right edge
-  if(x > window.innerWidth - 50) nx = Math.max(4, window.innerWidth - w - 8);
+  var vw = window.innerWidth;
+  var vh = parseInt(document.documentElement.style.getPropertyValue('--app-height')) || window.innerHeight;
+  var nx = Math.max(4, Math.min(vw - w - 4, x));
+  var ny = Math.max(50, Math.min(vh - h - 4, y));
+  // If original x was off-screen (hardcoded default), reset to right edge
+  if(x > vw - 50) nx = Math.max(4, vw - w - 8);
   return {x:nx, y:ny};
 }
 
@@ -31179,14 +31259,53 @@ function _applyThemeInlinePatches(day) {
 function toggleFullscreen() {
   const icon  = document.getElementById('fsIcon');
   const label = document.getElementById('fsLabel');
+
+  // iOS Safari does not support requestFullscreen — use viewport maximization instead
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  if(isIOS){
+    // On iOS: scroll to hide Safari's address bar, then maximize app height
+    if(!window._iosFakeFS){
+      window._iosFakeFS = true;
+      // Scroll to top to trigger Safari address bar collapse
+      window.scrollTo(0, 1);
+      setTimeout(function(){
+        window.scrollTo(0, 0);
+        // Force height recalculation after toolbar hides
+        if(typeof setAppHeight === 'function') setAppHeight();
+        else {
+          var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+          document.documentElement.style.setProperty('--app-height', h + 'px');
+          document.body.style.height = h + 'px';
+          if(typeof draw === 'function') draw();
+        }
+      }, 300);
+      if(icon)  icon.textContent  = '⛶';
+      if(label) label.textContent = 'FULL';
+      // Show tip on first use
+      var tip = document.createElement('div');
+      tip.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#0a1828;border:1px solid #2a7ab0;border-radius:6px;color:#5eb8ff;font-family:"IBM Plex Mono",monospace;font-size:9px;padding:8px 14px;z-index:99990;text-align:center;letter-spacing:0.08em;white-space:nowrap;';
+      tip.textContent = 'TIP: Add to Home Screen for true full screen';
+      document.body.appendChild(tip);
+      setTimeout(function(){ if(tip.parentNode) tip.parentNode.removeChild(tip); }, 3500);
+    } else {
+      window._iosFakeFS = false;
+      if(icon)  icon.textContent  = '⛶';
+      if(label) label.textContent = 'FULL';
+    }
+    return;
+  }
+
+  // Desktop / Android Chrome — use standard Fullscreen API
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch(() => {});
-    icon.textContent  = '✕';
-    label.textContent = 'EXIT';
+    if(icon)  icon.textContent  = '✕';
+    if(label) label.textContent = 'EXIT';
   } else {
     document.exitFullscreen().catch(() => {});
-    icon.textContent  = '⛶';
-    label.textContent = 'FULL';
+    if(icon)  icon.textContent  = '⛶';
+    if(label) label.textContent = 'FULL';
   }
 }
 document.addEventListener('fullscreenchange', () => {
@@ -32025,7 +32144,7 @@ async function exportRubberSealsPDF() {
 <input type="file" id="fileImportInput" accept=".vbpx,.vbpf" style="display:none" onchange="fileImportLoad(this)">
 
 <!-- ── LICENCE PANEL ── -->
-<div id="licenceOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.88);z-index:3000;align-items:center;justify-content:center;" onclick="if(event.target===this)closeLicencePanel()">
+<div id="licenceOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.88);z-index:3000;align-items:center;justify-content:center;touch-action:none;" onclick="if(event.target===this)closeLicencePanel()">
   <div id="licencePanel" class="fm-panel">
     <div class="fm-header">
       <span class="fm-title">🔑 LICENCE &amp; SUBSCRIPTION</span>
@@ -32122,7 +32241,7 @@ async function exportRubberSealsPDF() {
 </div>
 
 <!-- ── ACCOUNT PANEL ── -->
-<div id="accountOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;">
+<div id="accountOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
   <div id="accountPanel" class="fm-panel">
     <div class="fm-header">
       <span class="fm-title">👤 ACCOUNT</span>
@@ -32131,11 +32250,23 @@ async function exportRubberSealsPDF() {
     <div class="fm-body">
       <div id="acctView"></div>
     </div>
+    <div class="fm-footer" style="border-top:1px solid #1e3a54;padding:10px 16px;display:flex;align-items:center;gap:10px;background:#060e1a;">
+      <button onclick="_exportBakedAccounts()"
+        style="font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
+          letter-spacing:0.12em;padding:7px 14px;border-radius:3px;cursor:pointer;
+          background:rgba(0,160,80,0.15);color:#00c068;border:1px solid #00a050;"
+        title="Download a version of the app with all accounts built-in">
+        ⬇  BAKE ACCOUNTS INTO FILE
+      </button>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:#2a5070;letter-spacing:0.08em;flex:1;">
+        Super User only — embeds accounts so they appear on every device
+      </span>
+    </div>
   </div>
 </div>
 
 <!-- ── OPTIONS PANEL ── -->
-<div id="optionsOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;">
+<div id="optionsOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
   <div id="optionsPanel" class="fm-panel">
     <div class="fm-header">
       <span class="fm-title">⚙ OPTIONS</span>
@@ -33235,8 +33366,9 @@ function fileOpenLoad(input){
   reader.readAsText(file);
 }
 async function fileSave(){
+  // If no filename yet, use a default so web users can always save
   if(!_currentFileName){
-    return;
+    _currentFileName = 'vessel_plan.vbp';
   }
   const blob = _stateToBlob(_collectState());
   if(_currentFileHandle){
@@ -34477,7 +34609,7 @@ renderAccountPanel = function(){
 <!-- ══════════════════════════════════════════════════════
      VESSEL STATIC SETTINGS MODAL
 ════════════════════════════════════════════════════════ -->
-<div id="vsOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;">
+<div id="vsOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
   <div id="vsPanel">
     <div class="bc-header" style="background:#0e2240;padding:12px 20px;border-bottom:2px solid #2a5a90;">
       <span class="bc-title" style="font-size:15px;letter-spacing:0.2em;color:#ffffff;font-weight:800;">⛴ VESSEL STATIC SETTINGS</span>
@@ -34601,7 +34733,7 @@ renderAccountPanel = function(){
 <!-- ════════════════════════════════════════════════════════
      PROJECT NUMBER MODAL
 ════════════════════════════════════════════════════════ -->
-<div id="pnOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;">
+<div id="pnOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
   <div id="pnPanel">
     <div class="bc-header" style="background:#0e2240;padding:12px 20px;border-bottom:2px solid #2a5a90;">
       <span class="bc-title" style="font-size:15px;letter-spacing:0.2em;color:#ffffff;font-weight:800;">🗂 PROJECT NUMBER</span>
@@ -56514,11 +56646,36 @@ function mobToggle(hdr){
   var now = Date.now();
   if(now - _mobToggleTs < 300) return; // debounce
   _mobToggleTs = now;
-  var grp=hdr.parentElement;
-  var body=grp.querySelector('.mob-group-body');
-  var open=grp.classList.toggle('mob-open');
+  var grp = hdr.parentElement;
+  var body = grp.querySelector('.mob-group-body');
+  var willOpen = !grp.classList.contains('mob-open');
+
+  // Close all other open groups first
+  if(willOpen){
+    var drawer = document.getElementById('mobileMenuDrawer');
+    if(drawer){
+      drawer.querySelectorAll('.mob-group.mob-open').forEach(function(otherGrp){
+        if(otherGrp === grp) return;
+        var otherBody = otherGrp.querySelector('.mob-group-body');
+        otherGrp.classList.remove('mob-open');
+        if(otherBody){
+          otherBody.style.maxHeight = otherBody.scrollHeight + 'px';
+          requestAnimationFrame(function(){
+            requestAnimationFrame(function(){ otherBody.style.maxHeight = '0'; });
+          });
+        }
+      });
+    }
+  }
+
+  // Toggle this group
+  var open = grp.classList.toggle('mob-open');
   if(open){
     body.style.maxHeight = body.scrollHeight + 'px';
+    // Scroll drawer so this group is visible
+    setTimeout(function(){
+      hdr.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }, 280);
   } else {
     body.style.maxHeight = body.scrollHeight + 'px';
     requestAnimationFrame(function(){
@@ -56768,31 +56925,23 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           var sx3 = t2.clientX - rect_vp3.left;
           var sy3 = t2.clientY - rect_vp3.top;
           if(typeof fxpMode !== 'undefined' && fxpMode){
-            // Force draw to compute snap grid at touch position
-            if(typeof lmx !== 'undefined'){
-              var prevLmxF = lmx, prevLmyF = lmy;
-              lmx = sx3; lmy = sy3;
-              if(typeof draw === 'function') draw();
-              if(typeof fxpHandleClick === 'function') fxpHandleClick(sx3, sy3);
-              lmx = prevLmxF; lmy = prevLmyF;
-            } else {
-              if(typeof fxpHandleClick === 'function') fxpHandleClick(sx3, sy3);
-            }
+            // Directly set fxp mouse tracking vars so draw() computes snap at tap position
+            var _lxF = (sx3 - panX) / zoom;
+            var _lyF = (sy3 - panY) / zoom;
+            if(typeof _fxpMouseLx !== 'undefined'){ _fxpMouseLx = _lxF; _fxpMouseLy = _lyF; }
+            if(typeof _fxpSnapGridHit !== 'undefined') _fxpSnapGridHit = false;
+            if(typeof draw === 'function') draw();
+            if(typeof fxpHandleClick === 'function') fxpHandleClick(sx3, sy3);
             return;
           }
           if(typeof rpMode !== 'undefined' && rpMode){
-            // Force mousemove update to compute snap grid at touch position
-            // (snap grid is computed during draw, requires mouse position state)
-            if(typeof lmx !== 'undefined'){
-              var prevLmx = lmx, prevLmy = lmy;
-              lmx = sx3; lmy = sy3;
-              if(typeof draw === 'function') draw();
-              // Now snap state is computed — call the handler
-              if(typeof rpHandleClick === 'function') rpHandleClick(sx3, sy3);
-              lmx = prevLmx; lmy = prevLmy;
-            } else {
-              if(typeof rpHandleClick === 'function') rpHandleClick(sx3, sy3);
-            }
+            // Directly set rp mouse tracking vars so draw() computes snap at tap position
+            var _lxR = (sx3 - panX) / zoom;
+            var _lyR = (sy3 - panY) / zoom;
+            if(typeof _rpMouseLx !== 'undefined'){ _rpMouseLx = _lxR; _rpMouseLy = _lyR; }
+            if(typeof _rpSnapGridHit !== 'undefined') _rpSnapGridHit = false;
+            if(typeof draw === 'function') draw();
+            if(typeof rpHandleClick === 'function') rpHandleClick(sx3, sy3);
             return;
           }
           if(typeof ventMode !== 'undefined' && ventMode){
@@ -56820,15 +56969,19 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
             return;
           }
           if(typeof hcStopMode !== 'undefined' && hcStopMode){
-            if(typeof lmx !== 'undefined'){
-              var prevLmxS = lmx, prevLmyS = lmy;
-              lmx = sx3; lmy = sy3;
-              if(typeof draw === 'function') draw();
-              if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
-              lmx = prevLmxS; lmy = prevLmyS;
-            } else {
-              if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
+            // Compute which edge (fwd/aft) based on tap Y position
+            var _lxS = (sx3 - panX) / zoom;
+            var _lyS = (sy3 - panY) / zoom;
+            // SH = total bay height; fwd = top half, aft = bottom half
+            if(typeof _hcStopEdge !== 'undefined' && typeof SH !== 'undefined'){
+              _hcStopEdge = _lyS < SH / 2 ? 'fwd' : 'aft';
             }
+            // Update mouse tracking so draw() shows correct hover preview
+            if(typeof _hcStopMouseLx !== 'undefined'){
+              _hcStopMouseLx = _lxS; _hcStopMouseLy = _lyS;
+            }
+            if(typeof draw === 'function') draw();
+            if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
             return;
           }
         }
