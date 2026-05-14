@@ -1798,16 +1798,6 @@
   .dropdown .bay-only,
   .no-bay-mode .dropdown .bay-only { opacity: 1; }
 
-  .baynav {
-    display: none;
-    align-items: center;
-    height: 32px;
-    background: #0d1e2e;
-    border-bottom: 1px solid #1e4a6a;
-    flex-shrink: 0;
-    padding: 0 8px;
-    gap: 6px;
-  }
   .baynav.show { display: flex; }
   .baynav-label {
     font-size: 8px;
@@ -1818,9 +1808,33 @@
     border-right: 1px solid #1e4a6a;
     margin-right: 2px;
     white-space: nowrap;
+    flex-shrink: 0;
   }
-  .bay-scroll { display: flex; overflow-x: auto; flex: 1; scrollbar-width: none; gap: 0; }
+  .bay-scroll {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex: 1;
+    min-width: 0;  /* critical — prevents flex child from overflowing parent */
+    scrollbar-width: none;
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain; /* prevent scroll chaining to page */
+    touch-action: pan-x;            /* only horizontal touch, no page shift */
+  }
   .bay-scroll::-webkit-scrollbar { display: none; }
+  .baynav {
+    display: none;
+    align-items: center;
+    height: 32px;
+    background: #0d1e2e;
+    border-bottom: 1px solid #1e4a6a;
+    flex-shrink: 0;
+    padding: 0 8px;
+    gap: 6px;
+    max-width: 100%;  /* never wider than viewport */
+    overflow: hidden; /* clip any overflow at the bar level */
+  }
   .bay-tab {
     font-family: var(--mono);
     font-size: 9px;
@@ -2920,7 +2934,9 @@
 * { -webkit-tap-highlight-color: transparent; }
 body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 body { -webkit-text-size-adjust: 100%; }
-html, body { overscroll-behavior: none; }
+/* Prevent iOS black gap and elastic overscroll */
+html, body { overscroll-behavior: none; overflow: hidden !important; }
+body { transform-origin: top left; }
 #vp, #lbCanvas, #lbOvCanvas, #rsSchematic { touch-action: none; -webkit-user-select: none; user-select: none; }
 /* Overlay buttons inside #vp must receive touch events normally */
 #ovRotateBtn, #ovRotateBtnEl { touch-action: auto !important; pointer-events: auto !important; }
@@ -3034,10 +3050,12 @@ html.gray-panels .mob-group.mob-open .mob-group-hdr { background: #98bcd4; color
   .titlebar {
     height: 44px !important;
     overflow-x: auto !important;
-    overflow-y: visible !important;
+    overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: none !important;
     flex-wrap: nowrap !important;
+    overscroll-behavior-x: contain !important;
+    touch-action: pan-x !important;
   }
   .titlebar::-webkit-scrollbar { display: none; }
   /* All tb-cells shrink to content, no truncation */
@@ -3063,8 +3081,12 @@ html.gray-panels .mob-group.mob-open .mob-group-hdr { background: #98bcd4; color
   /* toolbar-fixed gets all remaining space for the sliding ribbon */
   .toolbar-fixed {
     flex: 1 !important; max-width: none !important;
-    overflow-x: auto !important; -webkit-overflow-scrolling: touch !important;
+    overflow-x: auto !important; overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
     scrollbar-width: none !important;
+    overscroll-behavior-x: contain !important;
+    touch-action: pan-x !important;
+    min-width: 0 !important;
   }
   .toolbar-fixed::-webkit-scrollbar { display: none; }
 
@@ -4571,7 +4593,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
       </button>
     </div>
     <!-- Mirror -->
-    <button id="ventMirrorBtn" class="fxp-type-btn fxp-edge-active" onclick="_ventMirror=!_ventMirror;ventSyncUI()"
+    <button id="ventMirrorBtn" class="fxp-type-btn fxp-edge-active" onclick="_ventMirror=_ventMirror==='off'?'2way':_ventMirror==='2way'?'4way':'off';ventSyncUI()"
       style="width:100%;margin-bottom:10px;letter-spacing:0.12em;">⇄ MIRROR PLACEMENT: ON</button>
     <!-- Mode -->
     <div style="font-size:7px;letter-spacing:0.14em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;">PLACEMENT MODE</div>
@@ -8321,22 +8343,19 @@ function _applyDefaultToBay(b, fndType, fndColor){
 
   for(let r=0;r<=rows;r++){
     const entry = mkEntry(r);
+    // Line 1 (always)
     for(const bl of [b, b+1]){
       const key = fndKey(bl, r, b);
       fnds[key] = {...entry};
       defaultedSlots.add(key);
     }
-    if(showLine2Top || showLine2Bot){
-      for(const bl of [b, b+1]){
-        const isTop = (bl===b);
-        if((isTop&&showLine2Top)||(!isTop&&showLine2Bot)){
-          fnds2[fndKey(bl, r, b)] = {...entry};
-        }
-      }
+    // Line 2 top/bottom — apply regardless of visibility so color is stored
+    for(const bl of [b, b+1]){
+      fnds2[fndKey(bl, r, b)] = {...entry};
     }
+    // Middle lines (3–6) — apply to all, regardless of visibility
     if(typeof fndsML!=='undefined'){
       for(let li=0;li<4;li++){
-        if(!showMidLine[li]) continue;
         const mlKey = `${b},${r}`;
         if(fndType==='double_elg'){
           fndsML[li][mlKey+'_L'] = {type:'double_elg', color:fndColor, colorL:fndColor, colorR:'deleted', spanSide:null};
@@ -18716,6 +18735,21 @@ function drawOverview(){
       ctx.beginPath(); ctx.moveTo(gx,bYa[b]); ctx.lineTo(gx+rows*SW,bYa[b]); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(gx,bYa[b]+SH); ctx.lineTo(gx+rows*SW,bYa[b]+SH); ctx.stroke();
     }
+    // Dotted bay separator lines
+    ctx.save();
+    ctx.strokeStyle='rgba(94,184,255,0.45)'; ctx.lineWidth=1;
+    ctx.setLineDash([4, 5]);
+    for(let b=1;b<cfg.bays;b++){
+      const sepY=(bYa[b-1]+SH + bYa[b]) / 2;
+      ctx.beginPath(); ctx.moveTo(gx,sepY); ctx.lineTo(gx+rows*SW,sepY); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.strokeStyle='rgba(160,80,10,0.55)'; ctx.lineWidth=0.8;
+    for(let b=0;b<cfg.bays;b++){
+      ctx.beginPath(); ctx.moveTo(gx,bYa[b]); ctx.lineTo(gx+rows*SW,bYa[b]); ctx.stroke();
+    }
+    ctx.restore();
+    // Platform boundary lines (dashed, per-platform width)
     platforms.forEach((p,pi)=>{
       const pRows=totalRowsForPlat(pi);
       const pOx=bayOffsetX(pRows);
@@ -18751,6 +18785,11 @@ function drawOverview(){
       const bOx=bayOffsetX(bRows);
       const bayW=bRows*SW;
       if(zoom>0.28){
+        // Port-side label inside the vessel (always visible even when rotated)
+        ctx.font=`700 9px IBM Plex Mono`; ctx.fillStyle='rgba(140,70,10,0.9)';
+        ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillText(`${bayDisplay(b)}`, gx + bOx + 4, lby);
+        // Also in left margin
         ctx.font=`600 9px IBM Plex Mono`; ctx.fillStyle='#a06010';
         ctx.textAlign='right'; ctx.textBaseline='middle';
         ctx.fillText(`${bayDisplay(b)}`,gx-34,lby);
@@ -23191,6 +23230,10 @@ function bcToggleAutoMode(){
   toggle.style.color = bcAutoMode ? '#00c860' : '#5eb8ff';
   document.getElementById('bc-auto-panel').style.display = bcAutoMode ? '' : 'none';
   document.getElementById('bc-manual-panel').style.display = bcAutoMode ? 'none' : '';
+  // Show/hide the floating auto copy button
+  const fab = document.getElementById('floatAutoCopyBtn');
+  if(fab) fab.style.display = bcAutoMode ? 'flex' : 'none';
+  // Init auto sources from sister groups (first bay of each group = source by default)
   if(bcAutoMode){
     bcAutoPairs = {};
     BC_COLORS.forEach(c=>{
@@ -23201,6 +23244,32 @@ function bcToggleAutoMode(){
   }
   renderAutoGrids();
 }
+
+// Execute auto copy directly from the floating button
+function _floatAutoCopyExec(){
+  if(!bcAutoMode){
+    // Enable auto mode first if not already on
+    openBayCopyTool();
+    if(!bcAutoMode) bcToggleAutoMode();
+    return;
+  }
+  // Check if there are groups to copy
+  const hasGroups = BC_COLORS.some(c => Object.values(sisterBays).includes(c));
+  if(!hasGroups){
+    alert('No sister bay groups defined.\nGo to BAY SETTINGS → SAME BAYS to set up groups first.');
+    return;
+  }
+  // Execute the copy
+  bcExecuteCopy();
+  // Flash the button to confirm
+  const btn = document.getElementById('floatAutoCopyBtn');
+  if(btn){
+    btn.style.borderColor = '#00ff88';
+    btn.style.opacity = '1';
+    setTimeout(function(){ btn.style.borderColor = '#00a050'; btn.style.opacity = '0.82'; }, 600);
+  }
+}
+
 
 function renderAutoGrids(){
   const groupList = document.getElementById('bc-auto-group-list');
@@ -25122,7 +25191,7 @@ function ventHandleClick(sx, sy){
     }
     pushUndo();
     addVentFree(bay,curLx,curLy,detectedSide,color);
-    if(_ventMirror){ _ventPlaceMirror(bay,rows,curLx,curLy,detectedSide,color); }
+    if(_ventMirror!=='off'){ _ventPlaceMirror(bay,rows,curLx,curLy,detectedSide,color); }
     draw(); return true;
   }
 
@@ -25181,7 +25250,7 @@ function ventHandleClick(sx, sy){
 
   pushUndo();
   addVent(bay,hcNum,side,spanFirst,gi,color);
-  if(_ventMirror){ _ventPlaceMirrorSnap(bay,rows,hcNum,spanFirst,gi,side,color); }
+  if(_ventMirror!=='off'){ _ventPlaceMirrorSnap(bay,rows,hcNum,spanFirst,gi,side,color); }
   draw(); return true;
 }
 
@@ -25318,7 +25387,7 @@ function _ventSideBlocked(bay, hcNum, rows, side){
 }
 
 let _ventSide='port';
-let _ventMirror=true;
+let _ventMirror='4way'; // 'off' | '2way' | '4way'
 let _ventFreeMode=false;
 let _ventDeleteMode=false;
 let _ventPalX=260, _ventPalY=16;
@@ -25354,7 +25423,12 @@ function ventSyncUI(){
   if(portBtn) portBtn.classList.toggle('fxp-edge-active', _ventSide==='port');
   if(stbdBtn) stbdBtn.classList.toggle('fxp-edge-active', _ventSide==='stbd');
   const mirBtn=document.getElementById('ventMirrorBtn');
-  if(mirBtn){ mirBtn.classList.toggle('fxp-edge-active',_ventMirror); mirBtn.textContent=`⇄ MIRROR: ${_ventMirror?'4-WAY':'OFF'}`; }
+  if(mirBtn){
+    mirBtn.classList.toggle('fxp-edge-active', _ventMirror!=='off');
+    const _mlabel = _ventMirror==='4way' ? '4-WAY' : _ventMirror==='2way' ? '2-WAY' : 'OFF';
+    mirBtn.textContent = '⇄ MIRROR: ' + _mlabel;
+    mirBtn.style.background = _ventMirror==='4way' ? '' : _ventMirror==='2way' ? 'rgba(0,160,200,0.18)' : '';
+  }
   const snapBtn=document.getElementById('ventModeSnap'), freeBtn=document.getElementById('ventModeFree');
   if(snapBtn) snapBtn.classList.toggle('view-on',!_ventFreeMode);
   if(freeBtn) freeBtn.classList.toggle('view-on',_ventFreeMode);
@@ -25671,6 +25745,34 @@ function _hddTrySnap(sx, sy){
     c++;
   }
   if(_hddSnapHit && typeof _hddSyncOffsetDefault==='function') _hddSyncOffsetDefault();
+
+  // Also check free polygon HCs
+  if(typeof hcCustomShapes !== 'undefined'){
+    hcCustomShapes.forEach(function(s){
+      if(s.bay !== bay) return;
+      const pts = s.points; if(!pts || pts.length < 3) return;
+      const xs = pts.map(function(p){ return p.x; });
+      const ys = pts.map(function(p){ return p.y; });
+      const polyMinX = Math.min.apply(null, xs), polyMaxX = Math.max.apply(null, xs);
+      const polyMinY = Math.min.apply(null, ys), polyMaxY = Math.max.apply(null, ys);
+      const polyCX = (polyMinX + polyMaxX) / 2;
+      const polyCY = (polyMinY + polyMaxY) / 2;
+      // Snap candidates: 4 edges of bounding box + offset
+      const candidates = [
+        { side:'port', cx: polyMinX - off, cy: ly },
+        { side:'stbd', cx: polyMaxX + off, cy: ly },
+        { side:'fwd',  cx: lx,             cy: polyMinY - off },
+        { side:'aft',  cx: lx,             cy: polyMaxY + off },
+      ];
+      candidates.forEach(function(cd){
+        var dsx = panX + cd.cx * zoom;
+        var dsy = panY + cd.cy * zoom;
+        var d = Math.hypot(sx - dsx, sy - dsy);
+        if(d < bestD){ bestD=d; _hddSnapX=cd.cx; _hddSnapY=cd.cy; _hddSnapSide=cd.side; _hddSnapHit=true; }
+      });
+    });
+    if(_hddSnapHit && typeof _hddSyncOffsetDefault==='function') _hddSyncOffsetDefault();
+  }
 }
 
 let _hddSnapSide='port';
@@ -27682,6 +27784,27 @@ function renderAccomMgrBayList(){
     return slot;
   }
 
+  // Helper: render platform info rows at a given afterBay position
+  function makePlatInfoRows(afterBay){
+    platforms.forEach((p, pi) => {
+      if(p.afterBay !== afterBay) return;
+      const pRow = document.createElement('div');
+      pRow.className = 'acm-bay-row';
+      pRow.style.cssText = 'background:rgba(30,60,30,0.12);border-left:2px solid rgba(60,160,80,0.4);';
+      const pLbl = document.createElement('div');
+      pLbl.className = 'acm-bay-slot';
+      pLbl.style.cssText = 'color:#40b060;background:rgba(20,50,20,0.25);border-color:rgba(40,120,60,0.3);font-size:8px;letter-spacing:0.1em;';
+      pLbl.textContent = '▤  ' + (p.name || ('PLT '+(pi+1))).toUpperCase();
+      pRow.appendChild(pLbl);
+      const pNote = document.createElement('div');
+      pNote.style.cssText = 'font-size:8px;color:rgba(60,160,80,0.7);padding:4px 10px;align-self:center;letter-spacing:0.06em;font-family:inherit;';
+      pNote.textContent = 'PLATFORM — managed in Platform Manager';
+      pRow.appendChild(pNote);
+      container.appendChild(pRow);
+    });
+  }
+
+  // Row FWD of first bay
   const fwdRow=document.createElement('div');
   fwdRow.className='acm-bay-row';
   const fwdLbl=document.createElement('div');
@@ -27691,7 +27814,9 @@ function renderAccomMgrBayList(){
   fwdRow.appendChild(fwdLbl);
   fwdRow.appendChild(makeAccomSlot(-1));
   container.appendChild(fwdRow);
+  makePlatInfoRows(-1);
 
+  // One row per bay: AFT slot + any platforms after that bay
   for(let b=0;b<cfg.bays;b++){
     const row=document.createElement('div');
     row.className='acm-bay-row';
@@ -27706,8 +27831,10 @@ function renderAccomMgrBayList(){
     aftSlot.insertBefore(aftLabel,aftSlot.firstChild);
     row.appendChild(aftSlot);
     container.appendChild(row);
+    makePlatInfoRows(b);
   }
 }
+
 
 document.addEventListener('mousedown',e=>{
   const ov=document.getElementById('accomMgrOverlay');
@@ -56580,11 +56707,21 @@ var _mobMenuTs = 0;
 // ── Viewport height fix — fires repeatedly to catch Safari toolbar ──
 (function(){
   function setAppHeight(){
-    var h = (window.visualViewport ? window.visualViewport.height : 0)
-            || window.innerHeight
-            || document.documentElement.clientHeight;
+    var vv = window.visualViewport;
+    var h = (vv ? vv.height : 0) || window.innerHeight || document.documentElement.clientHeight;
+
+    // iOS keyboard fix: when keyboard is open, visualViewport scrolls up.
+    // Counteract by applying the offset as a negative transform on the body wrapper.
+    // This prevents the black gap left behind after keyboard dismissal.
+    if(vv && vv.offsetTop !== 0){
+      document.body.style.transform = 'translateY(' + vv.offsetTop + 'px)';
+    } else {
+      document.body.style.transform = '';
+    }
+
     document.documentElement.style.setProperty('--app-height', h + 'px');
     document.body.style.height = h + 'px';
+
     // Resize canvas to match
     var vpEl = document.getElementById('vp');
     var cv   = document.getElementById('c');
@@ -56610,6 +56747,21 @@ var _mobMenuTs = 0;
       }
     }
   }
+
+  // On input focus: iOS keyboard appears — update height quickly
+  document.addEventListener('focusin', function(e){
+    if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')){
+      [50, 150, 300, 500].forEach(function(t){ setTimeout(setAppHeight, t); });
+    }
+  });
+  // On input blur: iOS keyboard hides — restore full height
+  document.addEventListener('focusout', function(e){
+    if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')){
+      // Small delay for iOS to finish dismissing keyboard
+      [100, 300, 600].forEach(function(t){ setTimeout(setAppHeight, t); });
+    }
+  });
+
   // Fire immediately and repeatedly — catches Safari toolbar appearing/hiding
   setAppHeight();
   [50, 150, 300, 600, 1000, 1500].forEach(function(t){ setTimeout(setAppHeight, t); });
