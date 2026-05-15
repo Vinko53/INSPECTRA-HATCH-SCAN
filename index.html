@@ -2936,7 +2936,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 body { -webkit-text-size-adjust: 100%; }
 /* Prevent iOS black gap and elastic overscroll */
 html, body { overscroll-behavior: none; overflow: hidden !important; }
-body { transform-origin: top left; }
+body { transform-origin: top center; will-change: transform; }
 #vp, #lbCanvas, #lbOvCanvas, #rsSchematic { touch-action: none; -webkit-user-select: none; user-select: none; }
 /* Overlay buttons inside #vp must receive touch events normally */
 #ovRotateBtn, #ovRotateBtnEl { touch-action: auto !important; pointer-events: auto !important; }
@@ -10462,17 +10462,58 @@ function hcStopHandleClick(sx, sy){
   const lx = (sx - panX) / zoom;
   const ly = (sy - panY) / zoom;
   const rows = totalRowsForBay(selBay);
+  const bay = selBay;
+  let hcNum = 0, edge = _hcStopEdge;
+  let spanFirst = -1;
+
+  // First try regular HC grid column
   const col = Math.floor(lx / SW);
-  if(col < 0 || col >= rows) return false;
-  const hcNum = getHC(selBay, col);
+  if(col >= 0 && col < rows){
+    hcNum = getHC(bay, col);
+    if(hcNum){
+      const sp = hcSpanCenter(bay, hcNum, rows, col);
+      spanFirst = sp.first;
+    }
+  }
+
+  // If no regular HC found, try free polygon HCs
+  if(!hcNum && typeof hcCustomShapes !== 'undefined'){
+    let bestDist = Infinity;
+    hcCustomShapes.forEach(function(s){
+      if(s.bay !== bay || !s.points || s.points.length < 3) return;
+      const xs = s.points.map(function(p){ return p.x; });
+      const ys = s.points.map(function(p){ return p.y; });
+      const minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+      const minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+      // Check if click is near this polygon (within 1.5 * stopper offset)
+      const off = _hddOffset ? _hddOffset() : 20;
+      const margin = Math.max(off * 2, 30);
+      if(lx < minX - margin || lx > maxX + margin || ly < minY - margin || ly > maxY + margin) return;
+      // Determine edge from click position relative to polygon bounding box
+      const midY = (minY + maxY) / 2;
+      const detectedEdge = ly < midY ? 'fwd' : 'aft';
+      const d = Math.min(
+        Math.abs(ly - minY), Math.abs(ly - maxY),
+        Math.abs(lx - minX), Math.abs(lx - maxX)
+      );
+      if(d < bestDist){
+        bestDist = d;
+        hcNum = s.hc;
+        edge = detectedEdge;
+        spanFirst = -1;
+      }
+    });
+  }
+
   if(!hcNum) return false;
-  const edge = _hcStopEdge;
-  const arr = hcStoppersBay(selBay);
+
+  // Toggle: remove if already placed at this hc+edge, else add
+  const arr = hcStoppersBay(bay);
   const existing = arr.find(s => s.hcNum === hcNum && s.edge === edge);
   if(existing){
-    removeHcStopper(selBay, existing.id);
+    removeHcStopper(bay, existing.id);
   } else {
-    addHcStopper(selBay, hcNum, edge, _hcStopBrush);
+    addHcStopper(bay, hcNum, edge, _hcStopBrush, _hcStopColor||'black', spanFirst);
   }
   draw(); return true;
 }
@@ -20323,9 +20364,26 @@ vp.addEventListener('mousemove',e=>{
       const _ly = (my - panY) / zoom;
       const _col = Math.floor(_lx / SW);
       const _rows = totalRows();
-      const _hcNum = (_col>=0 && _col<_rows) ? getHC(selBay, _col) : 0;
-      const _edge = _ly < SH/2 ? 'fwd' : 'aft';
-      const _span = _hcNum ? hcSpanCenter(selBay, _hcNum, _rows, _col) : {first:-1};
+      let _hcNum = (_col>=0 && _col<_rows) ? getHC(selBay, _col) : 0;
+      let _edge = _ly < SH/2 ? 'fwd' : 'aft';
+      let _span = _hcNum ? hcSpanCenter(selBay, _hcNum, _rows, _col) : {first:-1};
+
+      // Fallback: check free polygon HCs
+      if(!_hcNum && typeof hcCustomShapes !== 'undefined'){
+        let bestD = Infinity;
+        hcCustomShapes.forEach(function(s){
+          if(s.bay !== selBay || !s.points || s.points.length < 3) return;
+          const xs = s.points.map(function(p){ return p.x; });
+          const ys = s.points.map(function(p){ return p.y; });
+          const minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+          const minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+          const margin = 40;
+          if(_lx < minX-margin || _lx > maxX+margin || _ly < minY-margin || _ly > maxY+margin) return;
+          const d = Math.min(Math.abs(_ly-minY), Math.abs(_ly-maxY), Math.abs(_lx-minX), Math.abs(_lx-maxX));
+          if(d < bestD){ bestD=d; _hcNum=s.hc; _edge=_ly<(minY+maxY)/2?'fwd':'aft'; _span={first:-1}; }
+        });
+      }
+
       if(_lx !== _hcStopMouseLx || _ly !== _hcStopMouseLy ||
          _hcNum !== _hcStopMouseHc || _edge !== _hcStopMouseEdge || _span.first !== _hcStopMouseFirst){
         _hcStopMouseHc = _hcNum;
@@ -38729,6 +38787,16 @@ function _syncFabMenuLabels(){
   function savePositions(pos){
     try{ localStorage.setItem(POS_KEY, JSON.stringify(pos)); }catch(e){}
   }
+  // Also save/read individual mob_pos_ keys (used by mobile touch drag)
+  function _saveMobPos(id, left, top){
+    try{ localStorage.setItem('mob_pos_'+id, JSON.stringify({left:left, top:top})); }catch(e){}
+  }
+  function _loadMobPos(id){
+    try{
+      var s=localStorage.getItem('mob_pos_'+id);
+      return s ? JSON.parse(s) : null;
+    }catch(e){ return null; }
+  }
 
   function syncSaveDot(){
     // dot is now inside floatSaveBtn — no position sync needed
@@ -38738,8 +38806,13 @@ function _syncFabMenuLabels(){
     const el = document.getElementById(id);
     if(!el) return;
 
+    // Restore position — check mob_pos_ first (shared with touch drag), then legacy POS_KEY
+    const mobSaved = _loadMobPos(id);
     const pos = loadPositions();
-    if(pos[id]){
+    if(mobSaved){
+      el.style.left = mobSaved.left + 'px';
+      el.style.top  = mobSaved.top  + 'px';
+    } else if(pos[id]){
       el.style.left = pos[id].left + 'px';
       el.style.top  = pos[id].top  + 'px';
     }
@@ -38787,8 +38860,11 @@ function _syncFabMenuLabels(){
       el.style.cursor = 'pointer';
       if(moved){
         const all = loadPositions();
-        all[id] = { left: parseInt(el.style.left), top: parseInt(el.style.top) };
+        const newLeft = parseInt(el.style.left), newTop = parseInt(el.style.top);
+        all[id] = { left: newLeft, top: newTop };
         savePositions(all);
+        // Also save to mob_pos_ so mobile touch restore finds it
+        _saveMobPos(id, newLeft, newTop);
         if(typeof _userSettingsSave === 'function') _userSettingsSave();
         if(onMoved) onMoved(parseInt(el.style.left), parseInt(el.style.top));
         el.addEventListener('click', function stopClick(ev){
@@ -56706,14 +56782,15 @@ function _lbCopyEyesToAllBridges(){
 var _mobMenuTs = 0;
 // ── Viewport height fix — fires repeatedly to catch Safari toolbar ──
 (function(){
+  var _keyboardOpen = false;
+
   function setAppHeight(){
     var vv = window.visualViewport;
     var h = (vv ? vv.height : 0) || window.innerHeight || document.documentElement.clientHeight;
 
-    // iOS keyboard fix: when keyboard is open, visualViewport scrolls up.
-    // Counteract by applying the offset as a negative transform on the body wrapper.
-    // This prevents the black gap left behind after keyboard dismissal.
-    if(vv && vv.offsetTop !== 0){
+    // iOS keyboard fix: only apply transform when keyboard is actually open
+    // Do NOT apply on visualViewport scroll from ribbon scrolling (false positive)
+    if(_keyboardOpen && vv && vv.offsetTop !== 0){
       document.body.style.transform = 'translateY(' + vv.offsetTop + 'px)';
     } else {
       document.body.style.transform = '';
@@ -56751,12 +56828,15 @@ var _mobMenuTs = 0;
   // On input focus: iOS keyboard appears — update height quickly
   document.addEventListener('focusin', function(e){
     if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')){
+      _keyboardOpen = true;
       [50, 150, 300, 500].forEach(function(t){ setTimeout(setAppHeight, t); });
     }
   });
   // On input blur: iOS keyboard hides — restore full height
   document.addEventListener('focusout', function(e){
     if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')){
+      _keyboardOpen = false;
+      document.body.style.transform = '';
       // Small delay for iOS to finish dismissing keyboard
       [100, 300, 600].forEach(function(t){ setTimeout(setAppHeight, t); });
     }
@@ -56974,6 +57054,9 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
   var vp2=document.getElementById('vp');
   if(!vp2) return;
   var _t=[],_pd=0,_pmx=0,_pmy=0,_px=0,_py=0,_moved=false,_lastTap=0;
+  // Long-press timer for height picker (fires after 500ms hold on a foundation dot)
+  var _hpLongPressTimer = null;
+
   vp2.addEventListener('touchstart',function(e){
     // Pass through touches on overlay buttons (rotate btn etc.)
     if(e.target && e.target !== vp2 && e.target.tagName !== 'CANVAS' &&
@@ -56985,6 +57068,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
     if(_t.length===2){
       _pd=Math.hypot(_t[1].clientX-_t[0].clientX,_t[1].clientY-_t[0].clientY);
       _pmx=(_t[0].clientX+_t[1].clientX)/2; _pmy=(_t[0].clientY+_t[1].clientY)/2;
+      if(_hpLongPressTimer){ clearTimeout(_hpLongPressTimer); _hpLongPressTimer=null; }
     } else if(_t.length===1){
       _px=_t[0].clientX; _py=_t[0].clientY;
       // Crane tool: call mousedown to grab handle or select crane
@@ -56993,10 +57077,30 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
         if(typeof craneOnMouseDown==='function')
           craneOnMouseDown(_t[0].clientX-rCr.left, _t[0].clientY-rCr.top);
       }
+      // Long-press: open height picker on foundation dot (replaces right-click)
+      if(typeof editHeightMode!=='undefined' && (editHeightMode || true)){
+        var t0 = _t[0];
+        if(_hpLongPressTimer) clearTimeout(_hpLongPressTimer);
+        _hpLongPressTimer = setTimeout(function(){
+          _hpLongPressTimer = null;
+          if(_moved) return; // cancelled if finger moved
+          var rect = vp2.getBoundingClientRect();
+          var mx = t0.clientX - rect.left;
+          var my = t0.clientY - rect.top;
+          if(typeof nearestDot !== 'function') return;
+          var h = nearestDot(mx, my);
+          if(h){
+            if(navigator.vibrate) navigator.vibrate(40);
+            if(!editHeightMode && typeof _showHeightMode === 'function') _showHeightMode();
+            if(typeof openHeightPicker === 'function') openHeightPicker(t0.clientX, t0.clientY, h);
+          }
+        }, 500);
+      }
     }
   },{passive:false});
   vp2.addEventListener('touchmove',function(e){
     e.preventDefault();
+    if(_hpLongPressTimer){ clearTimeout(_hpLongPressTimer); _hpLongPressTimer=null; }
     var ts=Array.from(e.touches);
     if(ts.length===2&&_t.length>=2){
       var d=Math.hypot(ts[1].clientX-ts[0].clientX,ts[1].clientY-ts[0].clientY);
@@ -57023,6 +57127,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
     _t=ts;
   },{passive:false});
   vp2.addEventListener('touchend',function(e){
+    if(_hpLongPressTimer){ clearTimeout(_hpLongPressTimer); _hpLongPressTimer=null; }
     e.preventDefault();
     var rem=Array.from(e.touches);
     // Crane tool: end drag on touchend
@@ -57042,7 +57147,19 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
       // Double-tap detection (≤320ms between taps)
       if(now - (_lastTap||0) < 320){
         _lastTap=0;
-        if(typeof viewMode!=='undefined' && typeof setView==='function'){
+        // Don't switch view if palette or any edit/place tool is active —
+        // prevents accidental overview switch during fast painting
+        var _paletteActive = (typeof editColorMode!=='undefined' && editColorMode) ||
+                             (typeof fpalVisible!=='undefined' && fpalVisible) ||
+                             (typeof lashEyeMode!=='undefined' && lashEyeMode) ||
+                             (typeof fxpMode!=='undefined' && fxpMode) ||
+                             (typeof rpMode!=='undefined' && rpMode) ||
+                             (typeof ventMode!=='undefined' && ventMode) ||
+                             (typeof hddMode!=='undefined' && hddMode) ||
+                             (typeof hcStopMode!=='undefined' && hcStopMode) ||
+                             (typeof editMarkMode!=='undefined' && editMarkMode) ||
+                             (typeof editCraneMode!=='undefined' && editCraneMode);
+        if(!_paletteActive && typeof viewMode!=='undefined' && typeof setView==='function'){
           if(viewMode==='ov') setView('bay');
           else setView('ov');
         }
