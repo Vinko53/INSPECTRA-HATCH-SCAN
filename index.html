@@ -8185,6 +8185,9 @@ function selectBay(b){
   buildBayTabs();
   if(viewMode==='hc') buildHcTabs();
   updateStatusLabel();
+  // Sync canvas size from vp before centering
+  if(vp.clientWidth > 0)  canvas.width  = vp.clientWidth;
+  if(vp.clientHeight > 0) canvas.height = vp.clientHeight;
   resetView();
 }
 
@@ -10265,8 +10268,10 @@ function drawHcStoppers(bay, rows, ox, oy){
       const shape = hcCustomShapes[polyIdx];
       if(!shape || shape.bay !== bay) return;
       const xs = shape.points.map(p=>p.x);
+      const ys_p = shape.points.map(p=>p.y);
       lx = ox + (Math.min(...xs)+Math.max(...xs))/2;
-      ly = oy + (s.edge === 'fwd' ? -HC_STOP_Y_OFF : SH + HC_STOP_Y_OFF);
+      const polyMinY = Math.min(...ys_p), polyMaxY = Math.max(...ys_p);
+      ly = oy + (s.edge === 'fwd' ? polyMinY - HC_STOP_Y_OFF : polyMaxY + HC_STOP_Y_OFF);
     } else {
       const seedRow = (s.spanFirst !== undefined && s.spanFirst >= 0) ? s.spanFirst : undefined;
       const {cx} = hcSpanCenter(bay, s.hcNum, rows, seedRow);
@@ -10479,19 +10484,14 @@ function hcStopHandleClick(sx, sy){
   // If no regular HC found, try free polygon HCs
   if(!hcNum && typeof hcCustomShapes !== 'undefined'){
     let bestDist = Infinity;
-    hcCustomShapes.forEach(function(s){
+    hcCustomShapes.forEach(function(s, pi){
       if(s.bay !== bay || !s.points || s.points.length < 3) return;
       const xs = s.points.map(function(p){ return p.x; });
       const ys = s.points.map(function(p){ return p.y; });
       const minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
       const minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
-      // Check if click is near this polygon (within 1.5 * stopper offset)
-      const off = _hddOffset ? _hddOffset() : 20;
-      const margin = Math.max(off * 2, 30);
+      const margin = 60;
       if(lx < minX - margin || lx > maxX + margin || ly < minY - margin || ly > maxY + margin) return;
-      // Determine edge from click position relative to polygon bounding box
-      const midY = (minY + maxY) / 2;
-      const detectedEdge = ly < midY ? 'fwd' : 'aft';
       const d = Math.min(
         Math.abs(ly - minY), Math.abs(ly - maxY),
         Math.abs(lx - minX), Math.abs(lx - maxX)
@@ -10499,8 +10499,9 @@ function hcStopHandleClick(sx, sy){
       if(d < bestDist){
         bestDist = d;
         hcNum = s.hc;
-        edge = detectedEdge;
-        spanFirst = -1;
+        edge = (ly < (minY + maxY) / 2) ? 'fwd' : 'aft';
+        // Encode poly index using -1000 convention (matches drawHcStoppers decoder)
+        spanFirst = -1000 - pi;
       }
     });
   }
@@ -16385,6 +16386,10 @@ document.getElementById('cfgRows').addEventListener('change',e=>{
 function resetView(){
   if(window.viewMode === 'lb') return;
   const rows=maxTotalRows();
+  // Use vp.clientWidth/Height as the authoritative viewport size
+  // canvas.width may be stale if setAppHeight skipped width updates
+  const vpW = vp.clientWidth  || canvas.width  || 400;
+  const vpH = vp.clientHeight || canvas.height || 600;
   if(viewMode==='ov'){
     const {totalH}=computeItemYPositions(0);
     const vesW = rows*SW + VPX*2;
@@ -16392,23 +16397,21 @@ function resetView(){
     const cx = vesW/2;
     const cy = vesH/2 - BOWH/2;
     const rotated90 = (ovRotation===1||ovRotation===3);
-    const fitW = rotated90 ? vesH : vesW;
-    const fitH = rotated90 ? vesW : vesH;
     zoom = document.fullscreenElement ? 0.75 : 0.60;
-    panX = canvas.width/2  - cx*zoom;
-    panY = canvas.height/2 - cy*zoom;
+    panX = vpW/2  - cx*zoom;
+    panY = vpH/2 - cy*zoom;
   } else if(viewMode==='bay'){
     const bh=selIsPlat?PLAT_H:SH;
     const bw=(selIsPlat?totalRowsForPlat(selPlatIdx):totalRowsForBay(selBay))*SW;
     zoom = document.fullscreenElement ? 1.05 : 0.88;
-    panX=(canvas.width-bw*zoom)/2;
-    panY=(canvas.height-bh*zoom)/2;
+    panX=(vpW-bw*zoom)/2;
+    panY=(vpH-bh*zoom)/2;
   } else {
     const hcCols=getHcCols(selHcV);
     const bw=Math.max(1,hcCols.length)*SW, bh=SH, px=90, py=90;
-    zoom=Math.min((canvas.width-px*2)/bw,(canvas.height-py*2)/bh,3);
-    panX=(canvas.width-bw*zoom)/2;
-    panY=(canvas.height-bh*zoom)/2;
+    zoom=Math.min((vpW-px*2)/bw,(vpH-py*2)/bh,3);
+    panX=(vpW-bw*zoom)/2;
+    panY=(vpH-bh*zoom)/2;
   }
   draw();
   updateStatusLabel();
