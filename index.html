@@ -2977,7 +2977,7 @@ body { transform-origin: top center; will-change: transform; }
 .mob-drawer-hdr { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #1a5080; background: #071420; flex-shrink: 0; }
 .mob-drawer-hdr span { font-family: 'IBM Plex Mono',monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.2em; color: #5eb8ff; }
 .mob-close-btn { background: transparent; border: none; color: #7ab0d0; font-size: 22px; cursor: pointer; padding: 4px 10px; line-height: 1; }
-.mob-section { font-family: 'IBM Plex Mono',monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.20em; color: #5eb8ff; text-transform: uppercase; padding: 14px 18px 5px; border-top: 1px solid rgba(94,184,255,0.15); margin-top: 4px; background: rgba(0,30,60,0.3); flex-shrink: 0; }
+.mob-section { font-family: 'IBM Plex Mono',monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: #5eb8ff; text-transform: uppercase; padding: 14px 18px 6px; border-top: 2px solid rgba(94,184,255,0.25); margin-top: 6px; background: rgba(0,20,50,0.4); flex-shrink: 0; }
 .mob-action { display: flex; align-items: center; width: 100%; padding: 13px 20px; background: transparent; border: none; border-bottom: 1px solid #0f2a3e; color: #c8daea; font-family: 'IBM Plex Mono',monospace; font-size: 10px; letter-spacing: 0.06em; text-align: left; cursor: pointer; gap: 10px; flex-shrink: 0; }
 .mob-action:active { background: #1a4060; color: #fff; }
 .mob-group-hdr:active { background: #1a3a5a; }
@@ -3025,18 +3025,18 @@ body { transform-origin: top center; will-change: transform; }
 .mob-group.mob-open .mob-arrow { color: #5eb8ff; transform: rotate(90deg); }
 .mob-sub-label {
   font-family: 'IBM Plex Mono',monospace;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.20em;
+  letter-spacing: 0.16em;
   color: #5eb8ff;
   text-transform: uppercase;
-  padding: 14px 18px 5px;
+  padding: 14px 18px 6px;
   flex-shrink: 0;
-  border-top: 1px solid rgba(94,184,255,0.15);
-  margin-top: 4px;
-  background: rgba(0,30,60,0.3);
+  border-top: 2px solid rgba(94,184,255,0.25);
+  margin-top: 6px;
+  background: rgba(0,20,50,0.4);
 }
-.mob-sub-sep { height: 1px; background: rgba(94,184,255,0.12); flex-shrink: 0; }
+.mob-sub-sep { height: 1px; background: rgba(94,184,255,0.15); flex-shrink: 0; }
 
 /* Day mode */
 html.day-mode .mob-group-hdr { background: #b8d0e6; color: #0a3060; border-top-color: #90b8d8; border-bottom-color: #a0c0d8; font-size: 13px; }
@@ -3045,8 +3045,10 @@ html.day-mode .mob-group-body { background: #daeaf4; }
 html.day-mode .mob-group.mob-open .mob-group-hdr { background: #a0c4e0; color: #062050; border-bottom-color: #7aaac8; }
 html.day-mode .mob-group.mob-open .mob-arrow { color: #0a5aaa; }
 html.day-mode .mob-arrow { color: #7aaac8; }
-html.day-mode .mob-sub-label { color: #1a6aaa; border-top-color: rgba(26,106,170,0.2); background: rgba(200,220,240,0.4); }
-html.day-mode .mob-sub-sep { background: #a0c4e0; }
+html.day-mode .mob-sub-label { color: #0a3a6a; background: rgba(160,200,230,0.5); border-top-color: rgba(10,58,106,0.3); }
+html.day-mode .mob-sub-sep { background: #7aaac8; }
+html.gray-panels .mob-sub-label { color: #0a2a50; background: rgba(140,180,210,0.45); border-top-color: rgba(10,42,80,0.3); }
+html.gray-panels .mob-sub-sep { background: #90b0c8; }
 
 /* Gray panels */
 html.gray-panels .mob-group-hdr { background: #b0c4d4; color: #0a2a4a; border-top-color: #98b0c4; font-size: 13px; }
@@ -3350,7 +3352,7 @@ html.gray-panels .mob-drawer-hdr { background: #c8daea; border-bottom-color: #7a
 html.day-mode .mob-drawer-hdr span,
 html.gray-panels .mob-drawer-hdr span { color: #0a3a70; }
 html.day-mode .mob-section,
-html.gray-panels .mob-section { color: #1a6aaa; border-top-color: rgba(26,106,170,0.2); background: rgba(200,220,240,0.4); }
+html.gray-panels .mob-section { color: #0a2a50; border-top-color: rgba(10,42,80,0.3); background: rgba(140,180,210,0.45); }
 html.day-mode .mob-action,
 html.gray-panels .mob-action { color: #0a2a48; border-bottom-color: #a0c0d8; background: transparent; }
 html.day-mode .mob-action:active,
@@ -10500,10 +10502,25 @@ function hcStopHandleClick(sx, sy){
   const ly = (sy - panY) / zoom;
   const rows = totalRowsForBay(selBay);
   const bay = selBay;
+
+  // ── FREE MODE: place at snapped X/edge using _hcStopMouseLx ──────────────
+  if(_hcStopFreeMode){
+    // Use the pre-computed mouse position (set by touch handler or mousemove)
+    const snapX = Math.round(_hcStopMouseLx / (SW/4)) * (SW/4);
+    const fwdY = -HC_STOP_Y_OFF, aftY = SH + HC_STOP_Y_OFF;
+    const snapY = Math.abs(ly - fwdY) < Math.abs(ly - aftY) ? fwdY : aftY;
+    const edge = snapY === fwdY ? 'fwd' : 'aft';
+    if(isNaN(snapX) || snapX < 0 || snapX > rows * SW) return false;
+    pushUndo();
+    addHcStopperFree(bay, snapX, snapY, _hcStopBrush, _hcStopColor||'black');
+    draw(); return true;
+  }
+
+  // ── SNAP MODE ──────────────────────────────────────────────────────────────
   let hcNum = 0, edge = _hcStopEdge;
   let spanFirst = -1;
 
-  // First try regular HC grid column
+  // Try regular HC grid column
   const col = Math.floor(lx / SW);
   if(col >= 0 && col < rows){
     hcNum = getHC(bay, col);
@@ -10513,7 +10530,7 @@ function hcStopHandleClick(sx, sy){
     }
   }
 
-  // If no regular HC found, try free polygon HCs
+  // Fallback: try free polygon HCs
   if(!hcNum && typeof hcCustomShapes !== 'undefined'){
     let bestDist = Infinity;
     hcCustomShapes.forEach(function(s, pi){
@@ -10532,7 +10549,6 @@ function hcStopHandleClick(sx, sy){
         bestDist = d;
         hcNum = s.hc;
         edge = (ly < (minY + maxY) / 2) ? 'fwd' : 'aft';
-        // Encode poly index using -1000 convention (matches drawHcStoppers decoder)
         spanFirst = -1000 - pi;
       }
     });
@@ -37523,6 +37539,15 @@ html.gray-panels #hcStopManipPal .btn {
   color: #1a1a1a !important;
   border-color: #b0bcc8 !important;
 }
+html.gray-panels #hcStopPlacerPal .btn.view-on,
+html.gray-panels #hcStopManipPal .btn.view-on,
+html.gray-panels #hcStopPlacerPal .btn.on,
+html.gray-panels #hcStopManipPal .btn.on {
+  background: #d0e8ff !important;
+  color: #003a78 !important;
+  border-color: #0078d4 !important;
+  font-weight: 700 !important;
+}
 html.gray-panels #hcStopPlacerPal div[style*="color:#7ab8d8"],
 html.gray-panels #hcStopManipPal div[style*="color:#7ab8d8"] { color: #555 !important; }
 
@@ -57321,25 +57346,74 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           var sx3 = t2.clientX - rect_vp3.left;
           var sy3 = t2.clientY - rect_vp3.top;
           if(typeof fxpMode !== 'undefined' && fxpMode){
-            // Set fxp mouse tracking vars so draw() computes snap at tap position
+            // Set ALL fxp mouse tracking vars so draw() computes snap correctly
             var _lxF = (sx3 - panX) / zoom;
             var _lyF = (sy3 - panY) / zoom;
             if(typeof _fxpMouseLx !== 'undefined'){ _fxpMouseLx = _lxF; _fxpMouseLy = _lyF; }
             if(typeof _fxpFreeMouseLx !== 'undefined'){ _fxpFreeMouseLx = _lxF; _fxpFreeMouseLy = _lyF; }
+            // Compute which HC span the touch is nearest to
+            if(typeof _fxpMouseHc !== 'undefined' && typeof totalRowsForBay !== 'undefined'){
+              var _fxpRows = totalRowsForBay(selBay);
+              var _fxpCol = Math.floor(_lxF / SW);
+              var _fxpHn = (_fxpCol >= 0 && _fxpCol < _fxpRows) ? getHC(selBay, _fxpCol) : 0;
+              if(_fxpHn){
+                var _fxpSp = hcSpanCenter(selBay, _fxpHn, _fxpRows, _fxpCol);
+                _fxpMouseHc = _fxpHn;
+                _fxpMouseFirst = _fxpSp.first;
+                // Determine edge: compare distance to port vs stbd rail
+                var _fxpPortX = _fxpSp.first * SW;
+                var _fxpStbdX = (_fxpSp.last + 1) * SW;
+                if(typeof _fxpEdge !== 'undefined'){
+                  var _distPort = Math.abs(_lxF - _fxpPortX);
+                  var _distStbd = Math.abs(_lxF - _fxpStbdX);
+                  var _distFwd  = Math.abs(_lyF - 0);
+                  var _distAft  = Math.abs(_lyF - SH);
+                  var _minDist  = Math.min(_distPort, _distStbd, _distFwd, _distAft);
+                  if(_minDist === _distPort)       _fxpEdge = 'port';
+                  else if(_minDist === _distStbd)  _fxpEdge = 'stbd';
+                  else if(_minDist === _distFwd)   _fxpEdge = 'fwd';
+                  else                             _fxpEdge = 'aft';
+                }
+              }
+            }
             if(typeof _fxpSnapGridHit !== 'undefined') _fxpSnapGridHit = false;
             if(typeof _fxpFreeSnapped !== 'undefined') _fxpFreeSnapped = false;
-            // Draw twice: first pass computes snap state, second confirms it
+            // Two draw passes: first computes snap state, second confirms
             if(typeof draw === 'function'){ draw(); draw(); }
             if(typeof fxpHandleClick === 'function') fxpHandleClick(sx3, sy3);
             return;
           }
           if(typeof rpMode !== 'undefined' && rpMode){
-            // Directly set rp mouse tracking vars so draw() computes snap at tap position
             var _lxR = (sx3 - panX) / zoom;
             var _lyR = (sy3 - panY) / zoom;
             if(typeof _rpMouseLx !== 'undefined'){ _rpMouseLx = _lxR; _rpMouseLy = _lyR; }
+            // Also set _rpMouseHc/_rpMouseFirst so isHov check passes in draw()
+            if(typeof _rpMouseHc !== 'undefined' && typeof totalRowsForBay !== 'undefined'){
+              var _rpRows = totalRowsForBay(selBay);
+              var _rpCol = Math.floor(_lxR / SW);
+              var _rpHn = (_rpCol >= 0 && _rpCol < _rpRows) ? getHC(selBay, _rpCol) : 0;
+              if(_rpHn){
+                var _rpSp = hcSpanCenter(selBay, _rpHn, _rpRows, _rpCol);
+                _rpMouseHc = _rpHn;
+                _rpMouseFirst = _rpSp.first;
+                // Set nearest edge
+                if(typeof _rpEdge !== 'undefined'){
+                  var _rpPortX = _rpSp.first * SW;
+                  var _rpStbdX = (_rpSp.last + 1) * SW;
+                  var _rpDPort = Math.abs(_lxR - _rpPortX);
+                  var _rpDStbd = Math.abs(_lxR - _rpStbdX);
+                  var _rpDFwd  = Math.abs(_lyR - 0);
+                  var _rpDAft  = Math.abs(_lyR - SH);
+                  var _rpMin   = Math.min(_rpDPort, _rpDStbd, _rpDFwd, _rpDAft);
+                  if(_rpMin === _rpDPort)       _rpEdge = 'port';
+                  else if(_rpMin === _rpDStbd)  _rpEdge = 'stbd';
+                  else if(_rpMin === _rpDFwd)   _rpEdge = 'fwd';
+                  else                          _rpEdge = 'aft';
+                }
+              }
+            }
             if(typeof _rpSnapGridHit !== 'undefined') _rpSnapGridHit = false;
-            if(typeof draw === 'function') draw();
+            if(typeof draw === 'function'){ draw(); draw(); }
             if(typeof rpHandleClick === 'function') rpHandleClick(sx3, sy3);
             return;
           }
