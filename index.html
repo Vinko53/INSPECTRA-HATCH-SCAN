@@ -2941,7 +2941,13 @@ body { transform-origin: top center; will-change: transform; }
 /* Overlay buttons inside #vp must receive touch events normally */
 #ovRotateBtn, #ovRotateBtnEl { touch-action: auto !important; pointer-events: auto !important; }
 #vp > div { pointer-events: auto; }
-#bayNav, #hcNav, #rowSelWrap, #platNav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+#bayNav, #hcNav, #rowSelWrap, #platNav {
+  overflow: hidden;          /* clip — scrolling handled by .bay-scroll inside */
+  scrollbar-width: none;
+  flex-shrink: 0;
+  max-width: 100%;
+  min-width: 0;
+}
 #bayNav::-webkit-scrollbar, #hcNav::-webkit-scrollbar { display: none; }
 
 /* Hamburger button */
@@ -2971,7 +2977,7 @@ body { transform-origin: top center; will-change: transform; }
 .mob-drawer-hdr { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #1a5080; background: #071420; flex-shrink: 0; }
 .mob-drawer-hdr span { font-family: 'IBM Plex Mono',monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.2em; color: #5eb8ff; }
 .mob-close-btn { background: transparent; border: none; color: #7ab0d0; font-size: 22px; cursor: pointer; padding: 4px 10px; line-height: 1; }
-.mob-section { font-family: 'IBM Plex Mono',monospace; font-size: 7px; letter-spacing: 0.22em; color: #3a7090; text-transform: uppercase; padding: 10px 16px 4px; border-top: 1px solid #0f2a3e; margin-top: 2px; flex-shrink: 0; }
+.mob-section { font-family: 'IBM Plex Mono',monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.20em; color: #5eb8ff; text-transform: uppercase; padding: 14px 18px 5px; border-top: 1px solid rgba(94,184,255,0.15); margin-top: 4px; background: rgba(0,30,60,0.3); flex-shrink: 0; }
 .mob-action { display: flex; align-items: center; width: 100%; padding: 13px 20px; background: transparent; border: none; border-bottom: 1px solid #0f2a3e; color: #c8daea; font-family: 'IBM Plex Mono',monospace; font-size: 10px; letter-spacing: 0.06em; text-align: left; cursor: pointer; gap: 10px; flex-shrink: 0; }
 .mob-action:active { background: #1a4060; color: #fff; }
 .mob-group-hdr:active { background: #1a3a5a; }
@@ -3018,11 +3024,19 @@ body { transform-origin: top center; will-change: transform; }
 }
 .mob-group.mob-open .mob-arrow { color: #5eb8ff; transform: rotate(90deg); }
 .mob-sub-label {
-  font-family: 'IBM Plex Mono',monospace; font-size: 7px;
-  letter-spacing: 0.22em; color: #2a6080; text-transform: uppercase;
-  padding: 9px 20px 3px; flex-shrink: 0;
+  font-family: 'IBM Plex Mono',monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.20em;
+  color: #5eb8ff;
+  text-transform: uppercase;
+  padding: 14px 18px 5px;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(94,184,255,0.15);
+  margin-top: 4px;
+  background: rgba(0,30,60,0.3);
 }
-.mob-sub-sep { height: 1px; background: #0f2a3e; flex-shrink: 0; }
+.mob-sub-sep { height: 1px; background: rgba(94,184,255,0.12); flex-shrink: 0; }
 
 /* Day mode */
 html.day-mode .mob-group-hdr { background: #b8d0e6; color: #0a3060; border-top-color: #90b8d8; border-bottom-color: #a0c0d8; font-size: 13px; }
@@ -3031,8 +3045,8 @@ html.day-mode .mob-group-body { background: #daeaf4; }
 html.day-mode .mob-group.mob-open .mob-group-hdr { background: #a0c4e0; color: #062050; border-bottom-color: #7aaac8; }
 html.day-mode .mob-group.mob-open .mob-arrow { color: #0a5aaa; }
 html.day-mode .mob-arrow { color: #7aaac8; }
-html.day-mode .mob-sub-label { color: #5a88aa; }
-html.day-mode .mob-sub-sep { background: #c0d0e0; }
+html.day-mode .mob-sub-label { color: #1a6aaa; border-top-color: rgba(26,106,170,0.2); background: rgba(200,220,240,0.4); }
+html.day-mode .mob-sub-sep { background: #a0c4e0; }
 
 /* Gray panels */
 html.gray-panels .mob-group-hdr { background: #b0c4d4; color: #0a2a4a; border-top-color: #98b0c4; font-size: 13px; }
@@ -3323,7 +3337,7 @@ body, button, input, select {
   user-select: none;
 }
 /* Smoother scroll on all nav bars */
-.baynav { -webkit-overflow-scrolling: touch; }
+.bay-scroll { -webkit-overflow-scrolling: touch; }
 
 /* ── DRAWER DAY/GRAY MODE ── */
 html.day-mode #mobileMenuDrawer,
@@ -3336,7 +3350,7 @@ html.gray-panels .mob-drawer-hdr { background: #c8daea; border-bottom-color: #7a
 html.day-mode .mob-drawer-hdr span,
 html.gray-panels .mob-drawer-hdr span { color: #0a3a70; }
 html.day-mode .mob-section,
-html.gray-panels .mob-section { color: #3a6070; border-top-color: #a0c0d8; }
+html.gray-panels .mob-section { color: #1a6aaa; border-top-color: rgba(26,106,170,0.2); background: rgba(200,220,240,0.4); }
 html.day-mode .mob-action,
 html.gray-panels .mob-action { color: #0a2a48; border-bottom-color: #a0c0d8; background: transparent; }
 html.day-mode .mob-action:active,
@@ -4659,7 +4673,15 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
     <div id="hddSnapHint" style="font-size:10px;letter-spacing:0.05em;margin-bottom:4px;color:#c08040;">Click near HC edge to place</div>
     <div id="hddFreeHint" style="display:none;font-size:10px;letter-spacing:0.05em;margin-bottom:4px;color:#c08040;">Click anywhere to place freely</div>
     <div id="hddDeleteHint" style="display:none;font-size:10px;letter-spacing:0.05em;margin-bottom:4px;color:#ff8080;">Click device to delete it</div>
-    <div id="hddFlipHint" style="font-size:10px;letter-spacing:0.05em;margin-bottom:4px;color:#6a5030;">Hold CTRL to flip fwd/aft units</div>
+    <button id="hddFlipBtn" onclick="_hddFlipV=!_hddFlipV;_updateHddFlipHint();draw()"
+      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+        letter-spacing:0.12em;padding:8px 10px;border-radius:3px;cursor:pointer;
+        background:rgba(180,100,20,0.12);color:#c08040;border:1px solid #6a4010;
+        text-align:center;text-transform:uppercase;margin-bottom:4px;"
+      title="Toggle flip direction for fwd/aft units (Ctrl on desktop)">
+      ↔ ROTATE: OFF
+    </button>
+    <div id="hddFlipHint" style="font-size:9px;letter-spacing:0.05em;margin-bottom:4px;color:#6a5030;text-align:center;">Ctrl key also toggles on desktop</div>
   </div>
 </div>
 
@@ -8185,10 +8207,14 @@ function selectBay(b){
   buildBayTabs();
   if(viewMode==='hc') buildHcTabs();
   updateStatusLabel();
-  // Sync canvas size from vp before centering
-  if(vp.clientWidth > 0)  canvas.width  = vp.clientWidth;
+  // Use rAF so layout has settled before we read vp dimensions for centering
+  if(vp.clientWidth > 0) canvas.width  = vp.clientWidth;
   if(vp.clientHeight > 0) canvas.height = vp.clientHeight;
-  resetView();
+  requestAnimationFrame(function(){
+    if(vp.clientWidth > 0) canvas.width  = vp.clientWidth;
+    if(vp.clientHeight > 0) canvas.height = vp.clientHeight;
+    resetView();
+  });
 }
 
 function selectPlat(pi){
@@ -9214,28 +9240,34 @@ function layerOn(id){ const l=LAYERS.find(x=>x.id===id); return l ? l.on : true;
 let layersVisible = false;
 // ── Clamp a floating panel to visible screen on mobile ─────────────────────
 function _clampPalToScreen(x, y, elId){
-  // Always try to restore saved position first (works on both mobile and desktop)
+  // Always try to restore saved position first
   try {
     var saved = localStorage.getItem('mob_pos_' + elId);
     if(saved){
       var pos = JSON.parse(saved);
       if(pos && typeof pos.left === 'number' && typeof pos.top === 'number'){
-        x = pos.left; y = pos.top;
+        // Trust the saved position — user placed it there deliberately
+        // Only clamp if it would be completely off-screen (e.g. after screen rotation)
+        var vw = window.innerWidth, vh = window.innerHeight;
+        var el = document.getElementById(elId);
+        var w = el ? (el.offsetWidth || 260) : 260;
+        var h = el ? (el.offsetHeight || 200) : 200;
+        var sx = Math.max(0, Math.min(vw - Math.min(w, 80), pos.left));
+        var sy = Math.max(0, Math.min(vh - Math.min(h, 40), pos.top));
+        return {x: sx, y: sy};
       }
     }
   } catch(e){}
-  // On desktop — just return (possibly restored) coordinates without clamping
+  // No saved position — use default, clamp to screen on mobile
   if(window.innerWidth >= 768) return {x:x, y:y};
-  // On mobile — clamp to visible screen
-  var el = document.getElementById(elId);
-  var w = el ? (el.offsetWidth  || 260) : 260;
-  var h = el ? (el.offsetHeight || 200) : 200;
-  var vw = window.innerWidth;
-  var vh = parseInt(document.documentElement.style.getPropertyValue('--app-height')) || window.innerHeight;
-  var nx = Math.max(4, Math.min(vw - w - 4, x));
-  var ny = Math.max(50, Math.min(vh - h - 4, y));
-  // If original x was off-screen (hardcoded default), reset to right edge
-  if(x > vw - 50) nx = Math.max(4, vw - w - 8);
+  var el2 = document.getElementById(elId);
+  var w2 = el2 ? (el2.offsetWidth  || 260) : 260;
+  var h2 = el2 ? (el2.offsetHeight || 200) : 200;
+  var vw2 = window.innerWidth;
+  var vh2 = parseInt(document.documentElement.style.getPropertyValue('--app-height')) || window.innerHeight;
+  var nx = Math.max(4, Math.min(vw2 - w2 - 4, x));
+  var ny = Math.max(50, Math.min(vh2 - h2 - 4, y));
+  if(x > vw2 - 50) nx = Math.max(4, vw2 - w2 - 8);
   return {x:nx, y:ny};
 }
 
@@ -16386,10 +16418,13 @@ document.getElementById('cfgRows').addEventListener('change',e=>{
 function resetView(){
   if(window.viewMode === 'lb') return;
   const rows=maxTotalRows();
-  // Use vp.clientWidth/Height as the authoritative viewport size
-  // canvas.width may be stale if setAppHeight skipped width updates
-  const vpW = vp.clientWidth  || canvas.width  || 400;
-  const vpH = vp.clientHeight || canvas.height || 600;
+  // Ensure canvas size is current — sync from vp if needed
+  const _vpW = vp.offsetWidth  || vp.clientWidth;
+  const _vpH = vp.offsetHeight || vp.clientHeight;
+  if(_vpW > 50 && Math.abs(canvas.width  - _vpW) > 4) canvas.width  = _vpW;
+  if(_vpH > 50 && Math.abs(canvas.height - _vpH) > 4) canvas.height = _vpH;
+  const vpW = canvas.width;
+  const vpH = canvas.height;
   if(viewMode==='ov'){
     const {totalH}=computeItemYPositions(0);
     const vesW = rows*SW + VPX*2;
@@ -25875,6 +25910,7 @@ function hddHandleClick(sx, sy){
   if(viewMode!=='bay') return false;
   const bay=selBay;
 
+  // Always refresh snap state at click time (mousemove may not have fired yet)
   _hddMouseSx=sx; _hddMouseSy=sy;
   if(!_hddFreeMode) _hddTrySnap(sx, sy);
 
@@ -25884,16 +25920,20 @@ function hddHandleClick(sx, sy){
       pushUndo();
       const hit = (hcHoldDowns[bay]||[]).find(h=>h.id===hitId);
       removeHdd(bay, hitId);
+      // If mirror is on, also remove the mirror twins
       if(_hddMirror && hit){
         const TOL = 8; // position tolerance for finding mirrors
         const mirY = SH - hit.y;
         const arr = hcHoldDowns[bay]||[];
         if(hit.side==='port'||hit.side==='stbd'){
           const mirSide = hit.side==='port'?'stbd':'port';
+          // Remove: same side mirrored Y
           const twin1 = arr.find(h=>h.side===hit.side && Math.abs(h.x-hit.x)<TOL && Math.abs(h.y-mirY)<TOL);
           if(twin1) removeHdd(bay, twin1.id);
+          // Remove: opposite side same Y
           const twin2 = (hcHoldDowns[bay]||[]).find(h=>h.side===mirSide && Math.abs(h.y-hit.y)<TOL);
           if(twin2) removeHdd(bay, twin2.id);
+          // Remove: opposite side mirrored Y
           const twin3 = (hcHoldDowns[bay]||[]).find(h=>h.side===mirSide && Math.abs(h.y-mirY)<TOL);
           if(twin3) removeHdd(bay, twin3.id);
         } else {
@@ -25912,6 +25952,7 @@ function hddHandleClick(sx, sy){
 
   let px, py, side;
   if(_hddFreeMode){
+    // Auto-detect nearest HC edge
     _hddTrySnap(sx, sy);
     if(_hddSnapHit){
       px=_hddSnapX; py=_hddSnapY; side=_hddSnapSide;
@@ -25919,9 +25960,11 @@ function hddHandleClick(sx, sy){
       px=(sx-panX)/zoom; py=(sy-panY)/zoom; side='port';
     }
   } else {
+    // Snap mode: use snapped position if available, otherwise place at cursor on the selected rail
     if(_hddSnapHit){
       px=_hddSnapX; py=_hddSnapY; side=_hddSnapSide;
     } else {
+      // Fallback: place at cursor Y, rail X derived from selected side
       const lx=(sx-panX)/zoom, ly=(sy-panY)/zoom;
       const off=_hddOffset();
       const rows=totalRowsForBay(bay);
@@ -25936,6 +25979,8 @@ function hddHandleClick(sx, sy){
       py = (_hddSide==='fwd') ? -off : (_hddSide==='aft') ? SH+off : ly;
       side = _hddSide;
     }
+    // Mirror: same 4-way logic as ventilators
+    // port↔stbd on opposite rail at same Y, plus fore↔aft of both
     if(_hddMirror){
       const rows = totalRowsForBay(bay);
       const off  = _hddOffset();
@@ -25949,21 +25994,73 @@ function hddHandleClick(sx, sy){
           if(_hddSideBlocked(bay, rows, mirSide, c)) continue;
           const {first, last} = hcSpanCenter(bay, h, rows, c);
           const mirX = mirSide === 'port' ? first*SW - off : (last+1)*SW + off;
+          // Port ↔ Stbd at same Y
           addHdd(bay, mirX, py, mirSide, false, fndColorBrush||'black');
+          // Fore ↔ Aft of mirror side
           if(Math.abs(mirY - py) > 2) addHdd(bay, mirX, mirY, mirSide, false, fndColorBrush||'black');
         }
+        // Fore ↔ Aft of original side
         const origCol = Math.round(px / SW);
         if(Math.abs(mirY - py) > 2 && !_hddSideBlocked(bay, rows, side, Math.max(0, Math.min(rows-1, origCol)))){
           addHdd(bay, px, mirY, side, false, fndColorBrush||'black');
         }
 
       } else {
+        // fwd ↔ aft mirror — invert flipV so the mirror has the same visual orientation
+        // (drawHoldDownSymbol applies opposite horizontal scale for aft vs fwd,
+        //  so !_hddFlipV on the mirror counteracts that and keeps both facing the same way)
         const mirSide = side === 'fwd' ? 'aft' : 'fwd';
         const mirPlaceY = mirSide === 'fwd' ? -off : SH + off;
         addHdd(bay, px, mirPlaceY, mirSide, !_hddFlipV, fndColorBrush||'black');
       }
     }
   }
+  // ── Validate: only allow placement near an actual HC edge ──────────────────
+  // Reject clicks that are not within (offset + tolerance) of any HC cover edge
+  // This prevents placement in open water / outside HC covers
+  {
+    const _lx = (sx - panX) / zoom;
+    const _ly = (sy - panY) / zoom;
+    const _rows = totalRowsForBay(bay);
+    const _off = _hddOffset();
+    const _tol = _off * 2.5; // generous tolerance for touch
+    let nearHc = false;
+
+    // Check regular HC grid
+    const _seen = new Set();
+    for(let c = 0; c < _rows; c++){
+      const h = getHC(bay, c); if(!h || _seen.has(h)) continue; _seen.add(h);
+      const {first, last} = hcSpanCenter(bay, h, _rows, c);
+      const portX = first * SW;  // port edge X
+      const stbdX = (last + 1) * SW; // stbd edge X
+      const fwdY  = 0;           // fwd edge Y
+      const aftY  = SH;          // aft edge Y
+      // Near port or stbd edge (correct Y range)
+      if(_ly >= fwdY - _tol && _ly <= aftY + _tol){
+        if(Math.abs(_lx - portX) < _tol || Math.abs(_lx - stbdX) < _tol){ nearHc = true; break; }
+      }
+      // Near fwd or aft edge (correct X range)
+      if(_lx >= portX - _tol && _lx <= stbdX + _tol){
+        if(Math.abs(_ly - fwdY) < _tol || Math.abs(_ly - aftY) < _tol){ nearHc = true; break; }
+      }
+    }
+
+    // Check free polygon HCs
+    if(!nearHc && typeof hcCustomShapes !== 'undefined'){
+      hcCustomShapes.forEach(function(s){
+        if(nearHc || s.bay !== bay || !s.points || s.points.length < 3) return;
+        const xs = s.points.map(function(p){ return p.x; });
+        const ys = s.points.map(function(p){ return p.y; });
+        const minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+        const minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+        if(_lx >= minX - _tol && _lx <= maxX + _tol &&
+           _ly >= minY - _tol && _ly <= maxY + _tol){ nearHc = true; }
+      });
+    }
+
+    if(!nearHc){ draw(); return false; }
+  }
+
   pushUndo();
   addHdd(bay, px, py, side, _hddFlipV, fndColorBrush||'black');
   draw();
@@ -26056,6 +26153,13 @@ document.addEventListener('keyup', e=>{
 function _updateHddFlipHint(){
   const h = document.getElementById('hddFlipHint');
   if(h) h.style.color = _hddFlipV ? '#f0a030' : '#6a5030';
+  const btn = document.getElementById('hddFlipBtn');
+  if(btn){
+    btn.textContent = _hddFlipV ? '↔ ROTATE: ON' : '↔ ROTATE: OFF';
+    btn.style.background = _hddFlipV ? 'rgba(240,160,48,0.22)' : 'rgba(180,100,20,0.12)';
+    btn.style.color       = _hddFlipV ? '#f0a030' : '#c08040';
+    btn.style.borderColor = _hddFlipV ? '#c07020' : '#6a4010';
+  }
 }
 
 let _hddDragInited=false;
@@ -56952,17 +57056,17 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
         _timer = null;
         _dragging = true;
         _startX = cx; _startY = cy;
-        _startL = parseInt(el.style.left) || el.offsetLeft || 0;
-        _startT = parseInt(el.style.top)  || el.offsetTop  || 0;
-        // Ensure element is absolutely positioned
-        if(getComputedStyle(el).position === 'static'){
-          el.style.position = 'fixed';
-        }
+        // For position:fixed elements, el.offsetLeft is always 0 — read from style directly
+        var computedL = el.style.left  ? parseInt(el.style.left)  : el.getBoundingClientRect().left;
+        var computedT = el.style.top   ? parseInt(el.style.top)   : el.getBoundingClientRect().top;
+        _startL = isNaN(computedL) ? 0 : computedL;
+        _startT = isNaN(computedT) ? 0 : computedT;
+        // Ensure element is fixed positioned (not absolute)
+        el.style.position = 'fixed';
         el.style.transition = 'none';
         el.style.opacity = '0.88';
         el.style.zIndex  = '99995';
         el.style.boxShadow = '0 8px 32px rgba(0,0,0,0.7)';
-        // Haptic feedback if available
         if(navigator.vibrate) navigator.vibrate(30);
       }, LONG_PRESS_MS);
     }
@@ -57163,30 +57267,31 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
       if(_t.length===1){ _px=_t[0].clientX; _py=_t[0].clientY; }
       return;
     }
-    if(!_moved&&_t.length===1&&rem.length===0){
+    // For placement tools: also fire when _t is empty (first tap after opening panel via button)
+    var _placementActive = (typeof hcStopMode!=='undefined'&&hcStopMode)||
+                           (typeof fxpMode!=='undefined'&&fxpMode)||
+                           (typeof rpMode!=='undefined'&&rpMode)||
+                           (typeof ventMode!=='undefined'&&ventMode)||
+                           (typeof hddMode!=='undefined'&&hddMode)||
+                           (typeof lashEyeMode!=='undefined'&&lashEyeMode)||
+                           (typeof editMarkMode!=='undefined'&&editMarkMode)||
+                           (typeof editCraneMode!=='undefined'&&editCraneMode);
+    if(!_moved && rem.length===0 && (_t.length===1 || (_t.length===0 && _placementActive))){
       var t2=e.changedTouches[0];
       var now=Date.now();
-      // Double-tap detection (≤320ms between taps)
-      if(now - (_lastTap||0) < 320){
+      // Double-tap detection — SKIP when any placement tool is active
+      // (every tap must place, not toggle view)
+      if(!_placementActive && now - (_lastTap||0) < 320){
         _lastTap=0;
-        // Don't switch view if palette or any edit/place tool is active —
-        // prevents accidental overview switch during fast painting
+        // Don't switch view if palette is active
         var _paletteActive = (typeof editColorMode!=='undefined' && editColorMode) ||
-                             (typeof fpalVisible!=='undefined' && fpalVisible) ||
-                             (typeof lashEyeMode!=='undefined' && lashEyeMode) ||
-                             (typeof fxpMode!=='undefined' && fxpMode) ||
-                             (typeof rpMode!=='undefined' && rpMode) ||
-                             (typeof ventMode!=='undefined' && ventMode) ||
-                             (typeof hddMode!=='undefined' && hddMode) ||
-                             (typeof hcStopMode!=='undefined' && hcStopMode) ||
-                             (typeof editMarkMode!=='undefined' && editMarkMode) ||
-                             (typeof editCraneMode!=='undefined' && editCraneMode);
+                             (typeof fpalVisible!=='undefined' && fpalVisible);
         if(!_paletteActive && typeof viewMode!=='undefined' && typeof setView==='function'){
           if(viewMode==='ov') setView('bay');
           else setView('ov');
         }
       } else {
-        _lastTap=now;
+        if(!_placementActive) _lastTap=now; else _lastTap=0;
         // Fire synthetic events — target the canvas element for edit modes
         // that check e.target === canvas (markTool, craneTool etc.)
         var target = document.getElementById('c') || vp2;
@@ -57216,12 +57321,15 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           var sx3 = t2.clientX - rect_vp3.left;
           var sy3 = t2.clientY - rect_vp3.top;
           if(typeof fxpMode !== 'undefined' && fxpMode){
-            // Directly set fxp mouse tracking vars so draw() computes snap at tap position
+            // Set fxp mouse tracking vars so draw() computes snap at tap position
             var _lxF = (sx3 - panX) / zoom;
             var _lyF = (sy3 - panY) / zoom;
             if(typeof _fxpMouseLx !== 'undefined'){ _fxpMouseLx = _lxF; _fxpMouseLy = _lyF; }
+            if(typeof _fxpFreeMouseLx !== 'undefined'){ _fxpFreeMouseLx = _lxF; _fxpFreeMouseLy = _lyF; }
             if(typeof _fxpSnapGridHit !== 'undefined') _fxpSnapGridHit = false;
-            if(typeof draw === 'function') draw();
+            if(typeof _fxpFreeSnapped !== 'undefined') _fxpFreeSnapped = false;
+            // Draw twice: first pass computes snap state, second confirms it
+            if(typeof draw === 'function'){ draw(); draw(); }
             if(typeof fxpHandleClick === 'function') fxpHandleClick(sx3, sy3);
             return;
           }
