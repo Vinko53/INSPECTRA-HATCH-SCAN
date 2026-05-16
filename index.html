@@ -8815,7 +8815,7 @@ function showFshp(){
   fshpVisible=true;
   const el=fshpEl();
   el.style.display='block';
-  el.style.left=fshpX+'px';
+  {var _sc=_clampPalToScreen(parseInt(el.style.left)||0,parseInt(el.style.top)||0,'floatShp');el.style.left=_sc.x+'px';el.style.top=_sc.y+'px';}
   el.style.top=fshpY+'px';
   fshpSync();
   const btn=document.getElementById('btnFshp');
@@ -9228,7 +9228,7 @@ function showObjManip(){
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('objManipPal');
   el.style.display='block';
-  el.style.left=omPalX+'px';
+  {var _sc=_clampPalToScreen(parseInt(el.style.left)||0,parseInt(el.style.top)||0,'objManipPal');el.style.left=_sc.x+'px';el.style.top=_sc.y+'px';}
   el.style.top=omPalY+'px';
   const btn=document.getElementById('btnObjManip');
   if(btn){ btn.classList.add('on'); btn.style.color='#50b8ff'; btn.style.borderColor='#50b8ff'; btn.style.background='rgba(32,144,224,0.18)'; }
@@ -9273,37 +9273,38 @@ function layerOn(id){ const l=LAYERS.find(x=>x.id===id); return l ? l.on : true;
 
 let layersVisible = false;
 // ── Clamp a floating panel to visible screen on mobile ─────────────────────
-function _clampPalToScreen(x, y, elId){
-  // Always try to restore saved position first
+// Universal position restore — call from any show function before setting el.style.left/top
+function _restorePanelPos(el, elId, defaultX, defaultY){
+  var x = defaultX || 0, y = defaultY || 0;
   try {
     var saved = localStorage.getItem('mob_pos_' + elId);
+    if(!saved){
+      var fab = JSON.parse(localStorage.getItem('floatFabPositions') || '{}');
+      if(fab[elId]) saved = JSON.stringify({left: fab[elId].left, top: fab[elId].top});
+    }
     if(saved){
       var pos = JSON.parse(saved);
-      if(pos && typeof pos.left === 'number' && typeof pos.top === 'number'){
-        // Trust the saved position — user placed it there deliberately
-        // Only clamp if it would be completely off-screen (e.g. after screen rotation)
-        var vw = window.innerWidth, vh = window.innerHeight;
-        var el = document.getElementById(elId);
-        var w = el ? (el.offsetWidth || 260) : 260;
-        var h = el ? (el.offsetHeight || 200) : 200;
-        var sx = Math.max(0, Math.min(vw - Math.min(w, 80), pos.left));
-        var sy = Math.max(0, Math.min(vh - Math.min(h, 40), pos.top));
-        return {x: sx, y: sy};
+      if(pos && typeof pos.left === 'number'){
+        x = pos.left; y = pos.top;
       }
     }
   } catch(e){}
-  // No saved position — use default, clamp to screen on mobile
-  if(window.innerWidth >= 768) return {x:x, y:y};
-  var el2 = document.getElementById(elId);
-  var w2 = el2 ? (el2.offsetWidth  || 260) : 260;
-  var h2 = el2 ? (el2.offsetHeight || 200) : 200;
-  var vw2 = window.innerWidth;
-  var vh2 = parseInt(document.documentElement.style.getPropertyValue('--app-height')) || window.innerHeight;
-  var nx = Math.max(4, Math.min(vw2 - w2 - 4, x));
-  var ny = Math.max(50, Math.min(vh2 - h2 - 4, y));
-  if(x > vw2 - 50) nx = Math.max(4, vw2 - w2 - 8);
-  return {x:nx, y:ny};
+  // Safety clamp — keep at least 60px on screen
+  var vw = window.innerWidth, vh = window.innerHeight;
+  x = Math.max(0, Math.min(vw - 60, x));
+  y = Math.max(0, Math.min(vh - 40, y));
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  return {x, y};
 }
+// Legacy alias — use _restorePanelPos for new code
+function _clampPalToScreen(x, y, elId){
+  var el = document.getElementById(elId);
+  if(!el) return {x:x, y:y};
+  var result = _restorePanelPos(el, elId, x, y);
+  return {x: result.x, y: result.y};
+}
+
 
 let layersPalX = 420, layersPalY = 16;
 
@@ -10226,7 +10227,7 @@ function showLashEyePlacer(){
   if(el){
     var _clp = _clampPalToScreen(lashEyePlacerPalX, lashEyePlacerPalY, 'lashEyePlacerPal');
     lashEyePlacerPalX = _clp.x; lashEyePlacerPalY = _clp.y;
-    el.style.display='block'; el.style.left=lashEyePlacerPalX+'px'; el.style.top=lashEyePlacerPalY+'px';
+    el.style.display='block'; _restorePanelPos(el,'lashEyePlacerPal',lashEyePlacerPalX,lashEyePlacerPalY); lashEyePlacerPalX=parseInt(el.style.left); lashEyePlacerPalY=parseInt(el.style.top);
   }
   const btn = document.getElementById('btnLashEyePlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#5eb8ff'; btn.style.borderColor='#5eb8ff'; }
@@ -10315,7 +10316,7 @@ function _initLashEyePlacerDrag(){
   });
   document.addEventListener('mousemove', e=>{ if(!drag) return;
     lashEyePlacerPalX=e.clientX-ox; lashEyePlacerPalY=e.clientY-oy;
-    el.style.left=lashEyePlacerPalX+'px'; el.style.top=lashEyePlacerPalY+'px';
+    _restorePanelPos(el,'lashEyePlacerPal',lashEyePlacerPalX,lashEyePlacerPalY); lashEyePlacerPalX=parseInt(el.style.left); lashEyePlacerPalY=parseInt(el.style.top);
   });
   document.addEventListener('mouseup', ()=>{ if(drag){drag=false; handle.style.cursor='grab';} });
 }
@@ -10339,9 +10340,17 @@ function drawHcStoppers(bay, rows, ox, oy){
       const polyMinY = Math.min(...ys_p), polyMaxY = Math.max(...ys_p);
       ly = oy + (s.edge === 'fwd' ? polyMinY - HC_STOP_Y_OFF : polyMaxY + HC_STOP_Y_OFF);
     } else {
-      const seedRow = (s.spanFirst !== undefined && s.spanFirst >= 0) ? s.spanFirst : undefined;
-      const {cx} = hcSpanCenter(bay, s.hcNum, rows, seedRow);
-      lx = ox + cx;
+      // Regular snap stopper — find HC center
+      let seedRow = (s.spanFirst !== undefined && s.spanFirst >= 0) ? s.spanFirst : undefined;
+      let spanData = hcSpanCenter(bay, s.hcNum, rows, seedRow);
+      // If spanCenter returned fallback (cx=0,first=0,last=0) and there's no HC at row 0,
+      // search all rows to find this hcNum
+      if(spanData.cx === 0 && getHC(bay, 0) !== s.hcNum){
+        for(let _r = 0; _r < rows; _r++){
+          if(getHC(bay, _r) === s.hcNum){ spanData = hcSpanCenter(bay, s.hcNum, rows, _r); break; }
+        }
+      }
+      lx = ox + spanData.cx;
       ly = oy + (s.edge === 'fwd' ? -HC_STOP_Y_OFF : SH + HC_STOP_Y_OFF);
     }
     const hov = (hcStopMode || hcStopManipVisible) && _hcStopHovId === s.id;
@@ -10716,7 +10725,7 @@ function showHcStopPlacer(){
   hcStopMode = true;
   if(viewMode!=='bay') setView('bay');
   const el = document.getElementById('hcStopPlacerPal');
-  if(el){ {var _clp=_clampPalToScreen(hcStopPlacerPalX,hcStopPlacerPalY,'hcStopPlacerPal');hcStopPlacerPalX=_clp.x;hcStopPlacerPalY=_clp.y;}el.style.display='block'; el.style.left=hcStopPlacerPalX+'px'; el.style.top=hcStopPlacerPalY+'px'; }
+  if(el){ _restorePanelPos(el,'hcStopPlacerPal',hcStopPlacerPalX,hcStopPlacerPalY); hcStopPlacerPalX=parseInt(el.style.left); hcStopPlacerPalY=parseInt(el.style.top); el.style.display='block'; }
   const btn = document.getElementById('btnHcStopPlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#ffdd44'; btn.style.borderColor='#ffdd44'; }
   const _fsp = document.getElementById('floatHcStopPlaceBtn');
@@ -10796,7 +10805,7 @@ function _initHcStopManipDrag(){
   });
   document.addEventListener('mousemove',e=>{ if(!drag) return;
     hcStopManipPalX=e.clientX-ox; hcStopManipPalY=e.clientY-oy;
-    el.style.left=hcStopManipPalX+'px'; el.style.top=hcStopManipPalY+'px';
+    _restorePanelPos(el,'hcStopManipPal',hcStopManipPalX,hcStopManipPalY); hcStopManipPalX=parseInt(el.style.left); hcStopManipPalY=parseInt(el.style.top);
   });
   document.addEventListener('mouseup',()=>{ if(drag){drag=false;handle.style.cursor='grab';} });
 }
@@ -11567,7 +11576,7 @@ function showRpPlacer(){
   deactivateAllTools('rpPlace');
   rpMode=true;
   const el=document.getElementById('rpPlacerPal'); if(!el) return;
-  {var _clp=_clampPalToScreen(_rpPlacerPalX,_rpPlacerPalY,'rpPlacerPal');_rpPlacerPalX=_clp.x;_rpPlacerPalY=_clp.y;}el.style.display='block'; el.style.left=_rpPlacerPalX+'px'; el.style.top=_rpPlacerPalY+'px';
+  _restorePanelPos(el,'rpPlacerPal',_rpPlacerPalX,_rpPlacerPalY); _rpPlacerPalX=parseInt(el.style.left); _rpPlacerPalY=parseInt(el.style.top); el.style.display='block';
   rpPlacerSyncUI(); rpDrawPreview(); _initRpPlacerDrag();
   const fab=document.getElementById('floatRpPlaceBtn');
   if(fab){fab.classList.add('fshp-on');fab.style.opacity='1';}
@@ -11591,7 +11600,7 @@ function toggleRpPlacer(){ rpMode?hideRpPlacer():showRpPlacer(); }
 function showRpManip(){
   rpManipVisible=true;
   const el=document.getElementById('rpManipPal'); if(!el) return;
-  {var _clp=_clampPalToScreen(_rpManipPalX,_rpManipPalY,'rpManipPal');_rpManipPalX=_clp.x;_rpManipPalY=_clp.y;}el.style.display='block'; el.style.left=_rpManipPalX+'px'; el.style.top=_rpManipPalY+'px';
+  _restorePanelPos(el,'rpManipPal',_rpManipPalX,_rpManipPalY); _rpManipPalX=parseInt(el.style.left); _rpManipPalY=parseInt(el.style.top); el.style.display='block';
   rpManipSyncUI(); _initRpManipDrag();
   const fab=document.getElementById('floatRpManipBtn');
   if(fab){fab.classList.add('fshp-on');fab.style.opacity='1';}
@@ -11911,7 +11920,7 @@ function _initRpPlacerDrag(){
   });
   document.addEventListener('mousemove',e=>{ if(!drag) return;
     _rpPlacerPalX=e.clientX-ox; _rpPlacerPalY=e.clientY-oy;
-    el.style.left=_rpPlacerPalX+'px'; el.style.top=_rpPlacerPalY+'px';
+    _restorePanelPos(el,'rpPlacerPal',_rpPlacerPalX,_rpPlacerPalY); _rpPlacerPalX=parseInt(el.style.left); _rpPlacerPalY=parseInt(el.style.top);
   });
   document.addEventListener('mouseup',()=>{ if(drag){drag=false;handle.style.cursor='grab';} });
 }
@@ -11929,7 +11938,7 @@ function _initRpManipDrag(){
   });
   document.addEventListener('mousemove',e=>{ if(!drag) return;
     _rpManipPalX=e.clientX-ox; _rpManipPalY=e.clientY-oy;
-    el.style.left=_rpManipPalX+'px'; el.style.top=_rpManipPalY+'px';
+    _restorePanelPos(el,'rpManipPal',_rpManipPalX,_rpManipPalY); _rpManipPalX=parseInt(el.style.left); _rpManipPalY=parseInt(el.style.top);
   });
   document.addEventListener('mouseup',()=>{ if(drag){drag=false;handle.style.cursor='grab';} });
 }
@@ -12175,12 +12184,15 @@ function drawFlexipadGuides(bay, rows){
 
       if(!rail.isPoly){
         const sp = rail.sp;
-        ctx.strokeStyle = 'rgba(96,216,144,0.12)';
-        ctx.lineWidth = 0.5;
-        if(rail.edge === 'fwd')  { ctx.beginPath(); ctx.moveTo(sp.x0, sp.y0); ctx.lineTo(sp.x1, sp.y0); ctx.stroke(); }
-        if(rail.edge === 'aft')  { ctx.beginPath(); ctx.moveTo(sp.x0, sp.y1); ctx.lineTo(sp.x1, sp.y1); ctx.stroke(); }
-        if(rail.edge === 'port') { ctx.beginPath(); ctx.moveTo(sp.x0, sp.y0); ctx.lineTo(sp.x0, sp.y1); ctx.stroke(); }
-        if(rail.edge === 'stbd') { ctx.beginPath(); ctx.moveTo(sp.x1, sp.y0); ctx.lineTo(sp.x1, sp.y1); ctx.stroke(); }
+        // Only draw inner reference line for the closest rail (avoids confusing extra lines)
+        if(isClose){
+          ctx.strokeStyle = 'rgba(96,216,144,0.15)';
+          ctx.lineWidth = 0.5;
+          if(rail.edge === 'fwd')  { ctx.beginPath(); ctx.moveTo(sp.x0, sp.y0); ctx.lineTo(sp.x1, sp.y0); ctx.stroke(); }
+          if(rail.edge === 'aft')  { ctx.beginPath(); ctx.moveTo(sp.x0, sp.y1); ctx.lineTo(sp.x1, sp.y1); ctx.stroke(); }
+          if(rail.edge === 'port') { ctx.beginPath(); ctx.moveTo(sp.x0, sp.y0); ctx.lineTo(sp.x0, sp.y1); ctx.stroke(); }
+          if(rail.edge === 'stbd') { ctx.beginPath(); ctx.moveTo(sp.x1, sp.y0); ctx.lineTo(sp.x1, sp.y1); ctx.stroke(); }
+        }
       } else {
         ctx.strokeStyle = 'rgba(96,216,144,0.20)';
         ctx.lineWidth = 0.6;
@@ -13575,7 +13587,7 @@ function showFlexipadPlacer(){
   fxpMode=true;
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('flexipadPlacerPal');
-  if(el){ {var _clp=_clampPalToScreen(fxpPlacerPalX,fxpPlacerPalY,'flexipadPlacerPal');fxpPlacerPalX=_clp.x;fxpPlacerPalY=_clp.y;}el.style.display='block'; el.style.left=fxpPlacerPalX+'px'; el.style.top=fxpPlacerPalY+'px'; }
+  if(el){ _restorePanelPos(el,'flexipadPlacerPal',fxpPlacerPalX,fxpPlacerPalY); fxpPlacerPalX=parseInt(el.style.left); fxpPlacerPalY=parseInt(el.style.top); el.style.display='block'; }
   const btn=document.getElementById('btnFlexipadPlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#60d890'; btn.style.borderColor='#60d890'; }
   const fab=document.getElementById('floatFxpPlaceBtn');
@@ -13646,7 +13658,7 @@ function fxpPlacerSyncUI(){
 function showFlexipadManip(){
   const el=document.getElementById('flexipadManipPal');
   if(!el) return;
-  {var _clp=_clampPalToScreen(fxpManipPalX,fxpManipPalY,'flexipadManipPal');fxpManipPalX=_clp.x;fxpManipPalY=_clp.y;}el.style.display='block'; el.style.left=fxpManipPalX+'px'; el.style.top=fxpManipPalY+'px';
+  _restorePanelPos(el,'flexipadManipPal',fxpManipPalX,fxpManipPalY); fxpManipPalX=parseInt(el.style.left); fxpManipPalY=parseInt(el.style.top); el.style.display='block';
   fxpManipVisible=true;
   const btn=document.getElementById('btnFlexipadManip');
   if(btn){ btn.classList.add('on'); btn.style.color='#5eb8ff'; btn.style.borderColor='#5eb8ff'; }
@@ -13679,7 +13691,7 @@ function _initFxpPlacerDrag(){
   });
   document.addEventListener('mousemove',e=>{ if(!drag) return;
     fxpPlacerPalX=e.clientX-ox; fxpPlacerPalY=e.clientY-oy;
-    el.style.left=fxpPlacerPalX+'px'; el.style.top=fxpPlacerPalY+'px';
+    _restorePanelPos(el,'flexipadPlacerPal',fxpPlacerPalX,fxpPlacerPalY); fxpPlacerPalX=parseInt(el.style.left); fxpPlacerPalY=parseInt(el.style.top);
   });
   document.addEventListener('mouseup',()=>{ if(drag){drag=false;handle.style.cursor='grab';} });
 }
@@ -13696,7 +13708,7 @@ function _initFxpManipDrag(){
   });
   document.addEventListener('mousemove',e=>{ if(!drag) return;
     fxpManipPalX=e.clientX-ox; fxpManipPalY=e.clientY-oy;
-    el.style.left=fxpManipPalX+'px'; el.style.top=fxpManipPalY+'px';
+    _restorePanelPos(el,'flexipadManipPal',fxpManipPalX,fxpManipPalY); fxpManipPalX=parseInt(el.style.left); fxpManipPalY=parseInt(el.style.top);
   });
   document.addEventListener('mouseup',()=>{ if(drag){drag=false;handle.style.cursor='grab';} });
 
@@ -13990,7 +14002,7 @@ function _initHcStopPlacerDrag(){
   handle.addEventListener('pointermove', e=>{
     if(!handle.hasPointerCapture(e.pointerId)) return;
     hcStopPlacerPalX=e.clientX-ox; hcStopPlacerPalY=e.clientY-oy;
-    el.style.left=hcStopPlacerPalX+'px'; el.style.top=hcStopPlacerPalY+'px';
+    _restorePanelPos(el,'hcStopPlacerPal',hcStopPlacerPalX,hcStopPlacerPalY); hcStopPlacerPalX=parseInt(el.style.left); hcStopPlacerPalY=parseInt(el.style.top);
     e.stopPropagation();
   });
   handle.addEventListener('pointerup', e=>{
@@ -15348,7 +15360,7 @@ function toggleHcShapeEditor(){
     hcFreeDrawActive=false;
     const el=document.getElementById('hcShapePal');
     el.style.display='block';
-    el.style.left=hcShapePalX+'px';
+    {var _sc=_clampPalToScreen(parseInt(el.style.left)||0,parseInt(el.style.top)||0,'hcShapePal');el.style.left=_sc.x+'px';el.style.top=_sc.y+'px';}
     el.style.top=hcShapePalY+'px';
     vp.classList.add('editcursor');
     document.getElementById('btnHcShapeEditor').classList.add('dd-active-tool');
@@ -25543,7 +25555,7 @@ function showVentPlacer(){
   ventMode=true;
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('ventPlacerPal');
-  if(el){ {var _clp=_clampPalToScreen(_ventPalX,_ventPalY,'ventPlacerPal');_ventPalX=_clp.x;_ventPalY=_clp.y;}el.style.display='block'; el.style.left=_ventPalX+'px'; el.style.top=_ventPalY+'px'; }
+  if(el){ _restorePanelPos(el,'ventPlacerPal',_ventPalX,_ventPalY); _ventPalX=parseInt(el.style.left); _ventPalY=parseInt(el.style.top); el.style.display='block'; }
   const btn=document.getElementById('btnVentPlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#5eb8ff'; btn.style.borderColor='#5eb8ff'; }
   const fab=document.getElementById('floatVentPlaceBtn');
@@ -26150,7 +26162,7 @@ function showHddPlacer(){
   hddMode=true;
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('hddPlacerPal');
-  if(el){ {var _clp=_clampPalToScreen(_hddPalX,_hddPalY,'hddPlacerPal');_hddPalX=_clp.x;_hddPalY=_clp.y;}el.style.display='block'; el.style.left=_hddPalX+'px'; el.style.top=_hddPalY+'px'; }
+  if(el){ _restorePanelPos(el,'hddPlacerPal',_hddPalX,_hddPalY); _hddPalX=parseInt(el.style.left); _hddPalY=parseInt(el.style.top); el.style.display='block'; }
   const btn=document.getElementById('btnHddPlace');
   if(btn){ btn.classList.add('on'); btn.style.color='#f0a030'; btn.style.borderColor='#f0a030'; }
   const fab=document.getElementById('floatHddPlaceBtn');
@@ -29076,7 +29088,7 @@ function showMarkTool(){
   _mkColorPicked = false;
   const el = document.getElementById('markPal');
   el.style.display = 'block';
-  el.style.left = _mkPalX + 'px';
+  {var _sc=_clampPalToScreen(parseInt(el.style.left)||0,parseInt(el.style.top)||0,'markLegendPal');el.style.left=_sc.x+'px';el.style.top=_sc.y+'px';}
   el.style.top  = _mkPalY + 'px';
   document.getElementById('btnMarkTool').style.color = '#5eb8ff';
   const _fmt = document.getElementById('floatMarkToolBtn');
@@ -30214,7 +30226,7 @@ function showHcManip(){
   hcmVisible=true;
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('hcManipPal');
-  {var _clp=_clampPalToScreen(hcmPalX,hcmPalY,'hcManipPal');hcmPalX=_clp.x;hcmPalY=_clp.y;}el.style.display='block'; el.style.left=hcmPalX+'px'; el.style.top=hcmPalY+'px';
+  _restorePanelPos(el,'hcManipPal',hcmPalX,hcmPalY); hcmPalX=parseInt(el.style.left); hcmPalY=parseInt(el.style.top); el.style.display='block';
   const btn=document.getElementById('btnHcManip');
   if(btn) btn.classList.add('dd-active-tool');
   const _fhcm = document.getElementById('floatHcManipBtn');
@@ -31123,7 +31135,7 @@ function drawHcManipOverlay(){
     const r=vp.getBoundingClientRect();
     hcmPalX=Math.max(0,Math.min(r.width-el.offsetWidth,  e.clientX-r.left-hcmPalDx));
     hcmPalY=Math.max(0,Math.min(r.height-el.offsetHeight, e.clientY-r.top -hcmPalDy));
-    el.style.left=hcmPalX+'px'; el.style.top=hcmPalY+'px';
+    _restorePanelPos(el,'hcManipPal',hcmPalX,hcmPalY); hcmPalX=parseInt(el.style.left); hcmPalY=parseInt(el.style.top);
   });
   document.addEventListener('mouseup',()=>{ hcmPalDragging=false; });
 })();
