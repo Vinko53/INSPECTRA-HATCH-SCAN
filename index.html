@@ -8199,7 +8199,19 @@ function buildBayTabs(){
     if(isSel) selTab=t;
     platforms.forEach((p,pi)=>{ if(p.afterBay===b) sc.appendChild(makePlatTab(pi,p)); });
   }
-  if(selTab) selTab.scrollIntoView({block:'nearest',inline:'center'});
+  if(selTab){
+    // Manual scroll instead of scrollIntoView — prevents window scroll side-effects on Android
+    var _sc = selTab.parentElement;
+    if(_sc){
+      var _tabLeft  = selTab.offsetLeft;
+      var _tabW     = selTab.offsetWidth;
+      var _scW      = _sc.offsetWidth;
+      var _scScroll = _sc.scrollLeft;
+      // Center the tab in the scroll container
+      var _target = _tabLeft - (_scW - _tabW) / 2;
+      _sc.scrollLeft = Math.max(0, _target);
+    }
+  }
 }
 
 function selectBay(b){
@@ -8209,10 +8221,14 @@ function selectBay(b){
   buildBayTabs();
   if(viewMode==='hc') buildHcTabs();
   updateStatusLabel();
+  // Lock window scroll position — prevents Android Chrome from shifting layout
+  // when bay tab scrolling triggers window-level scroll events
+  if(window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
   // Use rAF so layout has settled before we read vp dimensions for centering
   if(vp.clientWidth > 0) canvas.width  = vp.clientWidth;
   if(vp.clientHeight > 0) canvas.height = vp.clientHeight;
   requestAnimationFrame(function(){
+    if(window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
     if(vp.clientWidth > 0) canvas.width  = vp.clientWidth;
     if(vp.clientHeight > 0) canvas.height = vp.clientHeight;
     resetView();
@@ -8631,6 +8647,22 @@ function showFpal(){
   fpalVisible=true;
   const el=fpalEl();
   el.style.display='block';
+  // Restore saved position from localStorage (saved by drag)
+  try {
+    var _saved = localStorage.getItem('mob_pos_floatPal');
+    if(!_saved) _saved = JSON.stringify((JSON.parse(localStorage.getItem('floatFabPositions')||'{}')).floatPal || {});
+    if(_saved){
+      var _pos = JSON.parse(_saved);
+      if(_pos && typeof _pos.left==='number' && typeof _pos.top==='number'){
+        fpalX = _pos.left; fpalY = _pos.top;
+      }
+    }
+  } catch(e){}
+  // Clamp to screen on mobile
+  var _vw = window.innerWidth, _vh = window.innerHeight;
+  var _pw = el.offsetWidth || 200, _ph = el.offsetHeight || 300;
+  fpalX = Math.max(0, Math.min(_vw - Math.min(_pw, 60), fpalX));
+  fpalY = Math.max(0, Math.min(_vh - Math.min(_ph, 40), fpalY));
   el.style.left=fpalX+'px';
   el.style.top=fpalY+'px';
   editShapeMode=false;
@@ -10503,16 +10535,18 @@ function hcStopHandleClick(sx, sy){
   const rows = totalRowsForBay(selBay);
   const bay = selBay;
 
-  // ── FREE MODE: place at snapped X/edge using _hcStopMouseLx ──────────────
+  // ── FREE MODE: place at tapped X, snapped to grid, at fwd or aft edge ──────
   if(_hcStopFreeMode){
-    // Use the pre-computed mouse position (set by touch handler or mousemove)
-    const snapX = Math.round(_hcStopMouseLx / (SW/4)) * (SW/4);
+    // Snap X to nearest SW/4 grid point
+    const snapX = Math.round(lx / (SW/4)) * (SW/4);
     const fwdY = -HC_STOP_Y_OFF, aftY = SH + HC_STOP_Y_OFF;
-    const snapY = Math.abs(ly - fwdY) < Math.abs(ly - aftY) ? fwdY : aftY;
-    const edge = snapY === fwdY ? 'fwd' : 'aft';
+    // Determine edge from Y proximity — use _hcStopEdge set by touch handler
+    const snapY = _hcStopEdge === 'fwd' ? fwdY : aftY;
     if(isNaN(snapX) || snapX < 0 || snapX > rows * SW) return false;
+    // Reset throttle so placement always registers
+    _objLastPlaceTime = 0;
     pushUndo();
-    addHcStopperFree(bay, snapX, snapY, _hcStopBrush, _hcStopColor||'black');
+    addHcStopperFree(bay, snapX, snapY, _hcStopBrush, 'black');
     draw(); return true;
   }
 
@@ -57346,74 +57380,35 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           var sx3 = t2.clientX - rect_vp3.left;
           var sy3 = t2.clientY - rect_vp3.top;
           if(typeof fxpMode !== 'undefined' && fxpMode){
-            // Set ALL fxp mouse tracking vars so draw() computes snap correctly
             var _lxF = (sx3 - panX) / zoom;
             var _lyF = (sy3 - panY) / zoom;
-            if(typeof _fxpMouseLx !== 'undefined'){ _fxpMouseLx = _lxF; _fxpMouseLy = _lyF; }
-            if(typeof _fxpFreeMouseLx !== 'undefined'){ _fxpFreeMouseLx = _lxF; _fxpFreeMouseLy = _lyF; }
-            // Compute which HC span the touch is nearest to
-            if(typeof _fxpMouseHc !== 'undefined' && typeof totalRowsForBay !== 'undefined'){
-              var _fxpRows = totalRowsForBay(selBay);
-              var _fxpCol = Math.floor(_lxF / SW);
-              var _fxpHn = (_fxpCol >= 0 && _fxpCol < _fxpRows) ? getHC(selBay, _fxpCol) : 0;
-              if(_fxpHn){
-                var _fxpSp = hcSpanCenter(selBay, _fxpHn, _fxpRows, _fxpCol);
-                _fxpMouseHc = _fxpHn;
-                _fxpMouseFirst = _fxpSp.first;
-                // Determine edge: compare distance to port vs stbd rail
-                var _fxpPortX = _fxpSp.first * SW;
-                var _fxpStbdX = (_fxpSp.last + 1) * SW;
-                if(typeof _fxpEdge !== 'undefined'){
-                  var _distPort = Math.abs(_lxF - _fxpPortX);
-                  var _distStbd = Math.abs(_lxF - _fxpStbdX);
-                  var _distFwd  = Math.abs(_lyF - 0);
-                  var _distAft  = Math.abs(_lyF - SH);
-                  var _minDist  = Math.min(_distPort, _distStbd, _distFwd, _distAft);
-                  if(_minDist === _distPort)       _fxpEdge = 'port';
-                  else if(_minDist === _distStbd)  _fxpEdge = 'stbd';
-                  else if(_minDist === _distFwd)   _fxpEdge = 'fwd';
-                  else                             _fxpEdge = 'aft';
-                }
-              }
-            }
+            // Fire a synthetic mousemove at this position to trigger the full
+            // edge detection logic (same as desktop mousemove handler)
+            // This sets _fxpMouseHc, _fxpMouseFirst, _fxpEdge, _fxpMouseLx/Ly correctly
+            var _fxpRect = vp2.getBoundingClientRect();
+            var _fxpSynMM = new MouseEvent('mousemove', {
+              clientX: t2.clientX, clientY: t2.clientY,
+              bubbles: true, cancelable: true, view: window
+            });
+            vp2.dispatchEvent(_fxpSynMM);
+            // Now reset hit flag and draw to compute snap
             if(typeof _fxpSnapGridHit !== 'undefined') _fxpSnapGridHit = false;
             if(typeof _fxpFreeSnapped !== 'undefined') _fxpFreeSnapped = false;
-            // Two draw passes: first computes snap state, second confirms
-            if(typeof draw === 'function'){ draw(); draw(); }
+            if(typeof _objLastPlaceTime !== 'undefined') _objLastPlaceTime = 0;
+            if(typeof draw === 'function'){ draw(); }
             if(typeof fxpHandleClick === 'function') fxpHandleClick(sx3, sy3);
             return;
           }
           if(typeof rpMode !== 'undefined' && rpMode){
-            var _lxR = (sx3 - panX) / zoom;
-            var _lyR = (sy3 - panY) / zoom;
-            if(typeof _rpMouseLx !== 'undefined'){ _rpMouseLx = _lxR; _rpMouseLy = _lyR; }
-            // Also set _rpMouseHc/_rpMouseFirst so isHov check passes in draw()
-            if(typeof _rpMouseHc !== 'undefined' && typeof totalRowsForBay !== 'undefined'){
-              var _rpRows = totalRowsForBay(selBay);
-              var _rpCol = Math.floor(_lxR / SW);
-              var _rpHn = (_rpCol >= 0 && _rpCol < _rpRows) ? getHC(selBay, _rpCol) : 0;
-              if(_rpHn){
-                var _rpSp = hcSpanCenter(selBay, _rpHn, _rpRows, _rpCol);
-                _rpMouseHc = _rpHn;
-                _rpMouseFirst = _rpSp.first;
-                // Set nearest edge
-                if(typeof _rpEdge !== 'undefined'){
-                  var _rpPortX = _rpSp.first * SW;
-                  var _rpStbdX = (_rpSp.last + 1) * SW;
-                  var _rpDPort = Math.abs(_lxR - _rpPortX);
-                  var _rpDStbd = Math.abs(_lxR - _rpStbdX);
-                  var _rpDFwd  = Math.abs(_lyR - 0);
-                  var _rpDAft  = Math.abs(_lyR - SH);
-                  var _rpMin   = Math.min(_rpDPort, _rpDStbd, _rpDFwd, _rpDAft);
-                  if(_rpMin === _rpDPort)       _rpEdge = 'port';
-                  else if(_rpMin === _rpDStbd)  _rpEdge = 'stbd';
-                  else if(_rpMin === _rpDFwd)   _rpEdge = 'fwd';
-                  else                          _rpEdge = 'aft';
-                }
-              }
-            }
+            // Fire synthetic mousemove to trigger full edge detection
+            var _rpSynMM = new MouseEvent('mousemove', {
+              clientX: t2.clientX, clientY: t2.clientY,
+              bubbles: true, cancelable: true, view: window
+            });
+            vp2.dispatchEvent(_rpSynMM);
             if(typeof _rpSnapGridHit !== 'undefined') _rpSnapGridHit = false;
-            if(typeof draw === 'function'){ draw(); draw(); }
+            if(typeof _objLastPlaceTime !== 'undefined') _objLastPlaceTime = 0;
+            if(typeof draw === 'function'){ draw(); }
             if(typeof rpHandleClick === 'function') rpHandleClick(sx3, sy3);
             return;
           }
@@ -57442,17 +57437,16 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
             return;
           }
           if(typeof hcStopMode !== 'undefined' && hcStopMode){
-            // Compute which edge (fwd/aft) based on tap Y position
             var _lxS = (sx3 - panX) / zoom;
             var _lyS = (sy3 - panY) / zoom;
-            // SH = total bay height; fwd = top half, aft = bottom half
             if(typeof _hcStopEdge !== 'undefined' && typeof SH !== 'undefined'){
               _hcStopEdge = _lyS < SH / 2 ? 'fwd' : 'aft';
             }
-            // Update mouse tracking so draw() shows correct hover preview
             if(typeof _hcStopMouseLx !== 'undefined'){
               _hcStopMouseLx = _lxS; _hcStopMouseLy = _lyS;
             }
+            // Reset throttle timer so touch tap always registers
+            if(typeof _objLastPlaceTime !== 'undefined') _objLastPlaceTime = 0;
             if(typeof draw === 'function') draw();
             if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
             return;
