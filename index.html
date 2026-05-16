@@ -4347,7 +4347,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 
 <!-- ══ ALARM LOG PANEL ══ -->
 <div id="oe-alarm-panel" style="
-  display:none;position:fixed;z-index:99500;
+  display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:99500;
   width:min(520px,94vw);
   font-family:'IBM Plex Mono',monospace;
   background:#f0f4f8;border:2px solid #b0c4d8;border-top:3px solid #c04040;
@@ -4459,7 +4459,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 
 <!-- ══ ASSIGNMENT ALARM MODAL ══ -->
 <!-- ══ ASSIGNMENT ALARM — floating panel, no backdrop ══ -->
-<div id="assignAlarmOverlay" style="display:none;position:fixed;z-index:99000;
+<div id="assignAlarmOverlay" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:99000;
   top:50%;left:50%;transform:translate(-50%,-50%);
   pointer-events:auto;">
   <div id="assignAlarmBox" style="
@@ -4539,7 +4539,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- FLEXIPAD PLACER PANEL -->
-<div id="flexipadPlacerPal" style="display:none;position:fixed;z-index:828;width:min(260px,92vw);font-family:'IBM Plex Mono',monospace;">
+<div id="flexipadPlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:828;width:min(260px,92vw);font-family:'IBM Plex Mono',monospace;">
   <div id="flexipadPlacerHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
     background:#0a1a0e;border-bottom:2px solid #206040;">
     <span style="font-size:14px;color:#60d890;flex-shrink:0;line-height:1;">▣</span>
@@ -4579,7 +4579,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- VENTILATOR PLACER PANEL -->
-<div id="ventPlacerPal" style="display:none;position:fixed;z-index:828;width:min(240px,92vw);
+<div id="ventPlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:828;width:min(240px,92vw);
   background:#071624;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
   box-shadow:0 12px 40px rgba(0,0,0,0.85);user-select:none;font-family:'IBM Plex Mono',monospace;">
   <div id="ventPlacerHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
@@ -4633,7 +4633,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- HOLD-DOWN DEVICE PLACER PANEL -->
-<div id="hddPlacerPal" style="display:none;position:fixed;z-index:828;width:min(240px,92vw);
+<div id="hddPlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:828;width:min(240px,92vw);
   background:#071624;border:1px solid #c07020;border-top:3px solid #f0a030;
   box-shadow:0 12px 40px rgba(0,0,0,0.85);user-select:none;font-family:'IBM Plex Mono',monospace;">
   <div id="hddPlacerHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
@@ -4687,7 +4687,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- FLEXIPAD MANIPULATOR PANEL -->
-<div id="flexipadManipPal" style="display:none;position:fixed;z-index:829;width:210px;
+<div id="flexipadManipPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:829;width:210px;
   background:#071820;border:1px solid #2d7fc1;border-top:3px solid #60d890;
   box-shadow:0 12px 40px rgba(0,0,0,0.85);user-select:none;font-family:'IBM Plex Mono',monospace;">
   <div id="flexipadManipHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
@@ -4804,7 +4804,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- MARK LABEL ASSIGN POPUP -->
-<div id="mlAssignPopup" style="display:none;position:fixed;z-index:8100;min-width:280px;max-width:360px;
+<div id="mlAssignPopup" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:8100;min-width:280px;max-width:360px;
   background:#0d2a45;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;
   box-shadow:0 8px 32px rgba(0,0,0,0.80);font-family:'IBM Plex Mono',monospace;">
   <div style="padding:7px 12px 5px;background:#0a1e30;border-bottom:1px solid #1e4a74;
@@ -5003,7 +5003,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
   </div>
 
 <!-- RESTING PAD PLACER PANEL -->
-<div id="rpPlacerPal" style="display:none;position:fixed;z-index:1200;width:min(260px,92vw);font-family:'IBM Plex Mono',monospace;">
+<div id="rpPlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:1200;width:min(260px,92vw);max-height:min(500px,80vh);overflow-y:auto;font-family:'IBM Plex Mono',monospace;">
   <div id="rpPlacerHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
     background:#180c30;border-bottom:2px solid #5030a0;">
     <span style="font-size:14px;color:#c090f0;flex-shrink:0;line-height:1;">⊞</span>
@@ -5051,7 +5051,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- RESTING PAD MANIPULATOR PANEL -->
-<div id="rpManipPal" style="display:none;position:fixed;z-index:1201;width:210px;
+<div id="rpManipPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:1201;width:210px;
 font-family:'IBM Plex Mono',monospace;">
   <div id="rpManipHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
     background:#180c30;border-bottom:2px solid #5030a0;">
@@ -5133,7 +5133,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatSaveBtn"
     onclick="fileSave()"
     title="Save file (Ctrl+S)"
-    style="position:absolute;top:10px;left:10px;z-index:200;
+    style="position:fixed;top:10px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5142,7 +5142,7 @@ font-family:'IBM Plex Mono',monospace;">
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
     <!-- Unsaved dot — top-right corner badge -->
-    <div id="floatSaveDot" style="position:absolute;top:-3px;right:-3px;z-index:1;
+    <div id="floatSaveDot" style="position:fixed;top:-3px;right:-3px;z-index:1;
       width:9px;height:9px;border-radius:50%;
       background:#e05050;border:1.5px solid #060e1a;
       display:none;pointer-events:none;"></div>
@@ -5165,7 +5165,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatLayersBtn"
     onclick="toggleLayers()"
     title="Layers — show/hide object categories"
-    style="position:absolute;top:56px;left:10px;z-index:200;
+    style="position:fixed;top:56px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5189,7 +5189,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatBayCopyBtn"
     onclick="openBayCopyTool()"
     title="Bay Copy Tool"
-    style="position:absolute;top:102px;left:10px;z-index:200;
+    style="position:fixed;top:102px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5215,7 +5215,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatSmartGridBtn"
     onclick="toggleSmartGrid()"
     title="Toggle Smart Grid"
-    style="position:absolute;top:148px;left:10px;z-index:200;
+    style="position:fixed;top:148px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5245,7 +5245,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcShapeBtn"
     onclick="autoSwitchBay();toggleHcShapeEditor()"
     title="HC Shape Editor — Free Polygon"
-    style="position:absolute;top:194px;left:10px;z-index:200;
+    style="position:fixed;top:194px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5273,7 +5273,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcManipBtn"
     onclick="autoSwitchBay();toggleHcManip()"
     title="HC Manipulator — Select & Edit Shapes"
-    style="position:absolute;top:240px;left:10px;z-index:200;
+    style="position:fixed;top:240px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5298,7 +5298,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcNamingBtn"
     onclick="autoSwitchBay();openHcNameTool()"
     title="HC Naming Tool"
-    style="position:absolute;top:286px;left:10px;z-index:200;
+    style="position:fixed;top:286px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5325,7 +5325,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatLashEyeBtn"
     onclick="autoSwitchBay();toggleLashEyePlacer()"
     title="Place Lashing Eye"
-    style="position:absolute;top:332px;left:10px;z-index:200;
+    style="position:fixed;top:332px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5355,7 +5355,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcStopPlaceBtn"
     onclick="autoSwitchBay();toggleHcStopPlacer()"
     title="Place HC Stopper"
-    style="position:absolute;top:378px;left:10px;z-index:200;
+    style="position:fixed;top:378px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5378,7 +5378,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcStopManipBtn"
     onclick="autoSwitchBay();toggleHcStopManip()"
     title="HC Stopper Manipulator"
-    style="position:absolute;top:424px;left:10px;z-index:200;
+    style="position:fixed;top:424px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5405,7 +5405,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatMarkToolBtn"
     onclick="toggleMarkTool()"
     title="Marking Tool — Place Symbols"
-    style="position:absolute;top:470px;left:10px;z-index:200;
+    style="position:fixed;top:470px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5428,7 +5428,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatMarkLegendBtn"
     onclick="openMarkLegend()"
     title="Mark Legend — Shape Library"
-    style="position:absolute;top:516px;left:10px;z-index:200;
+    style="position:fixed;top:516px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5454,7 +5454,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHeightToolBtn"
     onclick="autoSwitchBay();toggleHeightMode()"
     title="Custom Foundation Height"
-    style="position:absolute;top:562px;left:10px;z-index:200;
+    style="position:fixed;top:562px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5480,7 +5480,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFshpBtn"
     onclick="toggleFshp()"
     title="Foundation Shape Palette"
-    style="position:absolute;top:608px;left:10px;z-index:200;
+    style="position:fixed;top:608px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5508,7 +5508,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatObjManipBtn"
     onclick="toggleObjManip()"
     title="Object Manipulator"
-    style="position:absolute;top:654px;left:10px;z-index:200;
+    style="position:fixed;top:654px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5540,7 +5540,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFpalBtn"
     onclick="toggleFpal()"
     title="Color Palette"
-    style="position:absolute;top:700px;left:10px;z-index:200;
+    style="position:fixed;top:700px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5564,7 +5564,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatAssignBtn"
     onclick="autoSwitchBay();toggleAssignMode()"
     title="Assign Type to Foundation"
-    style="position:absolute;top:746px;left:10px;z-index:200;
+    style="position:fixed;top:746px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5588,7 +5588,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatObjEditorBtn"
     onclick="openObjEditor()"
     title="Foundation Types Library"
-    style="position:absolute;top:792px;left:10px;z-index:200;
+    style="position:fixed;top:792px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5616,7 +5616,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFxpPlaceBtn"
     onclick="autoSwitchBay();toggleFlexipadPlacer()"
     title="Place Flexipad"
-    style="position:absolute;top:838px;left:10px;z-index:200;
+    style="position:fixed;top:838px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5641,7 +5641,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFxpManipBtn"
     onclick="autoSwitchBay();toggleFlexipadManip()"
     title="Flexipad Manipulator"
-    style="position:absolute;top:884px;left:10px;z-index:200;
+    style="position:fixed;top:884px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5667,7 +5667,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFxpAssignBtn"
     onclick="autoSwitchBay();toggleFlexipadAssignMode()"
     title="Assign Type to Flexipad"
-    style="position:absolute;top:930px;left:10px;z-index:200;
+    style="position:fixed;top:930px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5695,7 +5695,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFxpLibBtn"
     onclick="openFxpLib()"
     title="Flexipad Library — Type Catalogue"
-    style="position:absolute;top:976px;left:10px;z-index:200;
+    style="position:fixed;top:976px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5722,7 +5722,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatVentPlaceBtn"
     onclick="autoSwitchBay();toggleVentPlacer()"
     title="Place HC Ventilator"
-    style="position:absolute;top:1022px;left:10px;z-index:200;
+    style="position:fixed;top:1022px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5751,7 +5751,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHddPlaceBtn"
     onclick="autoSwitchBay();toggleHddPlacer()"
     title="Place Hold-Down Device"
-    style="position:absolute;top:1066px;left:10px;z-index:200;
+    style="position:fixed;top:1066px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(20,10,0,0.92);
       border:1.5px solid #c07020;
@@ -5776,7 +5776,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpPlaceBtn"
     onclick="autoSwitchBay();toggleRpPlacer()"
     title="Place Resting Pad"
-    style="position:absolute;top:10px;left:58px;z-index:200;
+    style="position:fixed;top:10px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5801,7 +5801,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpManipBtn"
     onclick="autoSwitchBay();toggleRpManip()"
     title="Resting Pad Manipulator"
-    style="position:absolute;top:56px;left:58px;z-index:200;
+    style="position:fixed;top:56px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5827,7 +5827,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpAssignBtn"
     onclick="autoSwitchBay();toggleRpAssignMode()"
     title="Assign Type to Resting Pad"
-    style="position:absolute;top:102px;left:58px;z-index:200;
+    style="position:fixed;top:102px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5854,7 +5854,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpLibBtn"
     onclick="openRpLib()"
     title="Resting Pad Library — Type Catalogue"
-    style="position:absolute;top:148px;left:58px;z-index:200;
+    style="position:fixed;top:148px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5881,7 +5881,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpPocketPaintBtn"
     onclick="autoSwitchBay();toggleRpPocketPaintMode()"
     title="Paint Pads Individually"
-    style="position:absolute;top:194px;left:58px;z-index:200;
+    style="position:fixed;top:194px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5907,7 +5907,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpClearBtn"
     onclick="autoSwitchBay();clearRpBay()"
     title="Clear Resting Pads — Current Bay"
-    style="position:absolute;top:240px;left:58px;z-index:200;
+    style="position:fixed;top:240px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5990,7 +5990,7 @@ font-family:'IBM Plex Mono',monospace;">
     </div>
 
     <!-- Shape Library popup -->
-    <div id="fshpLibPopup" style="display:none;position:fixed;z-index:1600;
+    <div id="fshpLibPopup" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:1600;
       background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;
       box-shadow:0 16px 48px rgba(0,0,0,0.92);font-family:'IBM Plex Mono',monospace;
       width:280px;padding:0;user-select:none;" onmousedown="event.stopPropagation()">
@@ -6019,7 +6019,7 @@ font-family:'IBM Plex Mono',monospace;">
     <button class="fpal-multi-btn" id="fshpPairBtn" onclick="toggleSingleAsPair();fshpSync()" style="display:block;width:calc(100% - 16px);margin:0 8px 8px;">SGL → SINGLE</button>
   </div>
 
-  <!-- OBJECT MANIPULATOR FLOATING WINDOW -->  <div id="objManipPal" style="display:none;position:fixed;z-index:820;width:min(200px,92vw);
+  <!-- OBJECT MANIPULATOR FLOATING WINDOW -->  <div id="objManipPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:820;width:min(200px,92vw);
     background:#0c1828;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
     box-shadow:0 16px 48px rgba(0,0,0,0.92),0 0 0 1px rgba(94,184,255,0.10);
     user-select:none;font-family:'IBM Plex Mono',monospace;">
@@ -6340,7 +6340,7 @@ font-family:'IBM Plex Mono',monospace;">
   </div>
 
   <!-- HC SHAPE EDITOR PALETTE -->
-  <div id="hcShapePal" style="display:none;position:fixed;z-index:800;width:min(220px,92vw);background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;box-shadow:0 12px 40px rgba(0,0,0,0.8);user-select:none;font-family:'IBM Plex Mono',monospace;">
+  <div id="hcShapePal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:800;width:min(220px,92vw);background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;box-shadow:0 12px 40px rgba(0,0,0,0.8);user-select:none;font-family:'IBM Plex Mono',monospace;">
 
     <!-- ── TITLE BAR ── -->
     <div id="hcSpHandle" style="display:flex;align-items:center;height:26px;padding:0 6px 0 10px;background:#112234;border-bottom:1px solid #2a5878;cursor:grab;gap:4px;">
@@ -6478,7 +6478,7 @@ font-family:'IBM Plex Mono',monospace;">
     </div>
   </div>
 <!-- HC MANIPULATOR FLOATING PANEL -->
-<div id="hcManipPal" style="display:none;position:fixed;z-index:830;width:236px;
+<div id="hcManipPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:830;width:236px;
   background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;
   box-shadow:0 12px 40px rgba(0,0,0,0.88),0 0 0 1px rgba(94,184,255,0.08);font-family:'IBM Plex Mono',monospace;">
   <div id="hcManipHandle" style="display:flex;align-items:center;height:28px;padding:0 8px 0 10px;background:#112234;border-bottom:1px solid #2a5878;cursor:grab;gap:6px;">
@@ -6632,7 +6632,7 @@ font-family:'IBM Plex Mono',monospace;">
 </div>
 
 <!-- LASHING EYE PLACER PANEL -->
-<div id="lashEyePlacerPal" style="display:none;position:fixed;z-index:826;width:min(200px,92vw);
+<div id="lashEyePlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:826;width:min(200px,92vw);
   background:#0c1828;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
   box-shadow:0 16px 48px rgba(0,0,0,0.92),0 0 0 1px rgba(94,184,255,0.10);font-family:'IBM Plex Mono',monospace;">
   <div id="lashEyePlacerHandle" style="display:flex;align-items:center;height:28px;padding:0 8px 0 10px;
@@ -6868,7 +6868,7 @@ font-family:'IBM Plex Mono',monospace;">
 </div>
 
 <!-- HC STOPPER PLACER PANEL -->
-<div id="hcStopPlacerPal" style="display:none;position:fixed;z-index:826;width:min(220px,92vw);
+<div id="hcStopPlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:826;width:min(220px,92vw);
   background:#060e1a;border:1px solid #c8a800;border-top:2px solid #ffdd44;
   box-shadow:0 12px 40px rgba(0,0,0,0.85),0 0 0 1px rgba(255,220,50,0.08);font-family:'IBM Plex Mono',monospace;">
   <div id="hcStopPlacerHandle" style="display:flex;align-items:center;height:28px;padding:0 8px 0 10px;
@@ -6904,7 +6904,7 @@ font-family:'IBM Plex Mono',monospace;">
 </div>
 
 <!-- HC STOPPER MANIPULATOR PANEL -->
-<div id="hcStopManipPal" style="display:none;position:fixed;z-index:827;width:210px;
+<div id="hcStopManipPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:827;width:210px;
   background:#0c1828;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
   box-shadow:0 16px 48px rgba(0,0,0,0.92),0 0 0 1px rgba(94,184,255,0.10);font-family:'IBM Plex Mono',monospace;">
   <div id="hcStopManipHandle" style="display:flex;align-items:center;height:28px;padding:0 8px 0 10px;
@@ -6939,7 +6939,7 @@ font-family:'IBM Plex Mono',monospace;">
 </div>
 
 <!-- LAYERS FLOATING PANEL -->
-<div id="layersPal" style="display:none;position:fixed;z-index:825;width:252px;
+<div id="layersPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:825;width:252px;
   background:#0c1828;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
   box-shadow:0 16px 48px rgba(0,0,0,0.92),0 0 0 1px rgba(94,184,255,0.10);font-family:'IBM Plex Mono',monospace;">
 
@@ -6981,7 +6981,7 @@ font-family:'IBM Plex Mono',monospace;">
 </div>
 
 <!-- CUSTOM FOUNDATION HEIGHT PICKER -->
-<div id="heightPicker" style="display:none;position:fixed;z-index:4000;
+<div id="heightPicker" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:4000;
   background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;
   box-shadow:0 12px 40px rgba(0,0,0,0.88);font-family:'IBM Plex Mono',monospace;min-width:180px;">
   <div style="padding:6px 10px 4px;background:#112234;border-bottom:1px solid #2a5878;display:flex;align-items:center;justify-content:space-between;">
@@ -9278,17 +9278,18 @@ function _restorePanelPos(el, elId, defaultX, defaultY){
       if(pos && typeof pos.left === 'number'){
         x = pos.left; y = pos.top;
         // If saved position would put panel mostly off-screen, use default
-        var vwCheck = window.innerWidth;
-        if(x > vwCheck - 80 || x < -200) { x = defaultX || 0; y = defaultY || 0; }
+        var vwCheck = window.innerWidth, vhCheck = window.innerHeight;
+        if(x > vwCheck - 80 || x < -200 || y > vhCheck - 50) { x = defaultX || 0; y = defaultY || 0; }
       }
     }
   } catch(e){}
   // Safety clamp — keep panel sufficiently on screen
   var vw = window.innerWidth, vh = window.innerHeight;
-  var pw = el.offsetWidth || 220, ph = el.offsetHeight || 200;
+  var pw = el.offsetWidth || 220;
+  var ph = Math.min(el.scrollHeight || el.offsetHeight || 200, Math.round(vh * 0.9));
   // Keep at least half the panel visible, minimum 100px from right/bottom
   x = Math.max(0, Math.min(vw - Math.max(pw * 0.5, 100), x));
-  y = Math.max(0, Math.min(vh - Math.max(ph * 0.3, 60), y));
+  y = Math.max(0, Math.min(vh - Math.max(ph * 0.5, 80), y));
   el.style.left = x + 'px';
   el.style.top  = y + 'px';
   // Brief pointer-events guard: prevents the touchend that triggered the long-press
@@ -11156,9 +11157,11 @@ function drawRestingPadGuides(bay, rows){
   const W = rpHolderW(n);
 
   if(_rpFreeMode){
+    // FREE MODE — draw guidelines along HC edges, ghost at cursor
     const bayW = rows * SW;
     const gap  = RP_H/2 + 2;
 
+    // Collect HC spans (same as flexipads free mode)
     const _polyHcNums = new Set(hcCustomShapes.filter(s=>s.bay===bay).map(s=>s.hc));
     const spans = [];
     let r=0;
@@ -11185,6 +11188,7 @@ function drawRestingPadGuides(bay, rows){
       }
     });
 
+    // Draw rails
     const SNAP_D = Math.max(W, RP_H) * 1.2;
     let closestRail=null,closestDist=Infinity;
     ctx.save();
@@ -11195,10 +11199,20 @@ function drawRestingPadGuides(bay, rows){
         const cx=sp.x0+t*(sp.x1-sp.x0),cy=sp.y0+t*(sp.y1-sp.y0);
         d=Math.hypot(_rpMouseLx-cx,_rpMouseLy-cy);
       } else {
+        // Use same visual border as snap grid: HC_EXT for open edges, HC_SEP for adjacent HC
+        const HC_EXT_RP = DOT_R + 10;
+        const HC_SEP_RP = 2;
+        const adjL = getHC(bay, Math.round(sp.x0/SW) - 1);
+        const adjR = getHC(bay, Math.round(sp.x1/SW));
+        const extL = adjL ? HC_SEP_RP : HC_EXT_RP;
+        const extR = adjR ? HC_SEP_RP : HC_EXT_RP;
+        const portX = sp.x0 - extL - gap;
+        const stbdX = sp.x1 + extR + gap;
+        sp._portX = portX; sp._stbdX = stbdX;
         const dF=(_rpMouseLx>=sp.x0&&_rpMouseLx<=sp.x1)?Math.abs(_rpMouseLy-(-gap)):Infinity;
         const dA=(_rpMouseLx>=sp.x0&&_rpMouseLx<=sp.x1)?Math.abs(_rpMouseLy-(SH+gap)):Infinity;
-        const dP=(_rpMouseLy>=0&&_rpMouseLy<=SH)?Math.abs(_rpMouseLx-(sp.x0-gap)):Infinity;
-        const dS=(_rpMouseLy>=0&&_rpMouseLy<=SH)?Math.abs(_rpMouseLx-(sp.x1+gap)):Infinity;
+        const dP=(_rpMouseLy>=0&&_rpMouseLy<=SH)?Math.abs(_rpMouseLx-portX):Infinity;
+        const dS=(_rpMouseLy>=0&&_rpMouseLy<=SH)?Math.abs(_rpMouseLx-stbdX):Infinity;
         d=Math.min(dF,dA,dP,dS);
         sp._dFwd=dF;sp._dAft=dA;sp._dPort=dP;sp._dStbd=dS;
       }
@@ -11220,8 +11234,8 @@ function drawRestingPadGuides(bay, rows){
         const mn=Math.min(d,dA,dP,dS);
         if(mn===d){ghostX=_rpMouseLx;ghostY=-gap;snapEdge='fwd';}
         else if(mn===dA){ghostX=_rpMouseLx;ghostY=SH+gap;snapEdge='aft';}
-        else if(mn===dP){ghostX=closestRail.x0-gap;ghostY=_rpMouseLy;snapEdge='port';}
-        else{ghostX=closestRail.x1+gap;ghostY=_rpMouseLy;snapEdge='stbd';}
+        else if(mn===dP){ghostX=closestRail._portX||closestRail.x0-gap;ghostY=_rpMouseLy;snapEdge='port';}
+        else{ghostX=closestRail._stbdX||closestRail.x1+gap;ghostY=_rpMouseLy;snapEdge='stbd';}
       }
     }
 
@@ -11229,17 +11243,21 @@ function drawRestingPadGuides(bay, rows){
     _rpFreeSnapAngle=polyAngleDeg!==null?polyAngleDeg*Math.PI/180:null;
     _rpFreeSnapped=!!snapPx;
 
+    // Draw ghost
     ctx.globalAlpha=0.65;
+    // Use edge='free' to avoid double-rotation; rotAngle alone controls orientation
     drawRestingPadSymbol(ghostX,ghostY,'free',false,false,color,n,polyAngleDeg!==null?polyAngleDeg:snapEdge==='port'||snapEdge==='stbd'?90:0,null,null,-1);
     ctx.globalAlpha=1;
     return;
   }
 
+  // SNAP MODE — grid points matching the placement grid dots exactly
+  // Uses same geometry as drawRpPlacementGrid so ghost and dots are co-located.
   if(!rows || rows < 1) return;
   const _snapPolyHcNums = new Set(hcCustomShapes.filter(s=>s.bay===bay).map(s=>s.hc));
   const gap  = RP_H / 2 + 2;
   const STEP = RP_GRID_STEP;
-  const HC_SEP2=2, HC_EXT2=3; // close to HC edge
+  const HC_SEP2=2, HC_EXT2=DOT_R+10; // match visual HC border (same as drawHcOverlay)
 
   let r2=0;
   while(r2<rows){
@@ -11255,16 +11273,16 @@ function drawRestingPadGuides(bay, rows){
 
     const isHov=(hcNum===_rpMouseHc && sp.first===_rpMouseFirst);
 
-    if(isHov){
-      ctx.strokeStyle='rgba(192,144,240,0.9)';
-      ctx.lineWidth=1.4; ctx.setLineDash([]);
-      if(_rpEdge==='fwd')  {ctx.beginPath();ctx.moveTo(x0,railY_fwd); ctx.lineTo(x1,railY_fwd); ctx.stroke();}
-      else if(_rpEdge==='aft')  {ctx.beginPath();ctx.moveTo(x0,railY_aft); ctx.lineTo(x1,railY_aft); ctx.stroke();}
-      else if(_rpEdge==='port') {ctx.beginPath();ctx.moveTo(railX_port,0);  ctx.lineTo(railX_port,SH);  ctx.stroke();}
-      else                      {ctx.beginPath();ctx.moveTo(railX_stbd,0);  ctx.lineTo(railX_stbd,SH);  ctx.stroke();}
-      ctx.setLineDash([]);
-    }
+    // ── Draw rail line ──────────────────────────────────────────────────────
+    ctx.strokeStyle=isHov?'rgba(192,144,240,0.9)':'rgba(192,144,240,0.35)';
+    ctx.lineWidth=isHov?1.4:0.9; ctx.setLineDash(isHov?[]:[5,3]);
+    if(_rpEdge==='fwd')  {ctx.beginPath();ctx.moveTo(x0,railY_fwd); ctx.lineTo(x1,railY_fwd); ctx.stroke();}
+    else if(_rpEdge==='aft')  {ctx.beginPath();ctx.moveTo(x0,railY_aft); ctx.lineTo(x1,railY_aft); ctx.stroke();}
+    else if(_rpEdge==='port') {ctx.beginPath();ctx.moveTo(railX_port,0);  ctx.lineTo(railX_port,SH);  ctx.stroke();}
+    else                      {ctx.beginPath();ctx.moveTo(railX_stbd,0);  ctx.lineTo(railX_stbd,SH);  ctx.stroke();}
+    ctx.setLineDash([]);
 
+    // ── Compute grid points along this span's active rail (same formula as drawRpPlacementGrid) ──
     let gridPts = [];
     if(_rpEdge==='fwd'||_rpEdge==='aft'){
       const railY = _rpEdge==='fwd' ? railY_fwd : railY_aft;
@@ -11278,6 +11296,7 @@ function drawRestingPadGuides(bay, rows){
       for(let gi=0;gi<nV;gi++) gridPts.push({x:railX, y:startY+gi*STEP, gi});
     }
 
+    // ── Draw dots + find hovered (nearest to cursor) ────────────────────────
     let hovPt = null, hovDist = Infinity;
     if(isHov){
       gridPts.forEach(pt => {
@@ -11294,15 +11313,18 @@ function drawRestingPadGuides(bay, rows){
       const blocked  = isThis && !occupied && rpWouldOverlap(bay, rows, pt.x, pt.y, snapRotAngle, n, null);
 
       if(occupied){
+        // Filled dot — slot already has a pad
         ctx.beginPath(); ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI*2);
         ctx.fillStyle='rgba(192,144,240,0.5)'; ctx.fill();
         ctx.strokeStyle='rgba(210,160,255,0.7)'; ctx.lineWidth=0.8; ctx.stroke();
       } else if(blocked){
+        // Red X — slot blocked by overlapping existing pad
         ctx.strokeStyle='rgba(255,80,80,0.85)'; ctx.lineWidth=1.2;
         const r=2.5;
         ctx.beginPath(); ctx.moveTo(pt.x-r,pt.y-r); ctx.lineTo(pt.x+r,pt.y+r); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(pt.x+r,pt.y-r); ctx.lineTo(pt.x-r,pt.y+r); ctx.stroke();
       } else {
+        // Normal dot — slot available
         const dotR = isThis ? 4.5 : 2.5;
         ctx.beginPath(); ctx.arc(pt.x, pt.y, dotR, 0, Math.PI*2);
         ctx.fillStyle   = isThis ? 'rgba(192,144,240,0.18)' : 'rgba(192,144,240,0.05)'; ctx.fill();
@@ -11314,12 +11336,16 @@ function drawRestingPadGuides(bay, rows){
         }
       }
 
+      // ── Ghost holder at hovered point ───────────────────────────────────────
       if(isThis && !occupied && !blocked){
+        // Green-tinted ghost — placement allowed
         ctx.globalAlpha=0.6;
+        // Use edge='free' so base angle=0; snapRotAngle alone controls orientation
         drawRestingPadSymbol(pt.x, pt.y, 'free', false, false, color, n, snapRotAngle, null, null, -1);
         ctx.globalAlpha=1;
       }
       if(isThis && !occupied && blocked){
+        // Full red ghost — placement blocked (mirrors Flexipad behaviour exactly)
         ctx.globalAlpha=0.5;
         ctx.save();
         ctx.translate(pt.x, pt.y);
@@ -11329,6 +11355,7 @@ function drawRestingPadGuides(bay, rows){
         ctx.strokeStyle='rgba(255,60,60,0.85)';
         ctx.lineWidth=1.5/zoom;
         ctx.beginPath(); ctx.rect(-W/2, -RP_H/2, W, RP_H); ctx.fill(); ctx.stroke();
+        // Also draw red pocket outlines so shape is recognisable
         const totalInner=n*RP_PAD_W+Math.max(0,n-1)*RP_CELL_GAP;
         const cx0=-totalInner/2;
         ctx.strokeStyle='rgba(255,100,100,0.7)'; ctx.lineWidth=0.8/zoom;
@@ -11341,6 +11368,7 @@ function drawRestingPadGuides(bay, rows){
       }
     });
 
+    // ── Set snap state to hovered grid point ─────────────────────────────────
     if(hovPt && hovDist < HOVER_SNAP_DIST){
       const occupied = (restingPads[bay]||[]).some(rp => rp.free && Math.hypot(rp.x-hovPt.x, rp.y-hovPt.y) < 2);
       const blocked  = !occupied && rpWouldOverlap(bay, rows, hovPt.x, hovPt.y, snapRotAngle, n, null);
@@ -11353,7 +11381,6 @@ function drawRestingPadGuides(bay, rows){
     r2=sp.last+1;
   }
 }
-
 function rpHandleClick(sx, sy){
   if(!rpMode) return false;
   if(!layerOn('lyr_resting_pads') || !layerOn('lyr_hc_bearing')) return false;
@@ -11442,7 +11469,57 @@ function rpHandleClick(sx, sy){
     draw(); return true;
   }
 
-  if(!_rpSnapGridHit) return false;
+  if(!_rpSnapGridHit){
+    // Mobile fallback: try to find nearest snap point by searching all HCs
+    // (hovDist threshold may be too tight for finger touch)
+    if(typeof _rpMouseHc !== 'undefined' && _rpMouseHc){
+      const _rows2 = totalRowsForBay(bay);
+      const _sp = hcSpanCenter(bay, _rpMouseHc, _rows2, _rpMouseFirst>=0?_rpMouseFirst:undefined);
+      if(_sp && _sp.cx > 0){
+        const x0=_sp.first*SW, x1=(_sp.last+1)*SW, spanW=x1-x0;
+        const STEP2 = typeof RP_GRID_STEP!=='undefined' ? RP_GRID_STEP : 12;
+        const _off2 = typeof _rpOff!=='undefined' ? _rpOff : RP_H/2+1;
+        let railX = _rpEdge==='port' ? x0-_off2 : (_rpEdge==='stbd' ? x1+_off2 : null);
+        let railY = _rpEdge==='fwd'  ? -_off2   : (_rpEdge==='aft'  ? SH+_off2 : null);
+        let gridPts2 = [];
+        if(railX !== null){
+          const nV = Math.max(1, Math.floor(SH/STEP2));
+          const startY = (SH - (nV-1)*STEP2)/2;
+          for(let gi=0;gi<nV;gi++) gridPts2.push({x:railX, y:startY+gi*STEP2, gi});
+        } else if(railY !== null){
+          const nH = Math.max(1, Math.floor(spanW/STEP2));
+          const startX = x0 + (spanW - (nH-1)*STEP2)/2;
+          for(let gi=0;gi<nH;gi++) gridPts2.push({x:startX+gi*STEP2, y:railY, gi});
+        }
+        let bestPt=null, bestDist=Infinity;
+        gridPts2.forEach(function(pt){
+          const d = Math.hypot((lx-panX/zoom)-pt.x, (ly-panY/zoom)-pt.y);
+          // Use generous threshold for mobile touch
+          const d2 = Math.hypot(lx-pt.x, ly-pt.y);
+          if(d2 < bestDist){ bestDist=d2; bestPt=pt; }
+        });
+        if(bestPt && bestDist < STEP2 * 2){
+          const snapRot = (_rpEdge==='port'||_rpEdge==='stbd') ? 90 : 0;
+          if(!rpWouldOverlap(bay,rows,bestPt.x,bestPt.y,snapRot,n,null)){
+            pushUndo();
+            const rp = addRp(bay,_rpMouseHc,_rpEdge,color,n,_rpMouseFirst);
+            if(typeof _rpMirror!=='undefined' && _rpMirror){
+            const mirEdge = _rpEdge==='port'?'stbd':_rpEdge==='stbd'?'port':_rpEdge==='fwd'?'aft':'fwd';
+            // Find mirror HC (opposite side)
+            const _rpSp2 = hcSpanCenter(bay, _rpMouseHc, rows, _rpMouseFirst>=0?_rpMouseFirst:undefined);
+            if(_rpSp2 && _rpSp2.cx > 0){
+              const mirFirst = rows - 1 - _rpSp2.last;
+              const mirHcNum = getHC(bay, mirFirst);
+              if(mirHcNum) addRp(bay, mirHcNum, mirEdge, color, n, mirFirst);
+            }
+          }
+            draw(); return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
   const gx=_rpSnapGridX,gy=_rpSnapGridY;
   const snapRotAngle=(_rpEdge==='port'||_rpEdge==='stbd')?90:0;
   if(rpWouldOverlap(bay,rows,gx,gy,snapRotAngle,n,null)){ draw(); return false; }
@@ -12141,13 +12218,20 @@ function drawFlexipadGuides(bay, rows){
         polyRails.push(sp);
       } else {
         const _gap = FXP_H / 2 + 2;
+        const adjL = getHC(bay, sp.first - 1);
+        const adjR = getHC(bay, sp.last + 1);
+        const HC_EXT_FXP = DOT_R + 10;
+        const HC_SEP_FXP = 2;
+        const extL = adjL ? HC_SEP_FXP : HC_EXT_FXP;
+        const extR = adjR ? HC_SEP_FXP : HC_EXT_FXP;
         const rs = [
-          { x0: sp.x0, y0: -_gap,       x1: sp.x1, y1: -_gap,       edge:'fwd',  snapX: (sp.x0+sp.x1)/2, snapY: -_gap, sp },
-          { x0: sp.x0, y0: SH+_gap,     x1: sp.x1, y1: SH+_gap,     edge:'aft',  snapX: (sp.x0+sp.x1)/2, snapY: SH+_gap, sp },
-          { x0: sp.x0-_gap, y0: sp.y0,  x1: sp.x0-_gap, y1: sp.y1,  edge:'port', snapX: sp.x0-_gap, snapY: (sp.y0+sp.y1)/2, sp },
-          { x0: sp.x1+_gap, y0: sp.y0,  x1: sp.x1+_gap, y1: sp.y1,  edge:'stbd', snapX: sp.x1+_gap, snapY: (sp.y0+sp.y1)/2, sp }
+          { x0: sp.x0, y0: -_gap,            x1: sp.x1, y1: -_gap,            edge:'fwd',  snapX: (sp.x0+sp.x1)/2, snapY: -_gap, sp },
+          { x0: sp.x0, y0: SH+_gap,          x1: sp.x1, y1: SH+_gap,          edge:'aft',  snapX: (sp.x0+sp.x1)/2, snapY: SH+_gap, sp },
+          { x0: sp.x0-extL-_gap, y0: sp.y0,  x1: sp.x0-extL-_gap, y1: sp.y1,  edge:'port', snapX: sp.x0-extL-_gap, snapY: (sp.y0+sp.y1)/2, sp, isAdj: !!adjL },
+          { x0: sp.x1+extR+_gap, y0: sp.y0,  x1: sp.x1+extR+_gap, y1: sp.y1,  edge:'stbd', snapX: sp.x1+extR+_gap, snapY: (sp.y0+sp.y1)/2, sp, isAdj: !!adjR }
         ];
         rs.forEach(r => {
+          if(r.isAdj) return;
           if(!_railInsidePolyBBox(r)){ allRails.push(r); rectRails.push(r); }
         });
       }
@@ -12168,23 +12252,25 @@ function drawFlexipadGuides(bay, rows){
         rail._d = d;
       } else {
         const sp = rail.sp;
-        if(rail.edge === 'fwd' || rail.edge === 'aft'){
+                // Only consider rails from the nearest/containing span
+        const mouseInsideThisSpan = _fxpMouseLx >= sp.x0 && _fxpMouseLx <= sp.x1;
+        const mouseInsideAnySpan  = spans.some(s => !s.isPoly && _fxpMouseLx >= s.x0 && _fxpMouseLx <= s.x1);
+        if(mouseInsideAnySpan && !mouseInsideThisSpan){
+          d = Infinity;
+        } else if(rail.edge === 'fwd' || rail.edge === 'aft'){
           const inX = _fxpMouseLx >= sp.x0 - SW && _fxpMouseLx <= sp.x1 + SW;
           d = inX ? Math.abs(_fxpMouseLy - rail.y0) : Infinity;
         } else {
           const inY = _fxpMouseLy >= sp.y0 - SW && _fxpMouseLy <= sp.y1 + SW;
           if(!inY){ d = Infinity; }
           else {
-            d = Math.abs(_fxpMouseLx - rail.x0);
-            // If mouse is inside THIS span's X range, prefer this span's own outer edges.
-            // Add a penalty if this rail belongs to a different span (adjacent HC boundary).
-            const mouseInsideSpan = _fxpMouseLx >= sp.x0 && _fxpMouseLx <= sp.x1;
-            if(mouseInsideSpan){
-              // port rail: outer if mouse is left-of-center, else penalise
-              // stbd rail: outer if mouse is right-of-center, else penalise
+            // Distance to the actual outer snap position (not the inner boundary)
+            d = Math.abs(_fxpMouseLx - rail.snapX);
+            if(mouseInsideThisSpan){
               const spMid = (sp.x0 + sp.x1) / 2;
-              if(rail.edge === 'port' && _fxpMouseLx > spMid) d += SW * 2;
-              if(rail.edge === 'stbd' && _fxpMouseLx < spMid) d += SW * 2;
+              // Very large penalty to wrong side so correct outer edge always wins
+              if(rail.edge === 'port' && _fxpMouseLx >= spMid) d += SW * 10;
+              if(rail.edge === 'stbd' && _fxpMouseLx <  spMid) d += SW * 10;
             }
           }
         }
@@ -12192,10 +12278,10 @@ function drawFlexipadGuides(bay, rows){
         if(d < closestDist){ closestDist = d; closestRail = {...rail}; }
       }
 
+      // Only draw this rail if close enough to snap (eliminates ghost inner lines)
+      // Use the raw distance d (not penalized) but skip anything beyond SNAP_DIST
+      if(!rail.isPoly && d >= SNAP_DIST){ ctx.setLineDash([]); return; }
       const isClose = rail.isPoly ? (rail._d !== undefined ? rail._d : d) < POLY_SNAP_DIST : d < SNAP_DIST;
-      // Skip non-poly rails that are too far (prevents ghost lines on inner HC walls)
-      const isVisible = rail.isPoly || d < SW * 3;
-      if(!isVisible){ ctx.setLineDash([]); return; }
       if(rail.isPoly){
         ctx.strokeStyle = isClose ? 'rgba(96,216,144,0.95)' : 'rgba(96,216,144,0.55)';
         ctx.lineWidth   = isClose ? 1.8 : 1.1;
@@ -12287,18 +12373,31 @@ function drawFlexipadGuides(bay, rows){
     }
 
     const snapPx = closestRail && (closestRail.isPoly ? closestDist < POLY_SNAP_DIST : closestDist < SNAP_DIST);
-    let ghostX, ghostY, snapEdge;
-    if(!snapPx){
+    // Force snap: if no snap hit but cursor is inside an HC span, snap to nearest outer rail
+    let ghostX, ghostY, snapEdge, effectiveSnap = snapPx;
+    if(!snapPx && closestRectRail){
+      // Check if cursor is inside any HC span
+      const cursorInsideHC = spans.some(s => !s.isPoly &&
+        _fxpMouseLx >= s.x0 && _fxpMouseLx <= s.x1 &&
+        _fxpMouseLy >= s.y0 && _fxpMouseLy <= s.y1);
+      if(cursorInsideHC){
+        // Force snap to the nearest outer rail
+        effectiveSnap = true;
+      }
+    }
+    if(!effectiveSnap){
       ghostX = _fxpMouseLx; ghostY = _fxpMouseLy; snapEdge = _fxpEdge;
-    } else if(closestRail.isPoly){
+    } else if(snapPx && closestRail && closestRail.isPoly){
       const t = _projOnSeg(_fxpMouseLx, _fxpMouseLy, closestRail.x0, closestRail.y0, closestRail.x1, closestRail.y1);
       ghostX = closestRail.x0 + t*(closestRail.x1-closestRail.x0);
       ghostY = closestRail.y0 + t*(closestRail.y1-closestRail.y0);
       snapEdge = closestRail.edge;
     } else {
-      ghostX = (closestRail.edge === 'fwd' || closestRail.edge === 'aft') ? _fxpMouseLx : closestRail.snapX;
-      ghostY = (closestRail.edge === 'port' || closestRail.edge === 'stbd') ? _fxpMouseLy : closestRail.snapY;
-      snapEdge = closestRail.edge;
+      // Use nearest rect rail (for both normal snap and forced-snap-inside-HC)
+      const useRail = closestRectRail || closestRail;
+      ghostX = (useRail.edge === 'fwd' || useRail.edge === 'aft') ? _fxpMouseLx : useRail.snapX;
+      ghostY = (useRail.edge === 'port' || useRail.edge === 'stbd') ? _fxpMouseLy : useRail.snapY;
+      snapEdge = useRail.edge;
     }
 
     if(snapPx){
@@ -12363,7 +12462,7 @@ function drawFlexipadGuides(bay, rows){
     _fxpFreeSnapAngle = (snapPx && closestRail && closestRail.isPoly)
       ? Math.atan2(closestRail.edgeDy, closestRail.edgeDx)
       : null;
-    _fxpFreeSnapped   = !!snapPx;
+    _fxpFreeSnapped   = !!effectiveSnap;
 
     ctx.restore();
     return;
@@ -12652,7 +12751,6 @@ function drawFlexipadGuides(bay, rows){
   });
 
 }
-
 function fxpHitTest(sx, sy){
   const bay=selBay, rows=totalRowsForBay(bay);
   const arr=flexipads[bay]||[];
@@ -21572,7 +21670,7 @@ document.addEventListener('mouseup',e=>{
       draw();
     }
   }
-  if(hcStopMode && viewMode==='bay' && layerOn('lyr_hc_stoppers')){
+  if(hcStopMode && viewMode==='bay' && layerOn('lyr_hc_stoppers') && !window._lastWasTouch){
     if(e.target.closest && e.target.closest('#hcStopPlacerPal,#hcStopManipPal,#floatPal,#floatShp,#objManipPal,#hcManipPal,#hcShapePal,#layersPal,#lashEyePlacerPal,#flexipadPlacerPal,#flexipadManipPal,#fxpAssignPopup,#cranePal,#ventPlacerPal,#hddPlacerPal')) return;
     const lx=(mx-panX)/zoom, ly=(my-panY)/zoom;
     if(_hcStopFreeMode){
@@ -25480,10 +25578,12 @@ function _ventPlaceMirror(bay, rows, lx, ly, side, color){
 
   if(bestX!==null){
     addVentFree(bay, bestX, ly, mirSide, color);
-    if(Math.abs(mirLy - ly) > 2) addVentFree(bay, bestX, mirLy, mirSide, color);
+    // 4-way: also mirror fore↔aft on the mirror side
+    if(_ventMirror==='4way' && Math.abs(mirLy - ly) > 2) addVentFree(bay, bestX, mirLy, mirSide, color);
   }
 
-  if(Math.abs(mirLy - ly) > 2){
+  // Fore ↔ Aft of original side — only in 4-way mode
+  if(_ventMirror==='4way' && Math.abs(mirLy - ly) > 2){
     const approxCol = Math.round(lx / SW);
     const h0 = getHC(bay, Math.max(0, Math.min(rows-1, approxCol)));
     if(!h0 || !_ventSideBlocked(bay, h0, rows, side)){
@@ -25541,10 +25641,12 @@ function _ventPlaceMirrorSnap(bay, rows, hcNum, spanFirst, gi, side, color){
   if(mirHc!==null){
     const sf2 = getSpanFirst(mirHc);
     addIfFree(mirHc, sf2, mirSide, gi);
-    if(mirGi !== gi) addIfFree(mirHc, sf2, mirSide, mirGi);
+    // 4-way: also mirror fore↔aft on the mirror side
+    if(_ventMirror==='4way' && mirGi !== gi) addIfFree(mirHc, sf2, mirSide, mirGi);
   }
 
-  if(mirGi !== gi && !_ventSideBlocked(bay, hcNum, rows, side)){
+  // Fore ↔ Aft mirror on original HC/side — only in 4-way mode
+  if(_ventMirror==='4way' && mirGi !== gi && !_ventSideBlocked(bay, hcNum, rows, side)){
     addIfFree(hcNum, spanFirst, side, mirGi);
   }
 }
@@ -25998,57 +26100,120 @@ function hddHandleClick(sx, sy){
   if(!hddMode) return false;
   if(viewMode!=='bay') return false;
   const bay=selBay;
+  const _nowHdd = performance.now();
+  if(_nowHdd - _objLastPlaceTime < LASH_SPEED_MAP[_lashPlaceSpeed]) return false;
+  _objLastPlaceTime = _nowHdd;
 
-  // Always refresh snap state at click time (mousemove may not have fired yet)
   _hddMouseSx=sx; _hddMouseSy=sy;
   if(!_hddFreeMode) _hddTrySnap(sx, sy);
 
-  // ── ROTATE MODE: tap a placed HDD to flip it ─────────────────────────────
+  // ROTATE MODE: tap existing unit to flip it (does NOT place new units)
   if(_hddFlipV){
     const hitId = hddHitTest(sx, sy);
     if(hitId){
       pushUndo();
       const arr = hcHoldDowns[bay] || [];
       const hit = arr.find(h => h.id === hitId);
-      if(hit){
-        hit.flipV = !hit.flipV;
-        draw();
-        return true;
-      }
+      if(hit){ hit.flipV = !hit.flipV; draw(); return true; }
     }
-    // No hit — fall through to normal placement with flipV=true
+    return false; // ROTATE ON but no unit hit — do nothing
   }
-    const hitId=hddHitTest(sx,sy);
+
+  // DELETE MODE
+  if(_hddDeleteMode){
+    const hitId = hddHitTest(sx, sy);
     if(hitId){
       pushUndo();
       const hit = (hcHoldDowns[bay]||[]).find(h=>h.id===hitId);
       removeHdd(bay, hitId);
-      // If mirror is on, also remove the mirror twins
       if(_hddMirror && hit){
-        const TOL = 8; // position tolerance for finding mirrors
-        const mirY = SH - hit.y;
-        const arr = hcHoldDowns[bay]||[];
+        const TOL=8, mirY=SH-hit.y, arr=hcHoldDowns[bay]||[];
         if(hit.side==='port'||hit.side==='stbd'){
-          const mirSide = hit.side==='port'?'stbd':'port';
-          // Remove: same side mirrored Y
-          const twin1 = arr.find(h=>h.side===hit.side && Math.abs(h.x-hit.x)<TOL && Math.abs(h.y-mirY)<TOL);
-          if(twin1) removeHdd(bay, twin1.id);
-          // Remove: opposite side same Y
-          const twin2 = (hcHoldDowns[bay]||[]).find(h=>h.side===mirSide && Math.abs(h.y-hit.y)<TOL);
-          if(twin2) removeHdd(bay, twin2.id);
-          // Remove: opposite side mirrored Y
-          const twin3 = (hcHoldDowns[bay]||[]).find(h=>h.side===mirSide && Math.abs(h.y-mirY)<TOL);
-          if(twin3) removeHdd(bay, twin3.id);
+          const mirSide=hit.side==='port'?'stbd':'port';
+          const t1=arr.find(h=>h.side===hit.side&&Math.abs(h.x-hit.x)<TOL&&Math.abs(h.y-mirY)<TOL); if(t1)removeHdd(bay,t1.id);
+          const t2=(hcHoldDowns[bay]||[]).find(h=>h.side===mirSide&&Math.abs(h.y-hit.y)<TOL); if(t2)removeHdd(bay,t2.id);
+          const t3=(hcHoldDowns[bay]||[]).find(h=>h.side===mirSide&&Math.abs(h.y-mirY)<TOL); if(t3)removeHdd(bay,t3.id);
         } else {
-          const mirSide = hit.side==='fwd'?'aft':'fwd';
-          const twin = arr.find(h=>h.side===mirSide && Math.abs(h.x-hit.x)<TOL);
-          if(twin) removeHdd(bay, twin.id);
+          const mirSide=hit.side==='fwd'?'aft':'fwd';
+          const twin=arr.find(h=>h.side===mirSide&&Math.abs(h.x-hit.x)<TOL); if(twin)removeHdd(bay,twin.id);
         }
       }
       draw();
     }
     return true;
   }
+
+  // PLACE MODE
+  const rows=totalRowsForBay(bay);
+  const lx=(sx-panX)/zoom, ly=(sy-panY)/zoom;
+  let px, py, side;
+
+  if(_hddFreeMode){
+    // In free mode use snap position if available, else raw coords
+    px = _hddSnapHit ? _hddSnapX : lx;
+    py = _hddSnapHit ? _hddSnapY : ly;
+    side = _hddSnapHit ? _hddSnapSide : _hddSide;
+  } else {
+    if(!_hddSnapHit) return false;
+    px=_hddSnapX; py=_hddSnapY; side=_hddSnapSide;
+  }
+
+  // HC proximity validation
+  {
+    const _off=_hddOffset(), _tol=_off*2.5;
+    let nearHc=false;
+    const _seen=new Set();
+    for(let c=0;c<rows;c++){
+      const h=getHC(bay,c); if(!h||_seen.has(h)) continue; _seen.add(h);
+      const sp=hcSpanCenter(bay,h,rows,c);
+      const portX=sp.first*SW, stbdX=(sp.last+1)*SW;
+      if(ly>=-_tol&&ly<=SH+_tol){
+        if(Math.abs(lx-portX)<_tol||Math.abs(lx-stbdX)<_tol){nearHc=true;break;}
+      }
+      if(lx>=portX-_tol&&lx<=stbdX+_tol){
+        if(Math.abs(ly)<_tol||Math.abs(ly-SH)<_tol){nearHc=true;break;}
+      }
+    }
+    if(!nearHc&&typeof hcCustomShapes!=='undefined'){
+      hcCustomShapes.forEach(function(s){
+        if(nearHc||s.bay!==bay||!s.points||s.points.length<3)return;
+        const xs=s.points.map(function(p){return p.x;}),ys=s.points.map(function(p){return p.y;});
+        const minX=Math.min.apply(null,xs),maxX=Math.max.apply(null,xs);
+        const minY=Math.min.apply(null,ys),maxY=Math.max.apply(null,ys);
+        if(lx>=minX-_tol&&lx<=maxX+_tol&&ly>=minY-_tol&&ly<=maxY+_tol)nearHc=true;
+      });
+    }
+    if(!nearHc){draw();return false;}
+  }
+
+  pushUndo();
+  addHdd(bay,px,py,side,false,fndColorBrush||'black');
+
+  // Mirror placement
+  if(_hddMirror){
+    if(side==='port'||side==='stbd'){
+      const mirSide=side==='port'?'stbd':'port';
+      const _seen2=new Set();
+      for(let c=0;c<rows;c++){
+        const h=getHC(bay,c); if(!h||_seen2.has(h))continue; _seen2.add(h);
+        if(_hddSideBlocked(bay,rows,mirSide,c))continue;
+        const {first,last}=hcSpanCenter(bay,h,rows,c);
+        const off=_hddOffset();
+        const mirX=mirSide==='port'?first*SW-off:(last+1)*SW+off;
+        addHdd(bay,mirX,py,mirSide,false,fndColorBrush||'black');
+      }
+      const mirY=SH-py;
+      if(Math.abs(mirY-py)>2)addHdd(bay,px,mirY,side,false,fndColorBrush||'black');
+    } else {
+      const mirSide=side==='fwd'?'aft':'fwd';
+      const mirY=SH-py;
+      if(Math.abs(mirY-py)>2)addHdd(bay,px,mirY,mirSide,false,fndColorBrush||'black');
+    }
+  }
+
+  draw();
+  return true;
+}
 
 function _hddSideBlocked(bay, rows, side, col){
   const hcNum = getHC(bay, col);
@@ -27379,12 +27544,12 @@ function hcnApplyAutoFill(){
   justify-content:center;
   min-width:110px;
   padding:4px 10px;
-  background:rgba(45,127,193,0.12);
-  border:1px solid rgba(45,127,193,0.3);
+  background:rgba(45,127,193,0.22);
+  border:1.5px solid rgba(94,184,255,0.45);
   font-size:10px;
   font-weight:700;
   letter-spacing:0.12em;
-  color:#5eb8ff;
+  color:#8ed4ff;
   white-space:nowrap;
 }
 .acm-slot {
@@ -27393,8 +27558,8 @@ function hcnApplyAutoFill(){
   gap:6px;
   flex:1;
   padding:4px 8px;
-  background:rgba(45,127,193,0.06);
-  border:1px solid rgba(45,127,193,0.2);
+  background:rgba(20,40,70,0.35);
+  border:1px solid rgba(45,127,193,0.25);
   flex-wrap:wrap;
   min-height:30px;
 }
@@ -27402,13 +27567,13 @@ function hcnApplyAutoFill(){
   display:flex;
   align-items:center;
   gap:6px;
-  background:rgba(160,96,16,0.18);
-  border:1px solid rgba(160,96,16,0.55);
+  background:rgba(160,96,16,0.25);
+  border:1.5px solid rgba(200,130,40,0.7);
   padding:3px 10px 3px 10px;
   font-size:9px;
   font-weight:700;
   letter-spacing:0.1em;
-  color:#e8c070;
+  color:#f0c870;
   white-space:nowrap;
 }
 .acm-chip-del {
@@ -27416,7 +27581,7 @@ function hcnApplyAutoFill(){
   font-size:9px;
   background:transparent;
   border:none;
-  color:#c08050;
+  color:#d09050;
   cursor:pointer;
   padding:0 2px;
   line-height:1;
@@ -27429,22 +27594,23 @@ function hcnApplyAutoFill(){
   font-weight:800;
   letter-spacing:0.08em;
   text-transform:uppercase;
-  border:1.5px solid rgba(160,96,16,0.7);
-  color:#000000;
-  background:rgba(160,96,16,0.12);
+  border:1.5px solid rgba(200,130,40,0.7);
+  color:#f0c870;
+  background:rgba(100,60,10,0.25);
   padding:5px 12px;
   cursor:pointer;
   transition:all 0.1s;
   white-space:nowrap;
 }
-.acm-add-btn:hover { color:#000000; border-color:#a06010; background:rgba(160,96,16,0.28); border-style:solid; }
-.acm-add-btn:disabled { opacity:0.35; cursor:default; border-style:dashed; color:#555; }
+.acm-add-btn:hover { color:#fff8e0; border-color:#d4900a; background:rgba(160,96,16,0.40); border-style:solid; }
+.acm-add-btn:disabled { opacity:0.35; cursor:default; border-style:dashed; color:#888; }
 .acm-aft-label {
-  font-size:7px;
-  letter-spacing:0.1em;
-  color:#8a6030;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  color:#8ab8d8;
   text-transform:uppercase;
-  margin-right:4px;
+  margin-right:6px;
 }
 
 html.day-mode #accomMgrOverlay { background:rgba(100,140,180,0.55); }
@@ -28397,7 +28563,7 @@ document.addEventListener('keydown', e => {
 <!-- ════════════════════════════════════════════════════════════════
      CRANE TOOL
      ════════════════════════════════════════════════════════════════ -->
-<div id="cranePal" style="display:none;position:fixed;z-index:811;width:min(240px,92vw);
+<div id="cranePal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:811;width:min(240px,92vw);
   background:#060e1a;border:1px solid #2d7fc1;border-top:3px solid #c87800;
   box-shadow:0 12px 40px rgba(0,0,0,0.85),0 0 0 1px rgba(200,120,0,0.08);font-family:'IBM Plex Mono',monospace;">
 
@@ -28463,7 +28629,7 @@ document.addEventListener('keydown', e => {
 <!-- ════════════════════════════════════════════════════════════════
      MARKING TOOL
      ════════════════════════════════════════════════════════════════ -->
-<div id="markPal" onmousedown="event.stopPropagation()" style="display:none;position:fixed;z-index:810;width:206px;
+<div id="markPal" onmousedown="event.stopPropagation()" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:810;width:206px;
   background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;
   box-shadow:0 12px 40px rgba(0,0,0,0.88);user-select:none;
   font-family:'IBM Plex Mono',monospace;">
@@ -34092,7 +34258,7 @@ function renderAccountPanel(){
         transition:all 0.2s;
       ">
         <div style="
-          position:absolute;top:3px;
+          position:fixed;top:3px;
           left:${isOn ? '22px' : '3px'};
           width:16px;height:16px;border-radius:50%;
           background:${isOn ? '#40c870' : '#c04040'};
@@ -42328,7 +42494,7 @@ document.addEventListener('mousedown', e => {
 
 <!-- ══ SEAL PAINT BAR (floats above schematic when active, draggable) ══ -->
 <div id="sealPaintBar" onclick="event.stopPropagation()" style="
-  display:none;position:fixed;z-index:4100;
+  display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:4100;
   background:var(--paper);border:1.5px solid var(--bright);
   border-radius:5px;box-shadow:0 4px 24px rgba(0,0,0,0.5);
   font-family:'IBM Plex Mono',monospace;font-size:10px;
@@ -42380,7 +42546,7 @@ document.addEventListener('mousedown', e => {
 
 <!-- ══ CHANNEL PAINT TOOLBAR ══ -->
 <div id="chanPaintBar" onclick="event.stopPropagation()" style="
-  display:none;position:fixed;z-index:4100;
+  display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:4100;
   background:#d8e4d8;border:1.5px solid #c08010;
   border-radius:5px;box-shadow:0 4px 24px rgba(0,0,0,0.25);
   font-family:'IBM Plex Mono',monospace;font-size:10px;
@@ -42664,7 +42830,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #e05050 !important;">
         ⚙ SETTINGS ▾
       </button>
-      <div class="dropdown" id="rsDropSettings" style="display:none;position:absolute;top:100%;left:0;min-width:280px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropSettings" style="display:none;position:fixed;top:100%;left:0;min-width:280px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">BULK MARK — RUBBER SEAL</div>
         <button class="dd-action" onclick="openBulkMarkDialog('seal','vessel');closeRsMenus()">◯  MARK ALL SEALS — ENTIRE VESSEL</button>
         <button class="dd-action" onclick="openBulkMarkDialog('seal','bay');closeRsMenus()">◯  MARK ALL SEALS — CURRENT BAY</button>
@@ -42705,7 +42871,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #2090e0 !important;">
         ⚒ TOOLS ▾
       </button>
-      <div class="dropdown" id="rsDropTools" style="display:none;position:absolute;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropTools" style="display:none;position:fixed;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">INSPECTION</div>
         <button class="dd-action" onclick="toggleMeasureTool();closeRsMenus()">◎  MEASURE — DISTANCE / AREA</button>
         <button class="dd-action" onclick="toggleSealPaintTool();closeRsMenus()">✎  MARK SEAL — FREE COLOUR PAINT</button>
@@ -42734,7 +42900,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #00a050 !important;">
         ▦ STATISTICS ▾
       </button>
-      <div class="dropdown" id="rsDropStats" style="display:none;position:absolute;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropStats" style="display:none;position:fixed;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">VESSEL SUMMARY</div>
         <button class="dd-action dd-disabled">◯  SEAL STATUS OVERVIEW (v.NEXT)</button>
         <button class="dd-action dd-disabled">◯  DMG/MISS BREAKDOWN BY HC (v.NEXT)</button>
@@ -42759,7 +42925,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #9050e0 !important;">
         ⬆ EXPORT ▾
       </button>
-      <div class="dropdown" id="rsDropExport" style="display:none;position:absolute;top:100%;left:0;min-width:260px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropExport" style="display:none;position:fixed;top:100%;left:0;min-width:260px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">PDF</div>
         <button class="dd-action" onclick="exportRsConditionPDF();closeRsMenus()">◯  EXPORT PDF — RUBBER SEAL CONDITION</button>
         <button class="dd-action" onclick="exportChanConditionPDF();closeRsMenus()">⊟  EXPORT PDF — RETAINING CHANNEL CONDITION</button>
@@ -42840,9 +43006,9 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
         <!-- Schematic canvas — portrait, fills remaining column height -->
         <div id="rsSchWrap" style="flex:1;width:100%;min-height:0;position:relative;overflow:hidden;cursor:grab;">
-          <div id="rsSchZoomLayer" style="position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:0 0;will-change:transform;">
+          <div id="rsSchZoomLayer" style="position:fixed;top:0;left:0;width:100%;height:100%;transform-origin:0 0;will-change:transform;">
             <canvas id="rsSchematic"
-              style="position:absolute;top:0;left:0;display:block;"></canvas>
+              style="position:fixed;top:0;left:0;display:block;"></canvas>
           </div>
 
         </div>
@@ -50950,7 +51116,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #e05050 !important;">
         ⚙ SETTINGS ▾
       </button>
-      <div class="dropdown" id="lbDropSettings" style="display:none;position:absolute;top:100%;right:0;min-width:300px;z-index:3600;
+      <div class="dropdown" id="lbDropSettings" style="display:none;position:fixed;top:100%;right:0;min-width:300px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">LASHING BRIDGE SETUP</div>
         <button class="dd-action" onclick="_lbOpenBridgeEditor();_lbCloseMenus()">⚙  CONFIGURE LASHING BRIDGES</button>
@@ -50972,7 +51138,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #e0a000 !important;">
         ⚓ LB FITTINGS ▾
       </button>
-      <div class="dropdown" id="lbDropFittings" style="display:none;position:absolute;top:100%;right:0;min-width:320px;z-index:3600;
+      <div class="dropdown" id="lbDropFittings" style="display:none;position:fixed;top:100%;right:0;min-width:320px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">LASHING EYES</div>
         <button class="dd-action" onclick="_lbTogglePlacer();_lbCloseMenus()">◎  PLACE LASHING EYES</button>
@@ -50994,7 +51160,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #00a050 !important;">
         ▦ STATISTICS ▾
       </button>
-      <div class="dropdown" id="lbDropStats" style="display:none;position:absolute;top:100%;right:0;min-width:260px;z-index:3600;
+      <div class="dropdown" id="lbDropStats" style="display:none;position:fixed;top:100%;right:0;min-width:260px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">VESSEL SUMMARY</div>
         <button class="dd-action" onclick="_lbOpenStats();_lbCloseMenus()">▦  LASHING BRIDGE EYE STATUS</button>
@@ -51012,7 +51178,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #9050e0 !important;">
         ⬆ EXPORT ▾
       </button>
-      <div class="dropdown" id="lbDropExport" style="display:none;position:absolute;top:100%;right:0;min-width:280px;z-index:3600;
+      <div class="dropdown" id="lbDropExport" style="display:none;position:fixed;top:100%;right:0;min-width:280px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">PDF</div>
         <button class="dd-action" onclick="_lbExportAllPDF();_lbCloseMenus()">⬆  EXPORT PDF — ALL BRIDGES (LANDSCAPE)</button>
@@ -51072,7 +51238,7 @@ document.addEventListener('mousedown', function(e){
 
       <!-- Canvas wrap with zoom/pan -->
       <div id="lbCanvasWrap" style="flex:1;position:relative;overflow:hidden;cursor:default;">
-        <canvas id="lbCanvas" style="position:absolute;top:0;left:0;display:block;"></canvas>
+        <canvas id="lbCanvas" style="position:fixed;top:0;left:0;display:block;"></canvas>
         <!-- Zoom percentage — lower left -->
         <div id="lbZoomPct" style="position:absolute;bottom:12px;left:14px;z-index:10;
           font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
@@ -51080,7 +51246,7 @@ document.addEventListener('mousedown', function(e){
           background:rgba(8,12,18,0.72);padding:3px 7px;border-radius:3px;
           border:1px solid var(--line);">100%</div>
         <!-- Level legend -->
-        <div id="lbLevelLegend" style="position:absolute;top:10px;right:14px;
+        <div id="lbLevelLegend" style="position:fixed;top:10px;right:14px;
           font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text2);
           letter-spacing:0.08em;text-align:right;pointer-events:none;"></div>
       </div>
@@ -51105,7 +51271,7 @@ document.addEventListener('mousedown', function(e){
 
 
 <!-- ══ LB COLOR PALETTE ══ -->
-<div id="lbPalette" style="display:none;position:fixed;z-index:3700;
+<div id="lbPalette" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:3700;
   background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--blue);
   box-shadow:0 8px 32px rgba(0,0,0,0.35);
   font-family:'IBM Plex Mono',monospace;user-select:none;
@@ -51148,7 +51314,7 @@ document.addEventListener('mousedown', function(e){
 </div>
 
 <!-- ══ LB LASHING EYE PLACER PANEL ══ -->
-<div id="lbEyePlacerPal" style="display:none;position:fixed;z-index:3700;width:210px;
+<div id="lbEyePlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:3700;width:210px;
   background:var(--paper);border:1px solid var(--line);border-top:3px solid #e0a000;
   box-shadow:0 16px 48px rgba(0,0,0,0.55);font-family:'IBM Plex Mono',monospace;
   top:80px;left:380px;">
@@ -57216,6 +57382,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
   var _hpLongPressTimer = null;
 
   vp2.addEventListener('touchstart',function(e){
+    window._lastWasTouch = true; // flag: next mouse events came from touch, not real mouse
     // Pass through touches on overlay buttons (rotate btn etc.)
     if(e.target && e.target !== vp2 && e.target.tagName !== 'CANVAS' &&
        e.target.closest && e.target.closest('button,a,[onclick]')){
@@ -57416,7 +57583,8 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
             vp2.dispatchEvent(_rpSynMM);
             if(typeof _rpSnapGridHit !== 'undefined') _rpSnapGridHit = false;
             if(typeof _objLastPlaceTime !== 'undefined') _objLastPlaceTime = 0;
-            if(typeof draw === 'function'){ draw(); }
+            // Draw twice: first sets _rpMouseHc etc, second confirms snap hit
+            if(typeof draw === 'function'){ draw(); draw(); }
             if(typeof rpHandleClick === 'function') rpHandleClick(sx3, sy3);
             return;
           }
