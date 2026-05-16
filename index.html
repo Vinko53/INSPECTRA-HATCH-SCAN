@@ -2368,7 +2368,15 @@
     color: #b080e0; border: 1px solid #6a3090;
     padding: 8px 2px; cursor: pointer; transition: all 0.12s;
     border-radius: 3px; text-align: center;
+    touch-action: manipulation; -webkit-tap-highlight-color: rgba(192,144,240,0.3);
   }
+
+/* All floating panel buttons: prevent long-press drag from eating taps */
+[id$="Pal"] button, [id$="Panel"] button,
+.rp-count-btn, .lash-speed-btn, .fxp-type-btn, .om-mode-btn,
+.acm-add-btn, .acct-btn, .oe-btn, .bc-close, .panel-close-btn {
+  touch-action: manipulation !important;
+}
   .rp-count-btn:hover { background: rgba(100,40,160,0.4); color: #d0a0ff; border-color: #a060d0; }
   .rp-count-btn.rp-count-active { background: rgba(120,50,200,0.5); color: #ffffff; border-color: #c090f0; box-shadow: 0 0 8px rgba(192,144,240,0.4); }
 
@@ -3370,7 +3378,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 
 </style>
 </head>
-<body>
+<body class="float-icons-hidden">
 
 <!-- ══════════════════════════════════════════════════════
      LOGIN SCREEN — shown on every startup, blocks the app
@@ -3893,7 +3901,6 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
             <button class="btn" id="bHc3" onclick="autoSwitchBay();setHcBrush(3)">HC·3</button>
             <button class="btn" id="bHc4" onclick="autoSwitchBay();setHcBrush(4)">HC·4</button>
             <button class="btn" id="bHcDel" onclick="autoSwitchBay();setHcBrush(7)">⌫ DEL</button>
-            <button class="btn" id="btnEditHC" onclick="autoSwitchBay();toggleEditHC()">✎ HC</button>
           </div>
           <div class="dd-row bay-only" id="hcColorRow" style="flex-wrap:wrap;gap:3px;padding:4px 8px;align-items:center;">
             <button class="btn" id="hcCol_none"   onclick="setHcColor('none')"   style="font-size:8px;padding:2px 6px;background:rgba(0,0,0,0);color:#606060;border-color:#404040;border-style:dashed;">NON</button>
@@ -4001,11 +4008,6 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
           <button class="dd-action" id="btnShowAllDims" onclick="toggleShowAllDims();closeMenus()">⬛  MANUAL DIMENSIONS — ON / OFF</button>
           <button class="dd-action" id="btnShowAutoDims" onclick="toggleShowAutoDims();closeMenus()">⬛  AUTO DIMENSIONS — ON / OFF</button>
           <button class="dd-action" id="btnMeasureTool" onclick="toggleMeasureTool();closeMenus()">◎  MEASURE — POINT TO POINT / AREA</button>
-          <button class="dd-action dd-disabled">◉  ANNOTATE POSITION (v.NEXT)</button>
-          <div class="dd-sep"></div>
-          <div class="dd-section">COMPARE</div>
-          <button class="dd-action dd-disabled">⇄  COMPARE BAY CONFIGS (v.NEXT)</button>
-          <button class="dd-action dd-disabled">⧉  DIFF OVERLAY (v.NEXT)</button>
         </div>
       </div>
 
@@ -7993,12 +7995,22 @@ function computeItemYPositions(gy){
     first=false;
     return gy+y;
   }
-  platforms.forEach((p,pi)=>{ if(p.afterBay===-1){ platsY[pi]=placeItem(); y+=PLAT_H; } });
-  accommodations.forEach((a,ai)=>{ if(a.afterBay===-1){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
+  platforms.forEach((p,pi)=>{
+    if(p.afterBay===-1){
+      platsY[pi]=placeItem(); y+=PLAT_H;
+      accommodations.forEach((a,ai)=>{ if(a.afterPlatIdx===pi){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
+    }
+  });
+  accommodations.forEach((a,ai)=>{ if(a.afterBay===-1 && a.afterPlatIdx===undefined){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
   for(let b=0;b<cfg.bays;b++){
     baysY[b]=placeItem(); y+=SH;
-    platforms.forEach((p,pi)=>{ if(p.afterBay===b){ platsY[pi]=placeItem(); y+=PLAT_H; } });
-    accommodations.forEach((a,ai)=>{ if(a.afterBay===b){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
+    platforms.forEach((p,pi)=>{
+      if(p.afterBay===b){
+        platsY[pi]=placeItem(); y+=PLAT_H;
+        accommodations.forEach((a,ai)=>{ if(a.afterPlatIdx===pi){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
+      }
+    });
+    accommodations.forEach((a,ai)=>{ if(a.afterBay===b && a.afterPlatIdx===undefined){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
   }
   return {baysY, platsY, accomsY, totalH:y};
 }
@@ -9264,6 +9276,11 @@ function layerOn(id){ const l=LAYERS.find(x=>x.id===id); return l ? l.on : true;
 
 let layersVisible = false;
 // ── Clamp a floating panel to visible screen on mobile ─────────────────────
+// Track how many floating panels are open to toggle body.panel-open
+var _openPanelCount = 0;
+function _panelOpened(){ _openPanelCount++; document.body.classList.add('panel-open'); }
+function _panelClosed(){ _openPanelCount = Math.max(0, _openPanelCount - 1); if(!_openPanelCount) document.body.classList.remove('panel-open'); }
+
 // Universal position restore — call from any show function before setting el.style.left/top
 function _restorePanelPos(el, elId, defaultX, defaultY){
   var x = defaultX || 0, y = defaultY || 0;
@@ -11433,10 +11450,9 @@ function rpHandleClick(sx, sy){
           const mirLast  = rows - 1 - _sp.first;
           const mirHcNum = getHC(bay, mirFirst);
           if(mirHcNum){
-            let mirSpanFirst = mirFirst;
-            while(mirSpanFirst > 0 && getHC(bay, mirSpanFirst-1) === mirHcNum) mirSpanFirst--;
-            let mirSpanLast = mirLast;
-            while(mirSpanLast < rows-1 && getHC(bay, mirSpanLast+1) === mirHcNum) mirSpanLast++;
+            const mirSp = hcSpanCenter(bay, mirHcNum, rows, mirFirst);
+            const mirSpanFirst = mirSp.first;
+            const mirSpanLast  = mirSp.last;
 
             const mirX0 = mirSpanFirst * SW;
             const mirX1 = (mirSpanLast + 1) * SW;
@@ -11554,10 +11570,9 @@ function rpHandleClick(sx, sy){
       const mirLast  = rows - 1 - first;
       const mirHcNum = getHC(bay, mirFirst);
       if(mirHcNum){
-        let mirSpanFirst = mirFirst;
-        while(mirSpanFirst > 0 && getHC(bay, mirSpanFirst-1) === mirHcNum) mirSpanFirst--;
-        let mirSpanLast = mirLast;
-        while(mirSpanLast < rows-1 && getHC(bay, mirSpanLast+1) === mirHcNum) mirSpanLast++;
+        const mirSp = hcSpanCenter(bay, mirHcNum, rows, mirFirst);
+        const mirSpanFirst = mirSp.first;
+        const mirSpanLast  = mirSp.last;
 
         const mirX0 = mirSpanFirst * SW;
         const mirX1 = (mirSpanLast + 1) * SW;
@@ -11876,7 +11891,7 @@ function rpLibRenderTable(){
       const isNum=['width','length','thickness'].includes(f);
       td.style.cssText=`padding:4px 8px;border-right:${fi<RP_LIB_FIELDS.length-1?'1px solid #3a1e6a':'none'};`
         +(isNum?'text-align:right;':'')
-        +(f==='type'?'color:#c090f0;font-weight:700;min-width:120px;':f==='code'?'color:#9070d0;':'color:#7050a0;');
+        +(f==='type'?'color:#d8a8ff;font-weight:700;min-width:120px;':f==='code'?'color:#b890e8;':'color:#c0a8e0;');
       const span=document.createElement('span');
       span.className='oe-cell-view';
       span.textContent=obj[f]||(RP_LIB_PLACEHOLDERS[f]||'—');
@@ -13116,9 +13131,9 @@ function fxpLibRenderTable(){
         const isLast = fi === FXP_LIB_FIELDS.length - 1;
         td.style.cssText = 'padding:5px 10px;border-right:' + (isLast?'none':'1px solid #1e4a2e') + ';'
           + (isNum ? 'text-align:right;' : '')
-          + (f==='type' ? 'color:#000000;font-weight:700;min-width:100px;font-size:10px;'
-            : f==='code' ? 'color:#000000;font-size:10px;'
-            : 'color:#000000;font-size:10px;');
+          + (f==='type' ? 'color:#70ffa8;font-weight:700;min-width:100px;font-size:10px;'
+            : f==='code' ? 'color:#50d8a0;font-size:10px;'
+            : 'color:#c8f0dc;font-size:10px;');
         const span = document.createElement('span');
         span.textContent = obj[f] || (FXP_LIB_PLACEHOLDERS[f] || '\u2014');
         span.style.opacity = obj[f] ? '1' : '0.25';
@@ -13310,10 +13325,9 @@ function fxpPlaceMirrorPad(bay, rows, origX, origY, origEdge, origHcNum, origSpa
     const mirHcNum = getHC(bay, mirFirst);
     if(!mirHcNum) return false; // no HC on opposite side
 
-    let mirSpanFirst = mirFirst;
-    while(mirSpanFirst > 0 && getHC(bay, mirSpanFirst-1) === mirHcNum) mirSpanFirst--;
-    let mirSpanLast = mirLast;
-    while(mirSpanLast < rows-1 && getHC(bay, mirSpanLast+1) === mirHcNum) mirSpanLast++;
+    const mirSp = hcSpanCenter(bay, mirHcNum, rows, mirFirst);
+    const mirSpanFirst = mirSp.first;
+    const mirSpanLast  = mirSp.last;
 
     const mirX0 = mirSpanFirst * SW, mirX1 = (mirSpanLast + 1) * SW;
 
@@ -16381,9 +16395,25 @@ function setHcBrush(n){
     allClasses.forEach(c=>delBtn.classList.remove(c));
     if(n===7) delBtn.classList.add('hcdel-on');
   }
+  // Update color row target label
   const lbl=document.getElementById('hcColorTarget');
   if(lbl) lbl.textContent = (n>=1&&n<=4) ? `HC·${n}` : '—';
   hcSyncColorSelButtons();
+
+  // Auto-activate editHCMode when HC-1/2/3/4 or DEL selected; deactivate on NONE
+  const shouldActivate = (n>=1&&n<=4) || n===7;
+  if(shouldActivate && !editHCMode){
+    editHCMode=true;
+    deactivateAllTools('editHC');
+    hcEdgeHover=null; hcEdgeDrag=null;
+    vp.classList.add('editcursor');
+  } else if(!shouldActivate && editHCMode){
+    editHCMode=false;
+    hovHcRow=-1;
+    vp.classList.toggle('editcursor', editShapeMode||editColorMode||editCMMode);
+  }
+  const _beh=document.getElementById('btnEditHC');
+  if(_beh) _beh.classList.toggle('edit-on', editHCMode);
 }
 function setHcColor(colorKey){
   if(hcBrush<1||hcBrush>4) return;
@@ -16516,6 +16546,7 @@ function toggleMenu(name, e){
   const overflow = rect.right - window.innerWidth + 8;
   if(overflow > 0) drop.style.left = -overflow + 'px';
   if(name==='settings') _syncCfgInputs();
+  document.body.classList.add('menu-open');
 }
 function _syncCfgInputs(){
   const ci=document.getElementById('cfgBays'); if(ci) ci.value=cfg.bays;
@@ -16526,6 +16557,7 @@ function closeMenus(){
   Object.values(MENUS).forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('open'); });
   Object.values(MENU_BTNS).forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('open'); });
   openMenu=null;
+  document.body.classList.remove('menu-open');
   return wasOpen;
 }
 document.addEventListener('mousedown',e=>{
@@ -20854,7 +20886,7 @@ document.addEventListener('mousedown',e=>{
     if(fpalPaintTarget !== 'none') _fpalApplyTargetModes();
   downX=lmx=e.clientX-rect.left;
   downY=lmy=e.clientY-rect.top;
-  if(typeof hddMode!=='undefined' && hddMode){ _hddMouseDownX=e.clientX; _hddMouseDownY=e.clientY; }
+  if(typeof hddMode!=='undefined' && hddMode){ _hddMouseDownX=e.clientX; _hddMouseDownY=e.clientY; _hddCtrlAtDown=!!(e.ctrlKey||e.metaKey); }
   const mx=downX, my=downY; // available to all blocks below
   const anyEditMode=editShapeMode||editColorMode||editHCMode||editCMMode||editHCShapeMode||omVisible||editMarkMode||hcStopMode||hcStopManipVisible||lashEyeMode||_lashEyePaintMode||(typeof editCraneMode!=='undefined'&&editCraneMode)||fxpMode||fxpManipVisible||fxpAssignMode||(typeof lashEyeAssignMode!=='undefined'&&lashEyeAssignMode)||editOccupiedMode||editAssignMode;
   if((typeof hcmVisible!=='undefined'&&hcmVisible) && viewMode==='bay' && !anyEditMode){
@@ -21035,7 +21067,13 @@ vp.addEventListener('mouseup', e => {
       if(typeof ventMode!=='undefined' && ventMode) { ventHandleClick(_mx0, _my0); }
       if(typeof hddMode!=='undefined'  && hddMode)  {
         const _wasDrag = Math.hypot(e.clientX - _hddMouseDownX, e.clientY - _hddMouseDownY) > 5;
-        if(!_wasDrag) hddHandleClick(_mx0, _my0);
+        if(!_wasDrag){
+          const _ctrlWasHeld = !!_hddCtrlAtDown || !!(e.ctrlKey||e.metaKey) || _hddFlipV;
+          const _savedFlipV = _hddFlipV;
+          if(_ctrlWasHeld) _hddFlipV = true;
+          hddHandleClick(_mx0, _my0);
+          _hddFlipV = _savedFlipV;
+        }
       }
       if(rpManipVisible&&!rpMode && !(omVisible&&omTarget==='flexipads'&&omPadType==='restingpad')) { rpManipHandleClick(_mx0, _my0); }
       if(rpAssignMode){ const hit=rpHitTest(_mx0,_my0); if(hit) openRpAssignPopup(e.clientX,e.clientY,hit); }
@@ -21670,7 +21708,7 @@ document.addEventListener('mouseup',e=>{
       draw();
     }
   }
-  if(hcStopMode && viewMode==='bay' && layerOn('lyr_hc_stoppers') && !window._lastWasTouch){
+  if(hcStopMode && viewMode==='bay' && layerOn('lyr_hc_stoppers') && !window._lastWasTouch && (Date.now() - (window._lastTouchEndTime||0) > 400)){
     if(e.target.closest && e.target.closest('#hcStopPlacerPal,#hcStopManipPal,#floatPal,#floatShp,#objManipPal,#hcManipPal,#hcShapePal,#layersPal,#lashEyePlacerPal,#flexipadPlacerPal,#flexipadManipPal,#fxpAssignPopup,#cranePal,#ventPlacerPal,#hddPlacerPal')) return;
     const lx=(mx-panX)/zoom, ly=(my-panY)/zoom;
     if(_hcStopFreeMode){
@@ -26239,7 +26277,7 @@ let _hddSide='port';
 let _hddMirror=true;
 let _hddFreeMode=false;
 let _hddDeleteMode=false;
-let _hddMouseDownX = 0, _hddMouseDownY = 0;
+let _hddMouseDownX = 0, _hddMouseDownY = 0, _hddCtrlAtDown = false;
 let _hddFlipV=false;   // Ctrl key toggles vertical flip for fwd/aft units
 let _hddPalX=260, _hddPalY=60;
 
@@ -28044,6 +28082,16 @@ function confirmAddAccom(afterBay, label){
   buildBayTabs();
   draw();
 }
+function confirmAddAccomAfterPlat(platIdx, label){
+  accomCounter++;
+  // afterPlatIdx stores the platform index; afterBay copies the platform's afterBay
+  // so the drawing system places it correctly in sequence
+  const p = platforms[platIdx];
+  accommodations.push({id:accomCounter, afterBay: p ? p.afterBay : -1, afterPlatIdx: platIdx, label: label||'ACCOMMODATION'});
+  renderAccomMgrBayList();
+  buildBayTabs();
+  draw();
+}
 function deleteAccom(ai){
   if(!confirm('Remove this block? This cannot be undone.')) return;
   accommodations.splice(ai,1);
@@ -28105,18 +28153,54 @@ function renderAccomMgrBayList(){
       const pRow = document.createElement('div');
       pRow.className = 'acm-bay-row';
       pRow.style.cssText = 'background:rgba(30,60,30,0.12);border-left:2px solid rgba(60,160,80,0.4);';
+
+      // Platform label
       const pLbl = document.createElement('div');
       pLbl.className = 'acm-bay-slot';
       pLbl.style.cssText = 'color:#40b060;background:rgba(20,50,20,0.25);border-color:rgba(40,120,60,0.3);font-size:8px;letter-spacing:0.1em;';
       pLbl.textContent = '▤  ' + (p.name || ('PLT '+(pi+1))).toUpperCase();
       pRow.appendChild(pLbl);
-      const pNote = document.createElement('div');
-      pNote.style.cssText = 'font-size:8px;color:rgba(60,160,80,0.7);padding:4px 10px;align-self:center;letter-spacing:0.06em;font-family:inherit;';
-      pNote.textContent = 'PLATFORM — managed in Platform Manager';
-      pRow.appendChild(pNote);
+
+      // Block slot for this platform (afterPlatIdx = pi)
+      const platSlotKey = 'plat_' + pi;
+      const alreadyHere = accommodations.some(a => a.afterPlatIdx === pi);
+
+      const pSlot = document.createElement('div');
+      pSlot.style.cssText = 'display:flex;align-items:center;gap:6px;flex:1;padding:4px 8px;' +
+        'background:rgba(20,50,20,0.06);border:1px solid rgba(40,120,60,0.2);flex-wrap:wrap;min-height:30px;';
+
+      if(!alreadyHere){
+        const aftLbl = document.createElement('span');
+        aftLbl.className = 'acm-aft-label';
+        aftLbl.textContent = '▼ AFT';
+        pSlot.appendChild(aftLbl);
+        ACCOM_TYPES.forEach(t => {
+          const btn = document.createElement('button');
+          btn.className = 'acm-add-btn';
+          btn.textContent = '+ ' + t.label;
+          btn.title = 'Place ' + t.label + ' block after ' + (p.name || 'platform');
+          btn.onclick = () => confirmAddAccomAfterPlat(pi, t.label);
+          pSlot.appendChild(btn);
+        });
+      } else {
+        // Show existing block chip
+        const existingIdx = accommodations.findIndex(a => a.afterPlatIdx === pi);
+        const existing = accommodations[existingIdx];
+        const typeInfo = ACCOM_TYPES.find(t => t.label === existing.label) || ACCOM_TYPES[0];
+        const chip = document.createElement('div');
+        chip.className = 'acm-chip';
+        chip.innerHTML = typeInfo.icon + ' ' + existing.label;
+        const dBtn = document.createElement('button');
+        dBtn.className = 'acm-chip-del'; dBtn.textContent = '✕';
+        dBtn.onclick = () => deleteAccom(existingIdx);
+        chip.appendChild(dBtn);
+        pSlot.appendChild(chip);
+      }
+      pRow.appendChild(pSlot);
       container.appendChild(pRow);
     });
   }
+
 
   // Row FWD of first bay
   const fwdRow=document.createElement('div');
@@ -32791,6 +32875,15 @@ async function exportRubberSealsPDF() {
         </div>
       </div>
 
+      <div class="fm-opt-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <span class="fm-opt-label">Floating tool icons</span>
+        <span class="fm-opt-hint">Show or hide the floating shortcut icon buttons on the canvas. When OFF the icons are hidden — all tools remain accessible via the menus.</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;">
+          <button onclick="setFloatIconsVisible(true)"  id="floatIconsOnBtn"  class="lash-speed-btn">ON</button>
+          <button onclick="setFloatIconsVisible(false)" id="floatIconsOffBtn" class="lash-speed-btn lash-speed-active">OFF</button>
+        </div>
+      </div>
+
       <div class="fm-section">APPEARANCE</div>
       <div class="fm-opt-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
         <span class="fm-opt-label">HC shape border color</span>
@@ -33275,6 +33368,20 @@ async function exportRubberSealsPDF() {
 #fileSaveIndicator.unsaved { opacity: 1; }
 #fileSaveIndicator.unsaved + #fileSaveLabel { display: inline !important; }
 
+/* Hide floating icon buttons when dropdown menus or overlay panels are open */
+body.menu-open [id^="float"]:not(#floatSaveBtn):not(#floatSaveDot),
+body.panel-open [id^="float"]:not(#floatSaveBtn):not(#floatSaveDot),
+body.mob-menu-open [id^="float"]:not(#floatSaveBtn):not(#floatSaveDot) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.12s;
+}
+
+/* Floating icons toggle — hidden when float-icons-hidden is set (default) */
+body.float-icons-hidden [id^="float"]:not(#floatSaveBtn):not(#floatSaveDot) {
+  display: none !important;
+}
+
 #floatSaveBtn:hover {
   background: rgba(45,127,193,0.45) !important;
   border-color: #5eb8ff !important;
@@ -33532,6 +33639,7 @@ function _collectState(){
     layers: LAYERS.map(l=>({id:l.id, on:l.on})),
     _accounts:    JSON.parse(JSON.stringify(_accounts)),   // kept for export compatibility — but localStorage is master
     _loginEnabled,
+    _companyGroupPasswordHash,
     sisterBays:   JSON.parse(JSON.stringify(sisterBays)),
     lashingEyes:     JSON.parse(JSON.stringify(lashingEyes)),
     lashingEyesPlat: JSON.parse(JSON.stringify(lashingEyesPlat)),
@@ -33677,6 +33785,7 @@ function _applyState(s){
   if(s._accounts && _accounts.length === 0){
     s._accounts.forEach(a => _accounts.push(JSON.parse(JSON.stringify(a))));
     if(s._loginEnabled !== undefined) _loginEnabled = s._loginEnabled;
+    if(s._companyGroupPasswordHash !== undefined) _companyGroupPasswordHash = s._companyGroupPasswordHash;
     _saveAccountsToStorage();
   }
 
@@ -34110,6 +34219,8 @@ let _accounts    = [];   // [{id, name, initials, color, passwordHash}]
 let _activeAcct  = null; // index into _accounts, or null when logged in as super
 let _isSuperUser    = false; // true when logged in as the built-in super user
 let _isSupervisor   = false; // true when logged in as supervisor (no licence access)
+let _isCompanyGroup = false; // true when logged in as company group account (no accounts/licence)
+let _companyGroupPasswordHash = null; // set by super user; null = disabled
 let _loginEnabled = true; // when false, login screen is skipped — direct access allowed
 
 const _SUPER_NAME = 'Super User';
@@ -34125,8 +34236,9 @@ const _LS_KEY = 'vbp_accounts_v1'; // localStorage key
 function _saveAccountsToStorage(){
   try {
     localStorage.setItem(_LS_KEY, JSON.stringify({
-      accounts:     _accounts,
-      loginEnabled: _loginEnabled,
+      accounts:                _accounts,
+      loginEnabled:            _loginEnabled,
+      companyGroupPasswordHash: _companyGroupPasswordHash,
     }));
   } catch(e) {}
 }
@@ -34147,6 +34259,7 @@ function _loadAccountsFromStorage(){
       });
     }
     if(data.loginEnabled !== undefined) _loginEnabled = data.loginEnabled;
+    if(data.companyGroupPasswordHash !== undefined) _companyGroupPasswordHash = data.companyGroupPasswordHash;
     return true;
   } catch(e) { return false; }
 }
@@ -34277,6 +34390,44 @@ function renderAccountPanel(){
     hint.style.color = isOn ? '#5a8aaa' : '#d4881a';
     view.appendChild(hint);
 
+    // Company Group password setting (super user only)
+    if(_isSuperUser){
+      const cgLabel = document.createElement('div');
+      cgLabel.style.cssText = 'font-size:8px;letter-spacing:0.18em;color:#b0a040;text-transform:uppercase;margin-bottom:8px;';
+      cgLabel.textContent = 'COMPANY GROUP ACCOUNT';
+      view.appendChild(cgLabel);
+
+      const cgRow = document.createElement('div');
+      cgRow.style.cssText = 'padding:10px 14px;border:1px solid #504a20;background:rgba(30,28,8,0.5);margin-bottom:6px;';
+      const cgEnabled = !!_companyGroupPasswordHash;
+      cgRow.innerHTML = `
+        <div style="font-size:8px;color:#9a9040;letter-spacing:0.06em;margin-bottom:8px;line-height:1.5;">
+          When enabled, a <b style="color:#c8c040;">Company Group</b> login appears on the login screen.<br>
+          Company Group users cannot access Accounts, Licence, or create licences.
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+          <div style="flex:1;min-width:140px;">
+            <div style="font-size:7px;letter-spacing:0.12em;color:#706a30;margin-bottom:4px;">NEW PASSWORD ${cgEnabled?'(CHANGE)':'(SET TO ENABLE)'}</div>
+            <input id="cgNewPass" type="password" placeholder="${cgEnabled?'Enter new password…':'Set password to enable…'}"
+              style="width:100%;box-sizing:border-box;background:rgba(10,10,4,0.7);color:#d0c860;border:1px solid #504a20;
+                border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 8px;outline:none;"
+              maxlength="64" autocomplete="new-password">
+          </div>
+          <button onclick="_cgSetPassword()" style="
+            font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;
+            background:rgba(80,70,10,0.4);border:1.5px solid #807020;color:#c8c040;
+            padding:6px 12px;cursor:pointer;white-space:nowrap;">
+            ${cgEnabled ? '✓ UPDATE' : '⊞ ENABLE'}
+          </button>
+          ${cgEnabled ? `<button onclick="_cgClearPassword()" style="
+            font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;
+            background:rgba(60,10,10,0.4);border:1.5px solid #601010;color:#c04040;
+            padding:6px 12px;cursor:pointer;white-space:nowrap;">✕ DISABLE</button>` : ''}
+        </div>
+        <div id="cgMsg" style="font-size:8px;color:#70c040;margin-top:6px;min-height:12px;"></div>`;
+      view.appendChild(cgRow);
+    }
+
     const sep3 = document.createElement('div'); sep3.className='acct-sep'; sep3.style.margin='4px 0 14px'; view.appendChild(sep3);
   }
 
@@ -34350,6 +34501,7 @@ function _acctLogout(){
   _activeAcct  = null;
   _isSuperUser = false;
   _isSupervisor = false;
+  _isCompanyGroup = false;
   _markUnsaved();
   try { sessionStorage.removeItem('vbp_session'); } catch(e) {}
   closeAccountPanel();
@@ -34383,6 +34535,19 @@ document.querySelectorAll('.ui-theme-swatch').forEach(btn => {
 
 let _autoSaveInterval = 0;      // seconds; 0 = disabled
 let _autoSaveTimer    = null;
+
+// ── Floating icons visibility ──
+let _floatIconsVisible = false; // default OFF
+
+function setFloatIconsVisible(on){
+  _floatIconsVisible = !!on;
+  document.body.classList.toggle('float-icons-hidden', !_floatIconsVisible);
+  const onBtn  = document.getElementById('floatIconsOnBtn');
+  const offBtn = document.getElementById('floatIconsOffBtn');
+  if(onBtn)  onBtn.classList.toggle('lash-speed-active',  _floatIconsVisible);
+  if(offBtn) offBtn.classList.toggle('lash-speed-active', !_floatIconsVisible);
+  if(typeof _userSettingsSave === 'function') _userSettingsSave();
+}
 
 function setAutoSaveInterval(secs){
   _autoSaveInterval = secs;
@@ -34716,6 +34881,26 @@ function _lgRenderSelect(){
     <button class="lg-btn" style="background:linear-gradient(135deg,#0a2a1a,#071e12);border-color:#2a7050;color:#40c880;" onclick="_lgSupervisorLogin()">SIGN IN AS SUPERVISOR</button>`;
   form.appendChild(supervisorField);
 
+  // Company Group login — only show if password is configured
+  if(_companyGroupPasswordHash){
+    const orDivCG = document.createElement('div');
+    orDivCG.className = 'lg-or-divider';
+    orDivCG.textContent = 'OR';
+    form.appendChild(orDivCG);
+    const cgField = document.createElement('div');
+    cgField.innerHTML = `
+      <div class="lg-field">
+        <label class="lg-label">Company Group Password</label>
+        <input class="lg-input" id="lgCompanyGroupPass" type="password" placeholder="Enter company group password" autocomplete="off" maxlength="64">
+      </div>
+      <button class="lg-btn" style="background:linear-gradient(135deg,#1a1a0a,#12120a);border-color:#706a2a;color:#c8c040;" onclick="_lgCompanyGroupLogin()">⊞  SIGN IN AS COMPANY GROUP</button>`;
+    form.appendChild(cgField);
+    setTimeout(() => {
+      const inp3 = document.getElementById('lgCompanyGroupPass');
+      if(inp3) inp3.addEventListener('keydown', e => { if(e.key === 'Enter') _lgCompanyGroupLogin(); });
+    }, 50);
+  }
+
   setTimeout(() => {
     const inp = document.getElementById('lgSuperPass');
     if(inp) {
@@ -34789,8 +34974,50 @@ function _lgSupervisorLogin(){
   _lgClearMessages();
   _isSuperUser  = false;
   _isSupervisor = true;
+  _isCompanyGroup = false;
   _activeAcct   = null;
   _lgEnterApp();
+}
+
+function _lgCompanyGroupLogin(){
+  const inp = document.getElementById('lgCompanyGroupPass');
+  const val = inp ? inp.value : '';
+  if(!_companyGroupPasswordHash || _hashPass(val) !== _companyGroupPasswordHash){
+    if(inp){ inp.value = ''; inp.focus(); }
+    _lgSetErr('Incorrect company group password.');
+    return;
+  }
+  _lgClearMessages();
+  _isSuperUser    = false;
+  _isSupervisor   = false;
+  _isCompanyGroup = true;
+  _activeAcct     = null;
+  _lgEnterApp();
+}
+
+function _cgSetPassword(){
+  const inp = document.getElementById('cgNewPass');
+  const val = (inp ? inp.value : '').trim();
+  if(!val){
+    const msg = document.getElementById('cgMsg');
+    if(msg){ msg.style.color='#c04040'; msg.textContent='Password cannot be empty.'; }
+    return;
+  }
+  _companyGroupPasswordHash = _hashPass(val);
+  _markUnsaved();
+  _saveAccountsToStorage();
+  const msg = document.getElementById('cgMsg');
+  if(msg){ msg.style.color='#70c040'; msg.textContent='✓ Company Group password set.'; }
+  if(inp) inp.value = '';
+  setTimeout(() => renderAccountPanel(), 800);
+}
+
+function _cgClearPassword(){
+  if(!confirm('Disable Company Group login? The login button will be removed from the login screen.')) return;
+  _companyGroupPasswordHash = null;
+  _markUnsaved();
+  _saveAccountsToStorage();
+  renderAccountPanel();
 }
 
 function _lgSelectUser(idx){
@@ -34882,9 +35109,10 @@ function _lgEnterApp(){
   try {
     sessionStorage.removeItem('vbp_session'); // clear stale session first
     sessionStorage.setItem('vbp_session', JSON.stringify({
-      isSuperUser:  _isSuperUser,
-      isSupervisor: _isSupervisor,
-      activeAcct:   _activeAcct,
+      isSuperUser:    _isSuperUser,
+      isSupervisor:   _isSupervisor,
+      isCompanyGroup: _isCompanyGroup,
+      activeAcct:     _activeAcct,
     }));
   } catch(e) {}
   _userSettingsLoad();
@@ -34969,7 +35197,10 @@ function _lgEnterApp(){
 
 function _syncAccountMenuVisibility(){
   const btn = document.getElementById('menuBtnAccount');
-  if(btn) btn.style.display = (_isSuperUser || _isSupervisor) ? '' : 'none';
+  const btnL = document.getElementById('menuBtnLicence');
+  const showAdmin = _isSuperUser || _isSupervisor;
+  if(btn) btn.style.display = showAdmin ? '' : 'none';
+  if(btnL) btnL.style.display = (_isSuperUser) ? '' : 'none'; // licence only for super user
 }
 
 function _syncUserBadge(){
@@ -34999,6 +35230,15 @@ function _syncUserBadge(){
     name.style.color         = _SUPERVISOR_COLOR;
     role.textContent         = '⚡ Supervisor — Accounts Access';
     role.style.color         = '#2a8050';
+  } else if(_isCompanyGroup){
+    avatar.textContent       = 'CG';
+    avatar.style.background  = 'rgba(200,192,64,0.15)';
+    avatar.style.borderColor = '#c8c040';
+    avatar.style.color       = '#c8c040';
+    name.textContent         = 'Company Group';
+    name.style.color         = '#c8c040';
+    role.textContent         = '⊞ Company Group Account';
+    role.style.color         = '#8a8030';
   } else if(_activeAcct !== null && _accounts[_activeAcct]){
     const a = _accounts[_activeAcct];
     avatar.textContent       = a.initials;
@@ -35040,9 +35280,10 @@ window.addEventListener('DOMContentLoaded', () => {
                          && sess.activeAcct !== undefined
                          && _accounts[sess.activeAcct] !== undefined;
       if(validSuper || validSupervisor || validAcct){
-        _isSuperUser  = !!sess.isSuperUser;
-        _isSupervisor = !!sess.isSupervisor;
-        _activeAcct   = validAcct ? sess.activeAcct : null;
+        _isSuperUser    = !!sess.isSuperUser;
+        _isSupervisor   = !!sess.isSupervisor;
+        _isCompanyGroup = !!sess.isCompanyGroup;
+        _activeAcct     = validAcct ? sess.activeAcct : null;
         _lgEnterApp();
         restored = true;
       } else {
@@ -38812,6 +39053,7 @@ function _userSettingsSave(){
       panelTheme:       localStorage.getItem('panelTheme') || 'dark',
       fabVisibility:    (function(){ try{ return JSON.parse(localStorage.getItem('floatFabVisibility')||'{}'); }catch(e){ return {}; } })(),
       fabPositions:     (function(){ try{ return JSON.parse(localStorage.getItem('floatFabPositions')||'{}'); }catch(e){ return {}; } })(),
+      floatIconsVisible: typeof _floatIconsVisible !== 'undefined' ? _floatIconsVisible : false,
     };
     localStorage.setItem(key, JSON.stringify(settings));
   } catch(e) { console.warn('Could not save user settings:', e); }
@@ -38846,6 +39088,10 @@ function _userSettingsLoad(){
       showBgGrid = settings.showBgGrid;
       const _on=document.getElementById('canvasGridOnBtn');  if(_on)  _on.classList.toggle('lash-speed-active', showBgGrid);
       const _off=document.getElementById('canvasGridOffBtn'); if(_off) _off.classList.toggle('lash-speed-active', !showBgGrid);
+    }
+    // Floating icons visibility
+    if(typeof setFloatIconsVisible === 'function'){
+      setFloatIconsVisible(settings.floatIconsVisible !== undefined ? settings.floatIconsVisible : false);
     }
     if(settings.uiTheme !== undefined && typeof setUITheme === 'function') setUITheme(settings.uiTheme);
     if(settings.panelTheme !== undefined){
@@ -42830,7 +43076,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #e05050 !important;">
         ⚙ SETTINGS ▾
       </button>
-      <div class="dropdown" id="rsDropSettings" style="display:none;position:fixed;top:100%;left:0;min-width:280px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropSettings" style="display:none;position:absolute;top:100%;left:0;min-width:280px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">BULK MARK — RUBBER SEAL</div>
         <button class="dd-action" onclick="openBulkMarkDialog('seal','vessel');closeRsMenus()">◯  MARK ALL SEALS — ENTIRE VESSEL</button>
         <button class="dd-action" onclick="openBulkMarkDialog('seal','bay');closeRsMenus()">◯  MARK ALL SEALS — CURRENT BAY</button>
@@ -42871,7 +43117,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #2090e0 !important;">
         ⚒ TOOLS ▾
       </button>
-      <div class="dropdown" id="rsDropTools" style="display:none;position:fixed;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropTools" style="display:none;position:absolute;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">INSPECTION</div>
         <button class="dd-action" onclick="toggleMeasureTool();closeRsMenus()">◎  MEASURE — DISTANCE / AREA</button>
         <button class="dd-action" onclick="toggleSealPaintTool();closeRsMenus()">✎  MARK SEAL — FREE COLOUR PAINT</button>
@@ -42900,7 +43146,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #00a050 !important;">
         ▦ STATISTICS ▾
       </button>
-      <div class="dropdown" id="rsDropStats" style="display:none;position:fixed;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropStats" style="display:none;position:absolute;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">VESSEL SUMMARY</div>
         <button class="dd-action dd-disabled">◯  SEAL STATUS OVERVIEW (v.NEXT)</button>
         <button class="dd-action dd-disabled">◯  DMG/MISS BREAKDOWN BY HC (v.NEXT)</button>
@@ -42925,7 +43171,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #9050e0 !important;">
         ⬆ EXPORT ▾
       </button>
-      <div class="dropdown" id="rsDropExport" style="display:none;position:fixed;top:100%;left:0;min-width:260px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropExport" style="display:none;position:absolute;top:100%;left:0;min-width:260px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">PDF</div>
         <button class="dd-action" onclick="exportRsConditionPDF();closeRsMenus()">◯  EXPORT PDF — RUBBER SEAL CONDITION</button>
         <button class="dd-action" onclick="exportChanConditionPDF();closeRsMenus()">⊟  EXPORT PDF — RETAINING CHANNEL CONDITION</button>
@@ -43006,9 +43252,9 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
         <!-- Schematic canvas — portrait, fills remaining column height -->
         <div id="rsSchWrap" style="flex:1;width:100%;min-height:0;position:relative;overflow:hidden;cursor:grab;">
-          <div id="rsSchZoomLayer" style="position:fixed;top:0;left:0;width:100%;height:100%;transform-origin:0 0;will-change:transform;">
+          <div id="rsSchZoomLayer" style="position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:0 0;will-change:transform;">
             <canvas id="rsSchematic"
-              style="position:fixed;top:0;left:0;display:block;"></canvas>
+              style="position:absolute;top:0;left:0;display:block;"></canvas>
           </div>
 
         </div>
@@ -51116,7 +51362,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #e05050 !important;">
         ⚙ SETTINGS ▾
       </button>
-      <div class="dropdown" id="lbDropSettings" style="display:none;position:fixed;top:100%;right:0;min-width:300px;z-index:3600;
+      <div class="dropdown" id="lbDropSettings" style="display:none;position:absolute;top:100%;right:0;min-width:300px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">LASHING BRIDGE SETUP</div>
         <button class="dd-action" onclick="_lbOpenBridgeEditor();_lbCloseMenus()">⚙  CONFIGURE LASHING BRIDGES</button>
@@ -51138,7 +51384,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #e0a000 !important;">
         ⚓ LB FITTINGS ▾
       </button>
-      <div class="dropdown" id="lbDropFittings" style="display:none;position:fixed;top:100%;right:0;min-width:320px;z-index:3600;
+      <div class="dropdown" id="lbDropFittings" style="display:none;position:absolute;top:100%;right:0;min-width:320px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">LASHING EYES</div>
         <button class="dd-action" onclick="_lbTogglePlacer();_lbCloseMenus()">◎  PLACE LASHING EYES</button>
@@ -51160,7 +51406,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #00a050 !important;">
         ▦ STATISTICS ▾
       </button>
-      <div class="dropdown" id="lbDropStats" style="display:none;position:fixed;top:100%;right:0;min-width:260px;z-index:3600;
+      <div class="dropdown" id="lbDropStats" style="display:none;position:absolute;top:100%;right:0;min-width:260px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">VESSEL SUMMARY</div>
         <button class="dd-action" onclick="_lbOpenStats();_lbCloseMenus()">▦  LASHING BRIDGE EYE STATUS</button>
@@ -51178,7 +51424,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #9050e0 !important;">
         ⬆ EXPORT ▾
       </button>
-      <div class="dropdown" id="lbDropExport" style="display:none;position:fixed;top:100%;right:0;min-width:280px;z-index:3600;
+      <div class="dropdown" id="lbDropExport" style="display:none;position:absolute;top:100%;right:0;min-width:280px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">PDF</div>
         <button class="dd-action" onclick="_lbExportAllPDF();_lbCloseMenus()">⬆  EXPORT PDF — ALL BRIDGES (LANDSCAPE)</button>
@@ -51238,7 +51484,7 @@ document.addEventListener('mousedown', function(e){
 
       <!-- Canvas wrap with zoom/pan -->
       <div id="lbCanvasWrap" style="flex:1;position:relative;overflow:hidden;cursor:default;">
-        <canvas id="lbCanvas" style="position:fixed;top:0;left:0;display:block;"></canvas>
+        <canvas id="lbCanvas" style="position:absolute;top:0;left:0;display:block;"></canvas>
         <!-- Zoom percentage — lower left -->
         <div id="lbZoomPct" style="position:absolute;bottom:12px;left:14px;z-index:10;
           font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
@@ -51246,7 +51492,7 @@ document.addEventListener('mousedown', function(e){
           background:rgba(8,12,18,0.72);padding:3px 7px;border-radius:3px;
           border:1px solid var(--line);">100%</div>
         <!-- Level legend -->
-        <div id="lbLevelLegend" style="position:fixed;top:10px;right:14px;
+        <div id="lbLevelLegend" style="position:absolute;top:10px;right:14px;
           font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text2);
           letter-spacing:0.08em;text-align:right;pointer-events:none;"></div>
       </div>
@@ -57175,6 +57421,7 @@ function openMobileMenu(){
   _mobMenuTs = now;
   document.getElementById('mobileMenuDrawer').classList.add('open');
   document.getElementById('mobileMenuOverlay').classList.add('open');
+  document.body.classList.add('mob-menu-open');
   var b=document.getElementById('cfgBays'), r=document.getElementById('cfgRows');
   var mb=document.getElementById('mobCfgBays'), mr=document.getElementById('mobCfgRows');
   if(b&&mb) mb.value=b.value;
@@ -57183,6 +57430,7 @@ function openMobileMenu(){
 function closeMobileMenu(){
   document.getElementById('mobileMenuDrawer').classList.remove('open');
   document.getElementById('mobileMenuOverlay').classList.remove('open');
+  document.body.classList.remove('mob-menu-open');
   if(typeof closeMenus==='function') closeMenus();
 }
 var _mobToggleTs = 0;
@@ -57255,6 +57503,14 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
       // Stop long-press from starting drag when touching an input
       inp.addEventListener('touchstart', function(e){ e.stopPropagation(); }, {passive:true});
       inp.addEventListener('touchend',   function(e){ e.stopPropagation(); }, {passive:true});
+    });
+
+    // Stop touch propagation on buttons so the drag timer doesn't eat their taps
+    var _btns = el.querySelectorAll('button, [onclick], .rp-count-btn, .lash-speed-btn, .om-mode-btn, .acm-add-btn, .acct-btn');
+    _btns.forEach(function(btn){
+      btn.style.touchAction = 'manipulation';
+      btn.addEventListener('touchstart', function(e){ e.stopPropagation(); }, {passive:true});
+      btn.addEventListener('touchend',   function(e){ e.stopPropagation(); }, {passive:true});
     });
 
     var _timer = null;
@@ -57366,6 +57622,30 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
   } else {
     setTimeout(attachDragToFloaters, 800);
   }
+
+  // Watch all floating panels for display changes → toggle body.panel-open
+  function _watchFloatingPanels(){
+    const PANEL_IDS = [
+      'hcStopPlacerPal','hcStopManipPal','flexipadPlacerPal','flexipadManipPal',
+      'fxpAssignPopup','fxpLibPal','ventPlacerPal','hddPlacerPal','rpPlacerPal',
+      'rpManipPal','rpAssignPal','rpLibPal','rpPocketPaintPal','rpClearPal',
+      'lashEyePlacerPal','markPal','markLegendPal','hcManipPal','hcShapePal',
+      'floatPal','floatShp','objManipPal','cranePal','layersPal','floatFxpLibWrap',
+      'heightPicker','hcShapeEditorPal','lashEyeAssignPal'
+    ];
+    var obs = new MutationObserver(function(){
+      var anyOpen = PANEL_IDS.some(function(id){
+        var el = document.getElementById(id);
+        return el && el.style.display !== '' && el.style.display !== 'none';
+      });
+      document.body.classList.toggle('panel-open', anyOpen);
+    });
+    PANEL_IDS.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) obs.observe(el, {attributes:true, attributeFilter:['style']});
+    });
+  }
+  setTimeout(_watchFloatingPanels, 1000);
 })();
 
 // ── iOS: prevent Safari native pinch/zoom interfering with canvas ──
@@ -57483,6 +57763,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
   vp2.addEventListener('touchend',function(e){
     if(_hpLongPressTimer){ clearTimeout(_hpLongPressTimer); _hpLongPressTimer=null; }
     e.preventDefault();
+    window._lastTouchEndTime = Date.now();
     var rem=Array.from(e.touches);
     // Crane tool: end drag on touchend
     if(_moved && typeof editCraneMode!=='undefined' && editCraneMode &&
@@ -57619,15 +57900,15 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
             if(typeof _hcStopEdge !== 'undefined' && typeof SH !== 'undefined'){
               _hcStopEdge = _lyS < SH / 2 ? 'fwd' : 'aft';
             }
-            // Fire synthetic mousemove so the full tracking state (_hcStopMouseHc etc.) is set
+            // Fire synthetic mousemove so the full tracking state is set
             var _hcsMM = new MouseEvent('mousemove', {
               clientX: t2.clientX, clientY: t2.clientY,
               bubbles: true, cancelable: true, view: window
             });
             vp2.dispatchEvent(_hcsMM);
-            // Reset throttle
+            // Reset throttle, draw twice (first sets snap state, second confirms)
             if(typeof _objLastPlaceTime !== 'undefined') _objLastPlaceTime = 0;
-            if(typeof draw === 'function') draw();
+            if(typeof draw === 'function'){ draw(); draw(); }
             if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
             return;
           }
