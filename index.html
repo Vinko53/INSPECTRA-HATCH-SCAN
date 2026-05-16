@@ -4539,7 +4539,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- FLEXIPAD PLACER PANEL -->
-<div id="flexipadPlacerPal" style="display:none;position:fixed;z-index:828;width:260px;
+<div id="flexipadPlacerPal" style="display:none;position:fixed;z-index:828;width:min(260px,92vw);
   user-select:none;font-family:'IBM Plex Mono',monospace;">
   <div id="flexipadPlacerHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
     background:#0a1a0e;border-bottom:2px solid #206040;">
@@ -4580,7 +4580,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- VENTILATOR PLACER PANEL -->
-<div id="ventPlacerPal" style="display:none;position:fixed;z-index:828;width:240px;
+<div id="ventPlacerPal" style="display:none;position:fixed;z-index:828;width:min(240px,92vw);
   background:#071624;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
   box-shadow:0 12px 40px rgba(0,0,0,0.85);user-select:none;font-family:'IBM Plex Mono',monospace;">
   <div id="ventPlacerHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
@@ -4634,7 +4634,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- HOLD-DOWN DEVICE PLACER PANEL -->
-<div id="hddPlacerPal" style="display:none;position:fixed;z-index:828;width:240px;
+<div id="hddPlacerPal" style="display:none;position:fixed;z-index:828;width:min(240px,92vw);
   background:#071624;border:1px solid #c07020;border-top:3px solid #f0a030;
   box-shadow:0 12px 40px rgba(0,0,0,0.85);user-select:none;font-family:'IBM Plex Mono',monospace;">
   <div id="hddPlacerHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
@@ -5004,7 +5004,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
   </div>
 
 <!-- RESTING PAD PLACER PANEL -->
-<div id="rpPlacerPal" style="display:none;position:fixed;z-index:1200;width:260px;
+<div id="rpPlacerPal" style="display:none;position:fixed;z-index:1200;width:min(260px,92vw);
   user-select:none;font-family:'IBM Plex Mono',monospace;">
   <div id="rpPlacerHandle" style="display:flex;align-items:center;height:34px;padding:0 8px 0 12px;cursor:grab;gap:8px;
     background:#180c30;border-bottom:2px solid #5030a0;">
@@ -5047,7 +5047,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
     </button>
     <!-- PREVIEW CANVAS — bottom -->
     <div style="display:flex;justify-content:center;padding-top:10px;padding-bottom:4px;">
-      <canvas id="rpPreviewCanvas" width="220" height="44" style="position:relative;top:auto;left:auto;border-radius:4px;pointer-events:none;width:220px;height:44px;"></canvas>
+      <canvas id="rpPreviewCanvas" width="220" height="44" style="position:relative;top:auto;left:auto;border-radius:4px;pointer-events:none;width:min(220px,92vw);height:44px;"></canvas>
     </div>
   </div>
 </div>
@@ -6022,7 +6022,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
     <button class="fpal-multi-btn" id="fshpPairBtn" onclick="toggleSingleAsPair();fshpSync()" style="display:block;width:calc(100% - 16px);margin:0 8px 8px;">SGL → SINGLE</button>
   </div>
 
-  <!-- OBJECT MANIPULATOR FLOATING WINDOW -->  <div id="objManipPal" style="display:none;position:fixed;z-index:820;width:200px;
+  <!-- OBJECT MANIPULATOR FLOATING WINDOW -->  <div id="objManipPal" style="display:none;position:fixed;z-index:820;width:min(200px,92vw);
     background:#0c1828;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
     box-shadow:0 16px 48px rgba(0,0,0,0.92),0 0 0 1px rgba(94,184,255,0.10);
     user-select:none;font-family:'IBM Plex Mono',monospace;">
@@ -6343,7 +6343,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
   </div>
 
   <!-- HC SHAPE EDITOR PALETTE -->
-  <div id="hcShapePal" style="display:none;position:fixed;z-index:800;width:220px;background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;box-shadow:0 12px 40px rgba(0,0,0,0.8);user-select:none;font-family:'IBM Plex Mono',monospace;">
+  <div id="hcShapePal" style="display:none;position:fixed;z-index:800;width:min(220px,92vw);background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;box-shadow:0 12px 40px rgba(0,0,0,0.8);user-select:none;font-family:'IBM Plex Mono',monospace;">
 
     <!-- ── TITLE BAR ── -->
     <div id="hcSpHandle" style="display:flex;align-items:center;height:26px;padding:0 6px 0 10px;background:#112234;border-bottom:1px solid #2a5878;cursor:grab;gap:4px;">
@@ -6636,7 +6636,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- LASHING EYE PLACER PANEL -->
-<div id="lashEyePlacerPal" style="display:none;position:fixed;z-index:826;width:200px;
+<div id="lashEyePlacerPal" style="display:none;position:fixed;z-index:826;width:min(200px,92vw);
   background:#0c1828;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
   box-shadow:0 16px 48px rgba(0,0,0,0.92),0 0 0 1px rgba(94,184,255,0.10);
   user-select:none;font-family:'IBM Plex Mono',monospace;">
@@ -6873,7 +6873,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- HC STOPPER PLACER PANEL -->
-<div id="hcStopPlacerPal" style="display:none;position:fixed;z-index:826;width:220px;
+<div id="hcStopPlacerPal" style="display:none;position:fixed;z-index:826;width:min(220px,92vw);
   background:#060e1a;border:1px solid #c8a800;border-top:2px solid #ffdd44;
   box-shadow:0 12px 40px rgba(0,0,0,0.85),0 0 0 1px rgba(255,220,50,0.08);
   user-select:none;font-family:'IBM Plex Mono',monospace;">
@@ -8815,8 +8815,7 @@ function showFshp(){
   fshpVisible=true;
   const el=fshpEl();
   el.style.display='block';
-  {var _sc=_clampPalToScreen(parseInt(el.style.left)||0,parseInt(el.style.top)||0,'floatShp');el.style.left=_sc.x+'px';el.style.top=_sc.y+'px';}
-  el.style.top=fshpY+'px';
+  _restorePanelPos(el,'floatShp',fshpX,fshpY); fshpX=parseInt(el.style.left); fshpY=parseInt(el.style.top);
   fshpSync();
   const btn=document.getElementById('btnFshp');
   if(btn){ btn.classList.add('on'); btn.style.color='#f0d000'; btn.style.borderColor='#f0d000'; btn.style.background='rgba(212,176,0,0.15)'; }
@@ -9228,8 +9227,7 @@ function showObjManip(){
   if(viewMode!=='bay') setView('bay');
   const el=document.getElementById('objManipPal');
   el.style.display='block';
-  {var _sc=_clampPalToScreen(parseInt(el.style.left)||0,parseInt(el.style.top)||0,'objManipPal');el.style.left=_sc.x+'px';el.style.top=_sc.y+'px';}
-  el.style.top=omPalY+'px';
+  _restorePanelPos(el,'objManipPal',omPalX,omPalY); omPalX=parseInt(el.style.left); omPalY=parseInt(el.style.top);
   const btn=document.getElementById('btnObjManip');
   if(btn){ btn.classList.add('on'); btn.style.color='#50b8ff'; btn.style.borderColor='#50b8ff'; btn.style.background='rgba(32,144,224,0.18)'; }
   const _fom = document.getElementById('floatObjManipBtn');
@@ -9286,13 +9284,18 @@ function _restorePanelPos(el, elId, defaultX, defaultY){
       var pos = JSON.parse(saved);
       if(pos && typeof pos.left === 'number'){
         x = pos.left; y = pos.top;
+        // If saved position would put panel mostly off-screen, use default
+        var vwCheck = window.innerWidth;
+        if(x > vwCheck - 80 || x < -200) { x = defaultX || 0; y = defaultY || 0; }
       }
     }
   } catch(e){}
-  // Safety clamp — keep at least 60px on screen
+  // Safety clamp — keep panel sufficiently on screen
   var vw = window.innerWidth, vh = window.innerHeight;
-  x = Math.max(0, Math.min(vw - 60, x));
-  y = Math.max(0, Math.min(vh - 40, y));
+  var pw = el.offsetWidth || 220, ph = el.offsetHeight || 200;
+  // Keep at least half the panel visible, minimum 100px from right/bottom
+  x = Math.max(0, Math.min(vw - Math.max(pw * 0.5, 100), x));
+  y = Math.max(0, Math.min(vh - Math.max(ph * 0.3, 60), y));
   el.style.left = x + 'px';
   el.style.top  = y + 'px';
   return {x, y};
@@ -10563,14 +10566,22 @@ function hcStopHandleClick(sx, sy){
   let hcNum = 0, edge = _hcStopEdge;
   let spanFirst = -1;
 
-  // Try regular HC grid column
+  // Try exact column at tap X
   const col = Math.floor(lx / SW);
   if(col >= 0 && col < rows){
     hcNum = getHC(bay, col);
-    if(hcNum){
-      const sp = hcSpanCenter(bay, hcNum, rows, col);
-      spanFirst = sp.first;
+    if(hcNum){ const sp = hcSpanCenter(bay, hcNum, rows, col); spanFirst = sp.first; }
+  }
+  // If not found at exact column, search nearby columns (finger may tap between columns)
+  if(!hcNum){
+    let bestDist = SW * 1.5, bestHc = 0, bestFirst = -1;
+    for(let c = 0; c < rows; c++){
+      const h = getHC(bay, c); if(!h) continue;
+      const sp = hcSpanCenter(bay, h, rows, c);
+      const d = Math.abs(lx - sp.cx);
+      if(d < bestDist){ bestDist = d; bestHc = h; bestFirst = sp.first; }
     }
+    if(bestHc){ hcNum = bestHc; spanFirst = bestFirst; }
   }
 
   // Fallback: try free polygon HCs
@@ -11247,13 +11258,15 @@ function drawRestingPadGuides(bay, rows){
 
     const isHov=(hcNum===_rpMouseHc && sp.first===_rpMouseFirst);
 
-    ctx.strokeStyle=isHov?'rgba(192,144,240,0.9)':'rgba(192,144,240,0.35)';
-    ctx.lineWidth=isHov?1.4:0.9; ctx.setLineDash(isHov?[]:[5,3]);
-    if(_rpEdge==='fwd')  {ctx.beginPath();ctx.moveTo(x0,railY_fwd); ctx.lineTo(x1,railY_fwd); ctx.stroke();}
-    else if(_rpEdge==='aft')  {ctx.beginPath();ctx.moveTo(x0,railY_aft); ctx.lineTo(x1,railY_aft); ctx.stroke();}
-    else if(_rpEdge==='port') {ctx.beginPath();ctx.moveTo(railX_port,0);  ctx.lineTo(railX_port,SH);  ctx.stroke();}
-    else                      {ctx.beginPath();ctx.moveTo(railX_stbd,0);  ctx.lineTo(railX_stbd,SH);  ctx.stroke();}
-    ctx.setLineDash([]);
+    if(isHov){
+      ctx.strokeStyle='rgba(192,144,240,0.9)';
+      ctx.lineWidth=1.4; ctx.setLineDash([]);
+      if(_rpEdge==='fwd')  {ctx.beginPath();ctx.moveTo(x0,railY_fwd); ctx.lineTo(x1,railY_fwd); ctx.stroke();}
+      else if(_rpEdge==='aft')  {ctx.beginPath();ctx.moveTo(x0,railY_aft); ctx.lineTo(x1,railY_aft); ctx.stroke();}
+      else if(_rpEdge==='port') {ctx.beginPath();ctx.moveTo(railX_port,0);  ctx.lineTo(railX_port,SH);  ctx.stroke();}
+      else                      {ctx.beginPath();ctx.moveTo(railX_stbd,0);  ctx.lineTo(railX_stbd,SH);  ctx.stroke();}
+      ctx.setLineDash([]);
+    }
 
     let gridPts = [];
     if(_rpEdge==='fwd'||_rpEdge==='aft'){
@@ -12170,6 +12183,9 @@ function drawFlexipadGuides(bay, rows){
       }
 
       const isClose = rail.isPoly ? (rail._d !== undefined ? rail._d : d) < POLY_SNAP_DIST : d < SNAP_DIST;
+      // Skip non-poly rails that are too far (prevents ghost lines on inner HC walls)
+      const isVisible = rail.isPoly || d < SW * 3;
+      if(!isVisible){ ctx.setLineDash([]); return; }
       if(rail.isPoly){
         ctx.strokeStyle = isClose ? 'rgba(96,216,144,0.95)' : 'rgba(96,216,144,0.55)';
         ctx.lineWidth   = isClose ? 1.8 : 1.1;
@@ -15360,8 +15376,7 @@ function toggleHcShapeEditor(){
     hcFreeDrawActive=false;
     const el=document.getElementById('hcShapePal');
     el.style.display='block';
-    {var _sc=_clampPalToScreen(parseInt(el.style.left)||0,parseInt(el.style.top)||0,'hcShapePal');el.style.left=_sc.x+'px';el.style.top=_sc.y+'px';}
-    el.style.top=hcShapePalY+'px';
+    _restorePanelPos(el,'hcShapePal',hcShapePalX,hcShapePalY); hcShapePalX=parseInt(el.style.left); hcShapePalY=parseInt(el.style.top);
     vp.classList.add('editcursor');
     document.getElementById('btnHcShapeEditor').classList.add('dd-active-tool');
     const _fhcs = document.getElementById('floatHcShapeBtn');
@@ -23958,7 +23973,7 @@ function renderFndLabels(ctx, sx, sy, store, baseKey, fndRec, zoom){
 }
 
 
-const FND_HEIGHTS = [90,95,100,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200];
+const FND_HEIGHTS = [90,95,100,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240];
 
 function toggleCustomHeights(){
   showCustomHeights = !showCustomHeights;
@@ -25976,7 +25991,21 @@ function hddHandleClick(sx, sy){
   _hddMouseSx=sx; _hddMouseSy=sy;
   if(!_hddFreeMode) _hddTrySnap(sx, sy);
 
-  if(_hddDeleteMode){
+  // ── ROTATE MODE: tap a placed HDD to flip it ─────────────────────────────
+  if(_hddFlipV){
+    const hitId = hddHitTest(sx, sy);
+    if(hitId){
+      pushUndo();
+      const arr = hcHoldDowns[bay] || [];
+      const hit = arr.find(h => h.id === hitId);
+      if(hit){
+        hit.flipV = !hit.flipV;
+        draw();
+        return true;
+      }
+    }
+    // No hit — fall through to normal placement with flipV=true
+  }
     const hitId=hddHitTest(sx,sy);
     if(hitId){
       pushUndo();
@@ -26008,126 +26037,6 @@ function hddHandleClick(sx, sy){
     }
     return true;
   }
-
-  const hitId=hddHitTest(sx,sy);
-  if(hitId){ pushUndo(); removeHdd(bay, hitId); draw(); return true; }
-
-  let px, py, side;
-  if(_hddFreeMode){
-    // Auto-detect nearest HC edge
-    _hddTrySnap(sx, sy);
-    if(_hddSnapHit){
-      px=_hddSnapX; py=_hddSnapY; side=_hddSnapSide;
-    } else {
-      px=(sx-panX)/zoom; py=(sy-panY)/zoom; side='port';
-    }
-  } else {
-    // Snap mode: use snapped position if available, otherwise place at cursor on the selected rail
-    if(_hddSnapHit){
-      px=_hddSnapX; py=_hddSnapY; side=_hddSnapSide;
-    } else {
-      // Fallback: place at cursor Y, rail X derived from selected side
-      const lx=(sx-panX)/zoom, ly=(sy-panY)/zoom;
-      const off=_hddOffset();
-      const rows=totalRowsForBay(bay);
-      const seen=new Set(); let railX=lx;
-      for(let c=0;c<rows;c++){
-        const h=getHC(bay,c); if(!h||seen.has(h)) continue; seen.add(h);
-        const {first,last}=hcSpanCenter(bay,h,rows,c);
-        railX = _hddSide==='port' ? first*SW - off : (last+1)*SW + off;
-        break;
-      }
-      px = (_hddSide==='port'||_hddSide==='stbd') ? railX : lx;
-      py = (_hddSide==='fwd') ? -off : (_hddSide==='aft') ? SH+off : ly;
-      side = _hddSide;
-    }
-    // Mirror: same 4-way logic as ventilators
-    // port↔stbd on opposite rail at same Y, plus fore↔aft of both
-    if(_hddMirror){
-      const rows = totalRowsForBay(bay);
-      const off  = _hddOffset();
-      const mirY = SH - py;   // fore ↔ aft mirror
-
-      if(side === 'port' || side === 'stbd'){
-        const mirSide = side === 'port' ? 'stbd' : 'port';
-        const seen2 = new Set();
-        for(let c = 0; c < rows; c++){
-          const h = getHC(bay, c); if(!h || seen2.has(h)) continue; seen2.add(h);
-          if(_hddSideBlocked(bay, rows, mirSide, c)) continue;
-          const {first, last} = hcSpanCenter(bay, h, rows, c);
-          const mirX = mirSide === 'port' ? first*SW - off : (last+1)*SW + off;
-          // Port ↔ Stbd at same Y
-          addHdd(bay, mirX, py, mirSide, false, fndColorBrush||'black');
-          // Fore ↔ Aft of mirror side
-          if(Math.abs(mirY - py) > 2) addHdd(bay, mirX, mirY, mirSide, false, fndColorBrush||'black');
-        }
-        // Fore ↔ Aft of original side
-        const origCol = Math.round(px / SW);
-        if(Math.abs(mirY - py) > 2 && !_hddSideBlocked(bay, rows, side, Math.max(0, Math.min(rows-1, origCol)))){
-          addHdd(bay, px, mirY, side, false, fndColorBrush||'black');
-        }
-
-      } else {
-        // fwd ↔ aft mirror — invert flipV so the mirror has the same visual orientation
-        // (drawHoldDownSymbol applies opposite horizontal scale for aft vs fwd,
-        //  so !_hddFlipV on the mirror counteracts that and keeps both facing the same way)
-        const mirSide = side === 'fwd' ? 'aft' : 'fwd';
-        const mirPlaceY = mirSide === 'fwd' ? -off : SH + off;
-        addHdd(bay, px, mirPlaceY, mirSide, !_hddFlipV, fndColorBrush||'black');
-      }
-    }
-  }
-  // ── Validate: only allow placement near an actual HC edge ──────────────────
-  // Reject clicks that are not within (offset + tolerance) of any HC cover edge
-  // This prevents placement in open water / outside HC covers
-  {
-    const _lx = (sx - panX) / zoom;
-    const _ly = (sy - panY) / zoom;
-    const _rows = totalRowsForBay(bay);
-    const _off = _hddOffset();
-    const _tol = _off * 2.5; // generous tolerance for touch
-    let nearHc = false;
-
-    // Check regular HC grid
-    const _seen = new Set();
-    for(let c = 0; c < _rows; c++){
-      const h = getHC(bay, c); if(!h || _seen.has(h)) continue; _seen.add(h);
-      const {first, last} = hcSpanCenter(bay, h, _rows, c);
-      const portX = first * SW;  // port edge X
-      const stbdX = (last + 1) * SW; // stbd edge X
-      const fwdY  = 0;           // fwd edge Y
-      const aftY  = SH;          // aft edge Y
-      // Near port or stbd edge (correct Y range)
-      if(_ly >= fwdY - _tol && _ly <= aftY + _tol){
-        if(Math.abs(_lx - portX) < _tol || Math.abs(_lx - stbdX) < _tol){ nearHc = true; break; }
-      }
-      // Near fwd or aft edge (correct X range)
-      if(_lx >= portX - _tol && _lx <= stbdX + _tol){
-        if(Math.abs(_ly - fwdY) < _tol || Math.abs(_ly - aftY) < _tol){ nearHc = true; break; }
-      }
-    }
-
-    // Check free polygon HCs
-    if(!nearHc && typeof hcCustomShapes !== 'undefined'){
-      hcCustomShapes.forEach(function(s){
-        if(nearHc || s.bay !== bay || !s.points || s.points.length < 3) return;
-        const xs = s.points.map(function(p){ return p.x; });
-        const ys = s.points.map(function(p){ return p.y; });
-        const minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
-        const minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
-        if(_lx >= minX - _tol && _lx <= maxX + _tol &&
-           _ly >= minY - _tol && _ly <= maxY + _tol){ nearHc = true; }
-      });
-    }
-
-    if(!nearHc){ draw(); return false; }
-  }
-
-  pushUndo();
-  addHdd(bay, px, py, side, _hddFlipV, fndColorBrush||'black');
-  draw();
-  return true;
-}
 
 function _hddSideBlocked(bay, rows, side, col){
   const hcNum = getHC(bay, col);
@@ -26217,7 +26126,7 @@ function _updateHddFlipHint(){
   if(h) h.style.color = _hddFlipV ? '#f0a030' : '#6a5030';
   const btn = document.getElementById('hddFlipBtn');
   if(btn){
-    btn.textContent = _hddFlipV ? '↔ ROTATE: ON' : '↔ ROTATE: OFF';
+    btn.textContent = _hddFlipV ? '↔ ROTATE: ON — tap unit to rotate' : '↔ ROTATE: OFF';
     btn.style.background = _hddFlipV ? 'rgba(240,160,48,0.22)' : 'rgba(180,100,20,0.12)';
     btn.style.color       = _hddFlipV ? '#f0a030' : '#c08040';
     btn.style.borderColor = _hddFlipV ? '#c07020' : '#6a4010';
@@ -28476,7 +28385,7 @@ document.addEventListener('keydown', e => {
 <!-- ════════════════════════════════════════════════════════════════
      CRANE TOOL
      ════════════════════════════════════════════════════════════════ -->
-<div id="cranePal" style="display:none;position:fixed;z-index:811;width:240px;
+<div id="cranePal" style="display:none;position:fixed;z-index:811;width:min(240px,92vw);
   background:#060e1a;border:1px solid #2d7fc1;border-top:3px solid #c87800;
   box-shadow:0 12px 40px rgba(0,0,0,0.85),0 0 0 1px rgba(200,120,0,0.08);
   user-select:none;font-family:'IBM Plex Mono',monospace;">
@@ -28615,6 +28524,18 @@ document.addEventListener('keydown', e => {
   <div id="mkSelRow" style="display:none;padding:7px 8px 6px;border-bottom:1px solid #1e4a74;">
     <div id="mkSelInfo" style="font-size:7px;color:#5eb8ff;letter-spacing:0.10em;
       text-transform:uppercase;margin-bottom:5px;">—</div>
+    <div style="margin-bottom:6px;">
+      <div style="font-size:7px;font-weight:700;letter-spacing:0.12em;color:#5eb8ff;text-transform:uppercase;margin-bottom:3px;">MARK NAME</div>
+      <input id="mkCustomNameInput" type="text" placeholder="Enter mark name…"
+        style="width:100%;box-sizing:border-box;background:rgba(10,30,60,0.7);color:#e0f0ff;
+          border:1px solid #2a5878;border-radius:3px;font-family:'IBM Plex Mono',monospace;
+          font-size:10px;padding:5px 7px;outline:none;letter-spacing:0.05em;
+          touch-action:auto;-webkit-user-select:text;user-select:text;cursor:text;"
+        oninput="_mkApplyCustomName(this.value)"
+        onfocus="this.style.borderColor='#5eb8ff'"
+        onblur="this.style.borderColor='#2a5878';_mkApplyCustomName(this.value)"
+      />
+    </div>
     <div style="display:flex;gap:4px;">
       <button onclick="cycleSelMarkColor()"
         style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.08em;
@@ -28785,6 +28706,24 @@ function drawMarks(){
       const ty = drawY - mark.size * 0.38;
       ctx.fillStyle = '#000000';
       ctx.fillText(numStr, tx, ty);
+    }
+    // Draw custom name below mark symbol
+    if(mark.customName && mark.customName.length > 0){
+      const nameFontSize = Math.max(7, mark.size * 0.28);
+      ctx.font = `600 ${nameFontSize}px IBM Plex Mono`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      const nameX = drawX;
+      const nameY = drawY + mark.size * 0.58 + 2;
+      // White outline for readability
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(mark.customName, nameX, nameY);
+      // Text color matches mark color
+      const pal = MK_COLORS[mark.color] || MK_COLORS.red;
+      ctx.fillStyle = pal.s || '#333';
+      ctx.fillText(mark.customName, nameX, nameY);
     }
     ctx.restore();
   });
@@ -29087,10 +29026,12 @@ function showMarkTool(){
   _mkShapePicked = false;
   _mkColorPicked = false;
   const el = document.getElementById('markPal');
-  el.style.display = 'block';
-  {var _sc=_clampPalToScreen(parseInt(el.style.left)||0,parseInt(el.style.top)||0,'markLegendPal');el.style.left=_sc.x+'px';el.style.top=_sc.y+'px';}
-  el.style.top  = _mkPalY + 'px';
-  document.getElementById('btnMarkTool').style.color = '#5eb8ff';
+  if(el){
+    el.style.display = 'block';
+    _restorePanelPos(el, 'markPal', _mkPalX||16, _mkPalY||120);
+  }
+  const btnMark = document.getElementById('btnMarkTool');
+  if(btnMark) btnMark.style.color = '#5eb8ff';
   const _fmt = document.getElementById('floatMarkToolBtn');
   if(_fmt) _fmt.classList.add('mark-on');
   vp.classList.remove('grab');
@@ -29146,6 +29087,12 @@ function buildMkShapeRow(){
   });
 }
 
+function _mkApplyCustomName(val){
+  if(selMarkIdx < 0 || !marks[selMarkIdx]) return;
+  marks[selMarkIdx].customName = val.trim();
+  draw(); // redraw so name appears on canvas
+}
+
 function _syncMarkUI(){
   buildMkShapeRow();
   syncMarkColorBtns();
@@ -29161,6 +29108,11 @@ function _syncMarkUI(){
     if(info) info.textContent = `MARK${markNumStr}  ·  ${m.shape.toUpperCase()}  ·  ${m.color.toUpperCase()}${labelName?' — '+labelName:''}`;
     document.getElementById('mkSizeSlider').value = Math.min(120, m.size);
     document.getElementById('mkSizeLbl').textContent = m.size;
+    // Populate custom name input
+    const nameInput = document.getElementById('mkCustomNameInput');
+    if(nameInput && document.activeElement !== nameInput){
+      nameInput.value = m.customName || '';
+    }
   }
   const hint = document.getElementById('mkHint');
   if(hint){
@@ -57112,10 +57064,22 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
     if(!el || el._touchDragInited) return;
     el._touchDragInited = true;
 
-    // Suppress iOS text selection callout on this element
+    // Suppress iOS text selection callout on this element but allow inputs
     el.style.webkitUserSelect = 'none';
     el.style.userSelect = 'none';
     el.style.webkitTouchCallout = 'none';
+
+    // Re-enable text selection/input for all input/textarea/select children
+    var _inputs = el.querySelectorAll('input, textarea, select, [contenteditable]');
+    _inputs.forEach(function(inp){
+      inp.style.webkitUserSelect = 'text';
+      inp.style.userSelect = 'text';
+      inp.style.webkitTouchCallout = 'default';
+      inp.style.touchAction = 'auto';
+      // Stop long-press from starting drag when touching an input
+      inp.addEventListener('touchstart', function(e){ e.stopPropagation(); }, {passive:true});
+      inp.addEventListener('touchend',   function(e){ e.stopPropagation(); }, {passive:true});
+    });
 
     var _timer = null;
     var _dragging = false;
@@ -57240,6 +57204,9 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
   var _t=[],_pd=0,_pmx=0,_pmy=0,_px=0,_py=0,_moved=false,_lastTap=0;
   // Long-press timer for height picker (fires after 500ms hold on a foundation dot)
   var _hpLongPressTimer = null;
+  // Set to true when a long-press popup is opened; prevents touchend from firing
+  // synthetic click events at the same coordinates (which would instantly close the popup)
+  var _longPressConsumed = false;
 
   vp2.addEventListener('touchstart',function(e){
     // Pass through touches on overlay buttons (rotate btn etc.)
@@ -57248,13 +57215,22 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
       return;
     }
     e.preventDefault();
-    _t=Array.from(e.touches); _moved=false;
+    _t=Array.from(e.touches); _moved=false; _longPressConsumed=false;
     if(_t.length===2){
       _pd=Math.hypot(_t[1].clientX-_t[0].clientX,_t[1].clientY-_t[0].clientY);
       _pmx=(_t[0].clientX+_t[1].clientX)/2; _pmy=(_t[0].clientY+_t[1].clientY)/2;
       if(_hpLongPressTimer){ clearTimeout(_hpLongPressTimer); _hpLongPressTimer=null; }
     } else if(_t.length===1){
       _px=_t[0].clientX; _py=_t[0].clientY;
+      // Mark tool: call mousedown to select mark or handle on touch start
+      if(typeof editMarkMode!=='undefined' && editMarkMode &&
+         typeof viewMode!=='undefined' && viewMode !== 'ov'){
+        var rMk=vp2.getBoundingClientRect();
+        if(typeof markOnMouseDown==='function'){
+          var _mkSx=_t[0].clientX-rMk.left, _mkSy=_t[0].clientY-rMk.top;
+          markOnMouseDown(_mkSx, _mkSy);
+        }
+      }
       // Crane tool: call mousedown to grab handle or select crane
       if(typeof editCraneMode!=='undefined' && editCraneMode){
         var rCr=vp2.getBoundingClientRect();
@@ -57278,6 +57254,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
             var hitFp = fxpHitTest(mx, my);
             if(hitFp){
               if(navigator.vibrate) navigator.vibrate(40);
+              _longPressConsumed = true;
               _fxpShowLabelEditor(hitFp, mx, my);
               return;
             }
@@ -57288,6 +57265,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
             if(h){
               if(navigator.vibrate) navigator.vibrate(40);
               if(!editHeightMode && typeof _showHeightMode === 'function') _showHeightMode();
+              _longPressConsumed = true;
               openHeightPicker(t0.clientX, t0.clientY, h);
             }
           }
@@ -57316,6 +57294,13 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
         var rCr=vp2.getBoundingClientRect();
         if(typeof craneOnMouseMove==='function')
           craneOnMouseMove(ts[0].clientX-rCr.left, ts[0].clientY-rCr.top);
+      } else if(typeof editMarkMode!=='undefined' && editMarkMode &&
+         typeof markDragMode!=='undefined' && markDragMode!==null){
+        // Drag-move/resize/rotate a selected mark
+        var rMkM=vp2.getBoundingClientRect();
+        if(typeof markOnMouseMove==='function')
+          markOnMouseMove(ts[0].clientX-rMkM.left, ts[0].clientY-rMkM.top);
+        _moved=true; // prevent pan while dragging mark
       } else {
         panX+=dx; panY+=dy;
       }
@@ -57374,8 +57359,14 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           var rect_vp = vp2.getBoundingClientRect();
           var sx = t2.clientX - rect_vp.left;
           var sy = t2.clientY - rect_vp.top;
-          if(typeof markOnMouseDown === 'function') markOnMouseDown(sx, sy);
-          if(typeof markOnMouseUp   === 'function') markOnMouseUp(sx, sy, false);
+          var wasMkDrag = typeof markDragMode !== 'undefined' && markDragMode !== null;
+          // Finalize position from last touch move, then mouseUp
+          if(typeof markOnMouseMove === 'function') markOnMouseMove(sx, sy);
+          if(typeof markOnMouseUp   === 'function') markOnMouseUp(sx, sy, wasMkDrag);
+          // If it was a tap (not a drag), also call mouseDown so tap-to-select works
+          if(!wasMkDrag && !_moved){
+            if(typeof markOnMouseDown === 'function') markOnMouseDown(sx, sy);
+          }
           return;
         }
         if(typeof editCraneMode !== 'undefined' && editCraneMode){
@@ -57451,19 +57442,27 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           if(typeof hcStopMode !== 'undefined' && hcStopMode){
             var _lxS = (sx3 - panX) / zoom;
             var _lyS = (sy3 - panY) / zoom;
+            // Set edge from Y position
             if(typeof _hcStopEdge !== 'undefined' && typeof SH !== 'undefined'){
               _hcStopEdge = _lyS < SH / 2 ? 'fwd' : 'aft';
             }
-            if(typeof _hcStopMouseLx !== 'undefined'){
-              _hcStopMouseLx = _lxS; _hcStopMouseLy = _lyS;
-            }
-            // Reset throttle timer so touch tap always registers
+            // Fire synthetic mousemove so the full tracking state (_hcStopMouseHc etc.) is set
+            var _hcsMM = new MouseEvent('mousemove', {
+              clientX: t2.clientX, clientY: t2.clientY,
+              bubbles: true, cancelable: true, view: window
+            });
+            vp2.dispatchEvent(_hcsMM);
+            // Reset throttle
             if(typeof _objLastPlaceTime !== 'undefined') _objLastPlaceTime = 0;
             if(typeof draw === 'function') draw();
             if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
             return;
           }
         }
+
+        // Skip synthetic events if a long-press popup was just opened —
+        // otherwise the touchend coordinates hit the close button and dismiss it instantly.
+        if(_longPressConsumed){ _longPressConsumed=false; return; }
 
         ['mousedown','mouseup','click'].forEach(function(ev){
           var s=new MouseEvent(ev,{clientX:t2.clientX,clientY:t2.clientY,
