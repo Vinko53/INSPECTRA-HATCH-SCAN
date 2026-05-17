@@ -59174,7 +59174,6 @@ function _lbCopyEyesToAllBridges(){
         <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(3)">HC·3</button>
         <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(4)">HC·4</button>
         <button class="btn mob-danger" style="font-size:10px;padding:7px 10px;color:#e05050;border-color:#a02020;" onclick="autoSwitchBay&&autoSwitchBay();setHcBrush&&setHcBrush(7)">⌫ DEL</button>
-        <button class="btn" style="font-size:10px;padding:7px 10px;" onclick="autoSwitchBay&&autoSwitchBay();toggleEditHC&&toggleEditHC()">✎ HC</button>
       </div>
       <div class="mob-sub-label">HC COLOR</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 16px 10px;border-bottom:1px solid #0f2a3e;">
@@ -59904,22 +59903,50 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           if(typeof hcStopMode !== 'undefined' && hcStopMode){
             var _lxS = (sx3 - panX) / zoom;
             var _lyS = (sy3 - panY) / zoom;
-            // Set edge from Y position
-            if(typeof _hcStopEdge !== 'undefined' && typeof SH !== 'undefined'){
-              _hcStopEdge = _lyS < SH / 2 ? 'fwd' : 'aft';
+            var _bayS = selBay;
+            var _rowsS = totalRowsForBay(_bayS);
+            // Determine edge from Y position
+            var _edgeS = _lyS < SH / 2 ? 'fwd' : 'aft';
+            if(typeof _hcStopEdge !== 'undefined') _hcStopEdge = _edgeS;
+
+            if(typeof _hcStopFreeMode !== 'undefined' && _hcStopFreeMode){
+              // Free mode
+              var _snapXS = Math.round(_lxS / (SW/4)) * (SW/4);
+              var _snapYS = _edgeS === 'fwd' ? -HC_STOP_Y_OFF : SH + HC_STOP_Y_OFF;
+              if(!isNaN(_snapXS) && _snapXS >= 0 && _snapXS <= _rowsS * SW){
+                pushUndo();
+                addHcStopperFree(_bayS, _snapXS, _snapYS, _hcStopBrush, 'black');
+                if(typeof draw === 'function') draw();
+              }
+            } else {
+              // Snap mode — find HC by column
+              var _colS = Math.floor(_lxS / SW);
+              var _hcNumS = 0, _spanFirstS = -1;
+              if(_colS >= 0 && _colS < _rowsS){
+                _hcNumS = getHC(_bayS, _colS);
+                if(_hcNumS){ var _spS = hcSpanCenter(_bayS, _hcNumS, _rowsS, _colS); _spanFirstS = _spS.first; }
+              }
+              // Search nearby if not found
+              if(!_hcNumS){
+                var _bestDS = SW * 1.5, _bestHS = 0, _bestFS = -1;
+                for(var _cS = 0; _cS < _rowsS; _cS++){
+                  var _hS = getHC(_bayS, _cS); if(!_hS) continue;
+                  var _spS2 = hcSpanCenter(_bayS, _hS, _rowsS, _cS);
+                  var _dS = Math.abs(_lxS - _spS2.cx);
+                  if(_dS < _bestDS){ _bestDS = _dS; _bestHS = _hS; _bestFS = _spS2.first; }
+                }
+                if(_bestHS){ _hcNumS = _bestHS; _spanFirstS = _bestFS; }
+              }
+              if(_hcNumS){
+                var _arrS = hcStoppersBay(_bayS);
+                var _existS = _arrS.find(function(s){ return s.hcNum === _hcNumS && s.edge === _edgeS && !s.free; });
+                if(!_existS){
+                  pushUndo();
+                  addHcStopper(_bayS, _hcNumS, _edgeS, _hcStopBrush, _hcStopColor||'black', _spanFirstS);
+                  if(typeof draw === 'function') draw();
+                }
+              }
             }
-            // Fire synthetic mousemove so the full tracking state is set
-            var _hcsMM = new MouseEvent('mousemove', {
-              clientX: t2.clientX, clientY: t2.clientY,
-              bubbles: true, cancelable: true, view: window
-            });
-            vp2.dispatchEvent(_hcsMM);
-            // Reset throttle, draw twice (first sets snap state, second confirms)
-            if(typeof _objLastPlaceTime !== 'undefined') _objLastPlaceTime = 0;
-            if(typeof draw === 'function'){ draw(); draw(); }
-            window._hcStopPlacingFromTouch = true;
-            if(typeof hcStopHandleClick === 'function') hcStopHandleClick(sx3, sy3);
-            window._hcStopPlacingFromTouch = false;
             return;
           }
         }
