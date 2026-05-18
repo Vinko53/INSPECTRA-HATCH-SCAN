@@ -1,19 +1,3 @@
-<!--
-================================================================================
-  VESSEL GRID — BAY PLAN DRAWING SYSTEM
-  Copyright (c) 2026 Vinko Separovic. All rights reserved.
-
-  This software and its source code are the exclusive intellectual property
-  of Vinko Separovic. Unauthorized copying, reproduction, modification,
-  distribution, or use of this software, in whole or in part, without the
-  express written permission of Vinko Separovic is strictly prohibited.
-
-  This software is licensed, not sold. Use of this software constitutes
-  acceptance of the End User License Agreement (EULA) presented at first login.
-
-  For licensing inquiries contact: vinkoseparovic@inspectrahatch.com
-================================================================================
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3378,7 +3362,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 
 </style>
 </head>
-<body class="float-icons-hidden">
+<body>
 
 <!-- ══════════════════════════════════════════════════════
      LOGIN SCREEN — shown on every startup, blocks the app
@@ -4232,19 +4216,18 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
     width:min(820px,95vw);max-height:85vh;display:flex;flex-direction:column;
     box-shadow:0 24px 80px rgba(0,0,0,0.85);font-family:'IBM Plex Mono',monospace;">
     <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:44px;
-      background:#130820;border-bottom:1px solid #3a1e6a;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:16px;color:#c090f0;">⊞</span>
-        <span style="font-size:11px;font-weight:700;letter-spacing:0.2em;color:#c090f0;text-transform:uppercase;">RESTING PAD LIBRARY</span>
-        <span style="font-size:9px;color:#7050a0;letter-spacing:0.12em;">— PAD TYPE CATALOGUE</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;min-height:44px;
+      background:#130820;border-bottom:1px solid #3a1e6a;flex-shrink:0;flex-wrap:wrap;gap:6px;">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+        <span style="font-size:14px;color:#c090f0;">⊞</span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.15em;color:#c090f0;text-transform:uppercase;">RESTING PAD LIBRARY</span>
+        <span style="font-size:8px;color:#7050a0;letter-spacing:0.1em;white-space:nowrap;">— PAD TYPE CATALOGUE</span>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button class="oe-btn" style="border-color:#5030a0;color:#c090f0;" onclick="rpLibAddRow()">＋ ADD TYPE</button>
-        <button class="oe-btn" style="border-color:#5030a0;color:#9070c0;" onclick="rpLibDuplicateRow()">⧉ DUPLICATE</button>
-        <button class="oe-btn oe-btn-del" onclick="rpLibDeleteRow()">⌫ DELETE</button>
-        <div style="width:1px;background:#3a1e6a;align-self:stretch;margin:0 4px;"></div>
-        <button class="oe-btn oe-btn-close" onclick="closeRpLib()">✕ CLOSE</button>
+      <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+        <button class="oe-btn" style="border-color:#5030a0;color:#c090f0;touch-action:manipulation;" onclick="rpLibAddRow()">＋ ADD TYPE</button>
+        <button class="oe-btn" style="border-color:#5030a0;color:#9070c0;touch-action:manipulation;" onclick="rpLibDuplicateRow()">⧉ DUPLICATE</button>
+        <button class="oe-btn oe-btn-del" onclick="rpLibDeleteRow()" style="touch-action:manipulation;">⌫ DELETE</button>
+        <button class="oe-btn oe-btn-close" onclick="closeRpLib()" style="touch-action:manipulation;">✕ CLOSE</button>
       </div>
     </div>
     <!-- Table -->
@@ -4296,19 +4279,18 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
     box-shadow:0 24px 80px rgba(0,0,0,0.85);font-family:'IBM Plex Mono',monospace;">
 
     <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:44px;
-      background:#0a1e10;border-bottom:1px solid #1e4a2e;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:16px;color:#60d890;">▣</span>
-        <span style="font-size:11px;font-weight:700;letter-spacing:0.2em;color:#60d890;text-transform:uppercase;">FLEXIPAD LIBRARY</span>
-        <span style="font-size:9px;color:#3a7a50;letter-spacing:0.12em;">— PAD TYPE CATALOGUE</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;min-height:44px;
+      background:#0a1e10;border-bottom:1px solid #1e4a2e;flex-shrink:0;flex-wrap:wrap;gap:6px;">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+        <span style="font-size:14px;color:#60d890;">▣</span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.15em;color:#60d890;text-transform:uppercase;">FLEXIPAD LIBRARY</span>
+        <span style="font-size:8px;color:#3a7a50;letter-spacing:0.1em;white-space:nowrap;">— PAD TYPE CATALOGUE</span>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button class="oe-btn oe-btn-add" onclick="fxpLibAddRow()">＋ ADD TYPE</button>
-        <button class="oe-btn" onclick="fxpLibDuplicateRow()">⧉ DUPLICATE</button>
-        <button class="oe-btn oe-btn-del" onclick="fxpLibDeleteRow()">⌫ DELETE</button>
-        <div style="width:1px;background:#1e4a2e;align-self:stretch;margin:0 4px;"></div>
-        <button class="oe-btn oe-btn-close" onclick="closeFxpLib()">✕ CLOSE</button>
+      <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+        <button class="oe-btn oe-btn-add" onclick="fxpLibAddRow()" style="touch-action:manipulation;">＋ ADD TYPE</button>
+        <button class="oe-btn" onclick="fxpLibDuplicateRow()" style="touch-action:manipulation;">⧉ DUPLICATE</button>
+        <button class="oe-btn oe-btn-del" onclick="fxpLibDeleteRow()" style="touch-action:manipulation;">⌫ DELETE</button>
+        <button class="oe-btn oe-btn-close" onclick="closeFxpLib()" style="touch-action:manipulation;">✕ CLOSE</button>
       </div>
     </div>
 
@@ -5135,7 +5117,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatSaveBtn"
     onclick="fileSave()"
     title="Save file (Ctrl+S)"
-    style="position:fixed;top:10px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:10px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5167,7 +5149,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatLayersBtn"
     onclick="toggleLayers()"
     title="Layers — show/hide object categories"
-    style="position:fixed;top:56px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:56px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5191,7 +5173,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatBayCopyBtn"
     onclick="openBayCopyTool()"
     title="Bay Copy Tool"
-    style="position:fixed;top:102px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:102px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5217,7 +5199,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatSmartGridBtn"
     onclick="toggleSmartGrid()"
     title="Toggle Smart Grid"
-    style="position:fixed;top:148px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:148px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5247,7 +5229,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcShapeBtn"
     onclick="autoSwitchBay();toggleHcShapeEditor()"
     title="HC Shape Editor — Free Polygon"
-    style="position:fixed;top:194px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:194px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5275,7 +5257,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcManipBtn"
     onclick="autoSwitchBay();toggleHcManip()"
     title="HC Manipulator — Select & Edit Shapes"
-    style="position:fixed;top:240px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:240px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5300,7 +5282,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcNamingBtn"
     onclick="autoSwitchBay();openHcNameTool()"
     title="HC Naming Tool"
-    style="position:fixed;top:286px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:286px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5327,7 +5309,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatLashEyeBtn"
     onclick="autoSwitchBay();toggleLashEyePlacer()"
     title="Place Lashing Eye"
-    style="position:fixed;top:332px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:332px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5357,7 +5339,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcStopPlaceBtn"
     onclick="autoSwitchBay();toggleHcStopPlacer()"
     title="Place HC Stopper"
-    style="position:fixed;top:378px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:378px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5380,7 +5362,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHcStopManipBtn"
     onclick="autoSwitchBay();toggleHcStopManip()"
     title="HC Stopper Manipulator"
-    style="position:fixed;top:424px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:424px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5407,7 +5389,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatMarkToolBtn"
     onclick="toggleMarkTool()"
     title="Marking Tool — Place Symbols"
-    style="position:fixed;top:470px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:470px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5430,7 +5412,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatMarkLegendBtn"
     onclick="openMarkLegend()"
     title="Mark Legend — Shape Library"
-    style="position:fixed;top:516px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:516px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5456,7 +5438,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHeightToolBtn"
     onclick="autoSwitchBay();toggleHeightMode()"
     title="Custom Foundation Height"
-    style="position:fixed;top:562px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:562px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5482,7 +5464,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFshpBtn"
     onclick="toggleFshp()"
     title="Foundation Shape Palette"
-    style="position:fixed;top:608px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:608px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5510,7 +5492,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatObjManipBtn"
     onclick="toggleObjManip()"
     title="Object Manipulator"
-    style="position:fixed;top:654px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:654px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5542,7 +5524,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFpalBtn"
     onclick="toggleFpal()"
     title="Color Palette"
-    style="position:fixed;top:700px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:700px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5566,7 +5548,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatAssignBtn"
     onclick="autoSwitchBay();toggleAssignMode()"
     title="Assign Type to Foundation"
-    style="position:fixed;top:746px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:746px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5590,7 +5572,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatObjEditorBtn"
     onclick="openObjEditor()"
     title="Foundation Types Library"
-    style="position:fixed;top:792px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:792px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5618,7 +5600,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFxpPlaceBtn"
     onclick="autoSwitchBay();toggleFlexipadPlacer()"
     title="Place Flexipad"
-    style="position:fixed;top:838px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:838px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5643,7 +5625,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFxpManipBtn"
     onclick="autoSwitchBay();toggleFlexipadManip()"
     title="Flexipad Manipulator"
-    style="position:fixed;top:884px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:884px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5669,7 +5651,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFxpAssignBtn"
     onclick="autoSwitchBay();toggleFlexipadAssignMode()"
     title="Assign Type to Flexipad"
-    style="position:fixed;top:930px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:930px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5697,7 +5679,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatFxpLibBtn"
     onclick="openFxpLib()"
     title="Flexipad Library — Type Catalogue"
-    style="position:fixed;top:976px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:976px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5724,7 +5706,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatVentPlaceBtn"
     onclick="autoSwitchBay();toggleVentPlacer()"
     title="Place HC Ventilator"
-    style="position:fixed;top:1022px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:1022px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
@@ -5753,7 +5735,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatHddPlaceBtn"
     onclick="autoSwitchBay();toggleHddPlacer()"
     title="Place Hold-Down Device"
-    style="position:fixed;top:1066px;left:10px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:1066px;left:10px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(20,10,0,0.92);
       border:1.5px solid #c07020;
@@ -5778,7 +5760,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpPlaceBtn"
     onclick="autoSwitchBay();toggleRpPlacer()"
     title="Place Resting Pad"
-    style="position:fixed;top:10px;left:58px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:10px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5803,7 +5785,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpManipBtn"
     onclick="autoSwitchBay();toggleRpManip()"
     title="Resting Pad Manipulator"
-    style="position:fixed;top:56px;left:58px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:56px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5829,7 +5811,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpAssignBtn"
     onclick="autoSwitchBay();toggleRpAssignMode()"
     title="Assign Type to Resting Pad"
-    style="position:fixed;top:102px;left:58px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:102px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5856,7 +5838,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpLibBtn"
     onclick="openRpLib()"
     title="Resting Pad Library — Type Catalogue"
-    style="position:fixed;top:148px;left:58px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:148px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5883,7 +5865,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpPocketPaintBtn"
     onclick="autoSwitchBay();toggleRpPocketPaintMode()"
     title="Paint Pads Individually"
-    style="position:fixed;top:194px;left:58px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:194px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -5909,7 +5891,7 @@ font-family:'IBM Plex Mono',monospace;">
   <div id="floatRpClearBtn"
     onclick="autoSwitchBay();clearRpBay()"
     title="Clear Resting Pads — Current Bay"
-    style="position:fixed;top:240px;left:58px;z-index:820;
+    style="touch-action:manipulation;position:fixed;top:240px;left:58px;z-index:820;
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
@@ -6021,7 +6003,7 @@ font-family:'IBM Plex Mono',monospace;">
     <button class="fpal-multi-btn" id="fshpPairBtn" onclick="toggleSingleAsPair();fshpSync()" style="display:block;width:calc(100% - 16px);margin:0 8px 8px;">SGL → SINGLE</button>
   </div>
 
-  <!-- OBJECT MANIPULATOR FLOATING WINDOW -->  <div id="objManipPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:820;width:min(200px,92vw);
+  <!-- OBJECT MANIPULATOR FLOATING WINDOW -->  <div id="objManipPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:835;width:min(200px,92vw);
     background:#0c1828;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
     box-shadow:0 16px 48px rgba(0,0,0,0.92),0 0 0 1px rgba(94,184,255,0.10);
     user-select:none;font-family:'IBM Plex Mono',monospace;">
@@ -6342,7 +6324,7 @@ font-family:'IBM Plex Mono',monospace;">
   </div>
 
   <!-- HC SHAPE EDITOR PALETTE -->
-  <div id="hcShapePal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:800;width:min(220px,92vw);background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;box-shadow:0 12px 40px rgba(0,0,0,0.8);user-select:none;font-family:'IBM Plex Mono',monospace;">
+  <div id="hcShapePal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:835;width:min(220px,92vw);background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;box-shadow:0 12px 40px rgba(0,0,0,0.8);user-select:none;font-family:'IBM Plex Mono',monospace;">
 
     <!-- ── TITLE BAR ── -->
     <div id="hcSpHandle" style="display:flex;align-items:center;height:26px;padding:0 6px 0 10px;background:#112234;border-bottom:1px solid #2a5878;cursor:grab;gap:4px;">
@@ -27011,7 +26993,15 @@ let _hddSnapSide='port';
 
 function drawHddGuides(bay, rows){
   if(!hddMode || !layerOn('lyr_hc_holddown')) return;
-  if(_hddDeleteMode) return;
+  if(_hddDeleteMode){
+    if(_hddMouseSx || _hddMouseSy) _drawHddDeleteCursor(_hddMouseSx, _hddMouseSy);
+    return;
+  }
+  if(_hddFlipV){
+    // Rotate mode: show blue rotate cursor — no ghost HDD
+    if(_hddMouseSx || _hddMouseSy) _drawHddRotateCursor(_hddMouseSx, _hddMouseSy);
+    return;
+  }
   const lx = _hddFreeMode
     ? (_hddMouseSx-panX)/zoom
     : (_hddSnapHit ? _hddSnapX : (_hddMouseSx-panX)/zoom);
@@ -27025,6 +27015,61 @@ function drawHddGuides(bay, rows){
   ctx.globalAlpha = 0.55;
   drawHoldDownSymbol(lx, ly, side, false, false, blocked, _hddFlipV);
   ctx.globalAlpha = 1.0;
+}
+
+function _drawHddRotateCursor(sx, sy){
+  // Blue circular arrow cursor indicating rotate/flip mode
+  const r = 11;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset to screen space
+  ctx.strokeStyle = '#4ab0ff';
+  ctx.lineWidth   = 2;
+  ctx.lineCap     = 'round';
+  // Arc (270° of circle — open at bottom-right)
+  ctx.beginPath();
+  ctx.arc(sx, sy, r, -Math.PI * 0.1, Math.PI * 1.4);
+  ctx.stroke();
+  // Arrow head at end of arc
+  const endAngle = Math.PI * 1.4;
+  const ax = sx + r * Math.cos(endAngle);
+  const ay = sy + r * Math.sin(endAngle);
+  const arrLen = 5;
+  const arrAngle = endAngle + Math.PI / 2;
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(ax + arrLen * Math.cos(arrAngle - 0.5), ay + arrLen * Math.sin(arrAngle - 0.5));
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(ax + arrLen * Math.cos(arrAngle + 0.5), ay + arrLen * Math.sin(arrAngle + 0.5));
+  ctx.stroke();
+  // Centre dot
+  ctx.beginPath();
+  ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#4ab0ff';
+  ctx.fill();
+  ctx.restore();
+}
+
+function _drawHddDeleteCursor(sx, sy){
+  const arm = 11, gap = 3;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset to screen space
+  ctx.strokeStyle = '#ee2020';
+  ctx.lineWidth   = 2.2;
+  ctx.lineCap     = 'round';
+  // Diagonal X arms
+  ctx.beginPath();
+  ctx.moveTo(sx-arm, sy-arm); ctx.lineTo(sx-gap, sy-gap);
+  ctx.moveTo(sx+gap, sy+gap); ctx.lineTo(sx+arm, sy+arm);
+  ctx.moveTo(sx+arm, sy-arm); ctx.lineTo(sx+gap, sy-gap);
+  ctx.moveTo(sx-gap, sy+gap); ctx.lineTo(sx-arm, sy+arm);
+  ctx.stroke();
+  // Circle around the X
+  ctx.beginPath();
+  ctx.arc(sx, sy, arm * 1.2, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(238,32,32,0.55)';
+  ctx.lineWidth   = 1.2;
+  ctx.stroke();
+  ctx.restore();
 }
 
 function hddHitTest(sx, sy){
@@ -27052,7 +27097,7 @@ function hddHandleClick(sx, sy){
   _hddMouseSx=sx; _hddMouseSy=sy;
   if(!_hddFreeMode) _hddTrySnap(sx, sy);
 
-  // ROTATE MODE: tap existing unit to flip it (does NOT place new units)
+  // ROTATE MODE: tap existing unit to flip it — if no unit hit, fall through to place with flipV=true
   if(_hddFlipV){
     const hitId = hddHitTest(sx, sy);
     if(hitId){
@@ -27061,7 +27106,7 @@ function hddHandleClick(sx, sy){
       const hit = arr.find(h => h.id === hitId);
       if(hit){ hit.flipV = !hit.flipV; draw(); return true; }
     }
-    return false; // ROTATE ON but no unit hit — do nothing
+    // No existing unit hit — fall through to place a new one with flipV=true
   }
 
   // DELETE MODE
@@ -27132,7 +27177,7 @@ function hddHandleClick(sx, sy){
   }
 
   pushUndo();
-  addHdd(bay,px,py,side,false,fndColorBrush||'black');
+  addHdd(bay,px,py,side,_hddFlipV,fndColorBrush||'black');
 
   // Mirror placement
   if(_hddMirror){
@@ -27145,14 +27190,16 @@ function hddHandleClick(sx, sy){
         const {first,last}=hcSpanCenter(bay,h,rows,c);
         const off=_hddOffset();
         const mirX=mirSide==='port'?first*SW-off:(last+1)*SW+off;
-        addHdd(bay,mirX,py,mirSide,false,fndColorBrush||'black');
+        addHdd(bay,mirX,py,mirSide,_hddFlipV,fndColorBrush||'black');
       }
       const mirY=SH-py;
-      if(Math.abs(mirY-py)>2)addHdd(bay,px,mirY,side,false,fndColorBrush||'black');
+      if(Math.abs(mirY-py)>2)addHdd(bay,px,mirY,side,_hddFlipV,fndColorBrush||'black');
     } else {
+      // fwd/aft mirror: flip the flipV flag so both units face the same direction
+      // (fwd and aft draw with opposite default scale, so !flipV corrects for that)
       const mirSide=side==='fwd'?'aft':'fwd';
       const mirY=SH-py;
-      if(Math.abs(mirY-py)>2)addHdd(bay,px,mirY,mirSide,false,fndColorBrush||'black');
+      if(Math.abs(mirY-py)>2)addHdd(bay,px,mirY,mirSide,!_hddFlipV,fndColorBrush||'black');
     }
   }
 
@@ -27233,6 +27280,11 @@ function hddSyncUI(){
     delBtn.style.boxShadow=_hddDeleteMode?'0 0 10px rgba(200,40,40,0.3)':'none';
     delBtn.style.letterSpacing=_hddDeleteMode?'0.18em':'0.16em';
   }
+  // Set viewport cursor: none in delete/rotate mode so custom cursor is unobstructed
+  if(typeof vp !== 'undefined' && vp){
+    if(_hddDeleteMode || _hddFlipV) vp.style.cursor = 'none';
+    else vp.style.cursor = '';
+  }
   draw();
 }
 
@@ -27252,6 +27304,10 @@ function _updateHddFlipHint(){
     btn.style.background = _hddFlipV ? 'rgba(240,160,48,0.22)' : 'rgba(180,100,20,0.12)';
     btn.style.color       = _hddFlipV ? '#f0a030' : '#c08040';
     btn.style.borderColor = _hddFlipV ? '#c07020' : '#6a4010';
+  }
+  // Toggle cursor visibility for rotate mode
+  if(typeof vp !== 'undefined' && vp && !_hddDeleteMode){
+    vp.style.cursor = _hddFlipV ? 'none' : '';
   }
 }
 
@@ -29592,7 +29648,7 @@ document.addEventListener('keydown', e => {
 <!-- ════════════════════════════════════════════════════════════════
      CRANE TOOL
      ════════════════════════════════════════════════════════════════ -->
-<div id="cranePal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:811;width:min(240px,92vw);
+<div id="cranePal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:835;width:min(240px,92vw);
   background:#060e1a;border:1px solid #2d7fc1;border-top:3px solid #c87800;
   box-shadow:0 12px 40px rgba(0,0,0,0.85),0 0 0 1px rgba(200,120,0,0.08);font-family:'IBM Plex Mono',monospace;">
 
@@ -29658,7 +29714,7 @@ document.addEventListener('keydown', e => {
 <!-- ════════════════════════════════════════════════════════════════
      MARKING TOOL
      ════════════════════════════════════════════════════════════════ -->
-<div id="markPal" onmousedown="event.stopPropagation()" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:810;width:206px;
+<div id="markPal" onmousedown="event.stopPropagation()" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:835;width:206px;
   background:#0d1e30;border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;
   box-shadow:0 12px 40px rgba(0,0,0,0.88);user-select:none;
   font-family:'IBM Plex Mono',monospace;">
@@ -33967,10 +34023,9 @@ async function exportRubberSealsPDF() {
       <div class="fm-opt-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
         <span class="fm-opt-hint">Show or hide individual floating action buttons on the canvas</span>
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding-bottom:8px;border-bottom:1px solid rgba(94,184,255,0.15);">
-          <span class="fm-opt-label">All icons — master switch</span>
+          <span class="fm-opt-label">All icons — clear all</span>
           <div style="display:flex;gap:6px;">
-            <button onclick="setFloatIconsVisible(true)"  id="iconToggleOnBtn"  class="lash-speed-btn">ON</button>
-            <button onclick="setFloatIconsVisible(false)" id="iconToggleOffBtn" class="lash-speed-btn lash-speed-active">OFF</button>
+            <button onclick="setFloatIconsVisible(false)" id="iconToggleClearBtn" class="lash-speed-btn" style="color:#ff8080;border-color:#cc3030;">⌫ CLEAR ALL</button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;width:100%;">
@@ -34410,17 +34465,35 @@ async function exportRubberSealsPDF() {
 #fileSaveIndicator.unsaved { opacity: 1; }
 #fileSaveIndicator.unsaved + #fileSaveLabel { display: inline !important; }
 
-/* Hide floating icon buttons when dropdown menus or overlay panels are open */
+/* Float icons stay behind menus/panels via z-index — just block interactions */
 body.menu-open [id^="float"][id$="Btn"],
 body.panel-open [id^="float"][id$="Btn"],
 body.mob-menu-open [id^="float"][id$="Btn"] {
-  display: none !important;
+  pointer-events: none !important;
+  opacity: 0.35 !important;
 }
 
-/* Floating icons toggle — hidden when float-icons-hidden is set (default) */
-body.float-icons-hidden [id^="float"][id$="Btn"]:not(#floatSaveBtn) {
-  display: none !important;
+/* Float icon visibility controlled per-button by toggleFab */
+
+/* Float icon buttons — active state (tool is currently ON) */
+[id^="float"][id$="Btn"].lash-on,
+[id^="float"][id$="Btn"].stop-on,
+[id^="float"][id$="Btn"].fxp-on,
+[id^="float"][id$="Btn"].fshp-on,
+[id^="float"][id$="Btn"].rp-on,
+[id^="float"][id$="Btn"].mark-on,
+[id^="float"][id$="Btn"].crane-on,
+[id^="float"][id$="Btn"].vent-on,
+[id^="float"][id$="Btn"].hdd-on,
+[id^="float"][id$="Btn"].om-on,
+[id^="float"][id$="Btn"].layers-on {
+  border-color: #5eb8ff !important;
+  background: rgba(8,50,100,0.96) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 14px rgba(94,184,255,0.5) !important;
 }
+
+
 
 #floatSaveBtn:hover {
   background: rgba(45,127,193,0.45) !important;
@@ -35616,46 +35689,33 @@ let _autoSaveTimer    = null;
 // ── Floating icons visibility ──
 let _floatIconsVisible = false; // default OFF
 
+// CLEAR ALL: permanently hide all floating icons individually (user can re-enable one by one)
+var _fabClearedByMaster = false;
+
 function setFloatIconsVisible(on){
-  _floatIconsVisible = !!on;
-  document.body.classList.toggle('float-icons-hidden', !_floatIconsVisible);
-  const onBtn  = document.getElementById('iconToggleOnBtn');
-  const offBtn = document.getElementById('iconToggleOffBtn');
-  if(onBtn)  onBtn.classList.toggle('lash-speed-active',  _floatIconsVisible);
-  if(offBtn) offBtn.classList.toggle('lash-speed-active', !_floatIconsVisible);
-  // When turning ON: directly clear inline display:none from float icon BUTTONS only
-  if(_floatIconsVisible){
-    const _fabIds = ['floatSaveBtn','floatLayersBtn','floatBayCopyBtn','floatSmartGridBtn',
-      'floatHcShapeBtn','floatHcManipBtn','floatHcNamingBtn','floatLashEyeBtn',
-      'floatHcStopPlaceBtn','floatHcStopManipBtn','floatMarkToolBtn','floatMarkLegendBtn',
-      'floatHeightToolBtn','floatFshpBtn','floatObjManipBtn','floatFpalBtn',
-      'floatAssignBtn','floatObjEditorBtn','floatFxpPlaceBtn','floatFxpManipBtn',
-      'floatFxpAssignBtn','floatFxpLibBtn','floatVentPlaceBtn','floatHddPlaceBtn',
-      'floatRpPlaceBtn','floatRpManipBtn','floatRpAssignBtn','floatRpLibBtn'];
-    _fabIds.forEach(function(id){
-      var el = document.getElementById(id);
-      if(el && el.style.display === 'none') el.style.display = '';
-    });
-    document.querySelectorAll('[id^="fabToggle"]').forEach(function(btn){
-      btn.textContent = 'VISIBLE';
-      btn.classList.add('lash-speed-active');
-    });
-    if(typeof _loadFabVisibility === 'function' && typeof _saveFabVisibility === 'function'){
-      const vis = _loadFabVisibility();
-      Object.keys(vis).forEach(function(k){ vis[k] = true; });
-      _saveFabVisibility(vis);
-    }
-  } else {
-    // When turning OFF: update all individual toggle buttons to HIDDEN state
-    document.querySelectorAll('[id^="fabToggle"]').forEach(function(btn){
-      btn.textContent = 'HIDDEN';
-      btn.classList.remove('lash-speed-active');
-    });
-    if(typeof _loadFabVisibility === 'function' && typeof _saveFabVisibility === 'function'){
-      const vis = _loadFabVisibility();
-      Object.keys(vis).forEach(function(k){ vis[k] = false; });
-      _saveFabVisibility(vis);
-    }
+  if(on) return; // RESTORE removed — only CLEAR ALL action exists
+  // Hide all individually and update their toggle buttons to HIDDEN
+  const _fabIds = ['floatSaveBtn','floatLayersBtn','floatBayCopyBtn','floatSmartGridBtn',
+    'floatHcShapeBtn','floatHcManipBtn','floatHcNamingBtn','floatLashEyeBtn',
+    'floatHcStopPlaceBtn','floatHcStopManipBtn','floatMarkToolBtn','floatMarkLegendBtn',
+    'floatHeightToolBtn','floatFshpBtn','floatObjManipBtn','floatFpalBtn',
+    'floatAssignBtn','floatObjEditorBtn','floatFxpPlaceBtn','floatFxpManipBtn',
+    'floatFxpAssignBtn','floatFxpLibBtn','floatVentPlaceBtn','floatHddPlaceBtn',
+    'floatRpPlaceBtn','floatRpManipBtn','floatRpAssignBtn','floatRpLibBtn'];
+  _fabIds.forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  // Update per-icon toggle buttons to HIDDEN
+  document.querySelectorAll('[id^="fabToggle"]').forEach(function(btn){
+    btn.textContent = 'HIDDEN';
+    btn.classList.remove('lash-speed-active');
+  });
+  // Persist via fab visibility storage
+  if(typeof _loadFabVisibility === 'function' && typeof _saveFabVisibility === 'function'){
+    const vis = _loadFabVisibility();
+    Object.keys(vis).forEach(function(k){ vis[k] = false; });
+    _saveFabVisibility(vis);
   }
   if(typeof _userSettingsSave === 'function') _userSettingsSave();
 }
@@ -40176,7 +40236,6 @@ function _userSettingsSave(){
       panelTheme:       localStorage.getItem('panelTheme') || 'dark',
       fabVisibility:    (function(){ try{ return JSON.parse(localStorage.getItem('floatFabVisibility')||'{}'); }catch(e){ return {}; } })(),
       fabPositions:     (function(){ try{ return JSON.parse(localStorage.getItem('floatFabPositions')||'{}'); }catch(e){ return {}; } })(),
-      floatIconsVisible: typeof _floatIconsVisible !== 'undefined' ? _floatIconsVisible : false,
     };
     localStorage.setItem(key, JSON.stringify(settings));
   } catch(e) { console.warn('Could not save user settings:', e); }
@@ -40217,10 +40276,6 @@ function _userSettingsLoad(){
       showBgGrid = settings.showBgGrid;
       const _on=document.getElementById('canvasGridOnBtn');  if(_on)  _on.classList.toggle('lash-speed-active', showBgGrid);
       const _off=document.getElementById('canvasGridOffBtn'); if(_off) _off.classList.toggle('lash-speed-active', !showBgGrid);
-    }
-    // Floating icons visibility
-    if(typeof setFloatIconsVisible === 'function'){
-      setFloatIconsVisible(settings.floatIconsVisible !== undefined ? settings.floatIconsVisible : false);
     }
     // Theme
     if(settings.uiTheme !== undefined && typeof setUITheme === 'function') setUITheme(settings.uiTheme);
@@ -59594,7 +59649,13 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
 
     el.addEventListener('touchend', function(e){
       cancelLongPress();
-      if(_dragging){ endDrag(el); e.preventDefault(); }
+      if(_dragging){ endDrag(el); e.preventDefault(); return; }
+      // Short tap on a float icon button — call its onclick directly
+      // (div elements don't always fire click from touch on Android)
+      if(!_dragging && el.onclick && el.id && el.id.startsWith('float') && el.id.endsWith('Btn')){
+        e.preventDefault();
+        el.onclick(e);
+      }
     }, {passive: false});
 
     el.addEventListener('touchcancel', function(){
@@ -59803,11 +59864,95 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
         var _paletteActive = (typeof editColorMode!=='undefined' && editColorMode) ||
                              (typeof fpalVisible!=='undefined' && fpalVisible);
         if(!_paletteActive && typeof viewMode!=='undefined' && typeof setView==='function'){
-          if(viewMode==='ov') setView('bay');
-          else setView('ov');
+          if(viewMode==='ov'){
+            // Navigate to the specific bay/platform that was tapped
+            var rect_ov = vp2.getBoundingClientRect();
+            var _tapMx = t2.clientX - rect_ov.left;
+            var _tapMy = t2.clientY - rect_ov.top;
+            var _tapWx = (_tapMx - panX) / zoom;
+            var _tapWy = (_tapMy - panY) / zoom;
+            // Account for overview rotation
+            if(typeof ovRotation !== 'undefined' && ovRotation !== 0){
+              var _rows2 = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
+              var _tH2 = typeof computeItemYPositions==='function' ? computeItemYPositions(0).totalH : 0;
+              var _bH = typeof BOWH!=='undefined' ? BOWH : 0;
+              var _vesW2 = _rows2*(typeof SW!=='undefined'?SW:52)+(typeof VPX!=='undefined'?VPX:20)*2;
+              var _vesH2 = _tH2+(typeof VPY!=='undefined'?VPY:20)*2+_bH;
+              var _cx2 = _vesW2/2, _cy2 = _vesH2/2-_bH/2;
+              var _ang2 = -ovRotation * Math.PI/2;
+              var _dx2 = _tapWx-_cx2, _dy2 = _tapWy-_cy2;
+              _tapWx = _cx2 + _dx2*Math.cos(_ang2) - _dy2*Math.sin(_ang2);
+              _tapWy = _cy2 + _dx2*Math.sin(_ang2) + _dy2*Math.cos(_ang2);
+            }
+            var _ovRows = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
+            var _gx = typeof VPX!=='undefined' ? VPX : 20;
+            var _gy = (typeof BOWH!=='undefined'?BOWH:40)+(typeof VPY!=='undefined'?VPY:20);
+            var _pos = typeof computeItemYPositions==='function' ? computeItemYPositions(_gy) : {baysY:[],platsY:[]};
+            var _found = false;
+            for(var _b=0; _b<cfg.bays; _b++){
+              var _bY = _pos.baysY[_b];
+              if(_tapWy>=_bY && _tapWy<_bY+(typeof SH!=='undefined'?SH:600) && _tapWx>=_gx && _tapWx<_gx+_ovRows*(typeof SW!=='undefined'?SW:52)){
+                if(typeof selectBay==='function') selectBay(_b);
+                _found = true; break;
+              }
+            }
+            setView('bay');
+          } else { setView('ov'); }
         }
       } else {
         if(!_placementActive) _lastTap=now; else _lastTap=0;
+
+        // Single tap in overview mode — navigate directly to tapped bay
+        if(!_placementActive && typeof viewMode!=='undefined' && viewMode==='ov'){
+          var rect_ov2 = vp2.getBoundingClientRect();
+          var _stMx = t2.clientX - rect_ov2.left;
+          var _stMy = t2.clientY - rect_ov2.top;
+          var _stWx = (_stMx - panX) / zoom;
+          var _stWy = (_stMy - panY) / zoom;
+          if(typeof ovRotation !== 'undefined' && ovRotation !== 0){
+            var _sr2 = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
+            var _stH2 = typeof computeItemYPositions==='function' ? computeItemYPositions(0).totalH : 0;
+            var _sbH = typeof BOWH!=='undefined' ? BOWH : 40;
+            var _svW = _sr2*(typeof SW!=='undefined'?SW:52)+(typeof VPX!=='undefined'?VPX:20)*2;
+            var _svH = _stH2+(typeof VPY!=='undefined'?VPY:20)*2+_sbH;
+            var _scx = _svW/2, _scy = _svH/2-_sbH/2;
+            var _sang = -ovRotation*Math.PI/2;
+            var _sdx = _stWx-_scx, _sdy = _stWy-_scy;
+            _stWx = _scx + _sdx*Math.cos(_sang) - _sdy*Math.sin(_sang);
+            _stWy = _scy + _sdx*Math.sin(_sang) + _sdy*Math.cos(_sang);
+          }
+          var _sGx = typeof VPX!=='undefined' ? VPX : 20;
+          var _sGy = (typeof BOWH!=='undefined'?BOWH:40)+(typeof VPY!=='undefined'?VPY:20);
+          var _sPos = typeof computeItemYPositions==='function' ? computeItemYPositions(_sGy) : {baysY:[],platsY:[]};
+          var _sRows = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
+          var _sSW = typeof SW!=='undefined' ? SW : 52;
+          var _sSH = typeof SH!=='undefined' ? SH : 600;
+          var _sNav = false;
+          for(var _sb=0; _sb<cfg.bays; _sb++){
+            var _sbY = _sPos.baysY[_sb];
+            if(_stWy>=_sbY && _stWy<_sbY+_sSH && _stWx>=_sGx && _stWx<_sGx+_sRows*_sSW){
+              if(typeof selectBay==='function') selectBay(_sb);
+              if(typeof setView==='function') setView('bay');
+              _sNav = true; break;
+            }
+          }
+          // If not a bay, check platforms
+          if(!_sNav && typeof platforms!=='undefined'){
+            platforms.forEach(function(p,pi){
+              if(_sNav) return;
+              var _pRows = typeof totalRowsForPlat==='function' ? totalRowsForPlat(pi) : _sRows;
+              var _pOx = Math.floor((_sRows-_pRows)/2)*_sSW;
+              var _ppH = typeof PLAT_H!=='undefined' ? PLAT_H : 40;
+              if(_stWy>=_sPos.platsY[pi] && _stWy<_sPos.platsY[pi]+_ppH &&
+                 _stWx>=_sGx+_pOx && _stWx<_sGx+_pOx+_pRows*_sSW){
+                if(typeof selectPlatform==='function') selectPlatform(pi);
+                if(typeof setView==='function') setView('bay');
+                _sNav = true;
+              }
+            });
+          }
+          if(_sNav) return;
+        }
         // Fire synthetic events — target the canvas element for edit modes
         // that check e.target === canvas (markTool, craneTool etc.)
         var target = document.getElementById('c') || vp2;
@@ -59903,48 +60048,43 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
           if(typeof hcStopMode !== 'undefined' && hcStopMode){
             var _lxS = (sx3 - panX) / zoom;
             var _lyS = (sy3 - panY) / zoom;
-            var _bayS = selBay;
-            var _rowsS = totalRowsForBay(_bayS);
-            // Determine edge from Y position
+            var _rowsS = typeof totalRows === 'function' ? totalRows() : totalRowsForBay(selBay);
             var _edgeS = _lyS < SH / 2 ? 'fwd' : 'aft';
             if(typeof _hcStopEdge !== 'undefined') _hcStopEdge = _edgeS;
-
-            if(typeof _hcStopFreeMode !== 'undefined' && _hcStopFreeMode){
-              // Free mode
-              var _snapXS = Math.round(_lxS / (SW/4)) * (SW/4);
-              var _snapYS = _edgeS === 'fwd' ? -HC_STOP_Y_OFF : SH + HC_STOP_Y_OFF;
-              if(!isNaN(_snapXS) && _snapXS >= 0 && _snapXS <= _rowsS * SW){
-                pushUndo();
-                addHcStopperFree(_bayS, _snapXS, _snapYS, _hcStopBrush, 'black');
-                if(typeof draw === 'function') draw();
-              }
-            } else {
-              // Snap mode — find HC by column
-              var _colS = Math.floor(_lxS / SW);
-              var _hcNumS = 0, _spanFirstS = -1;
-              if(_colS >= 0 && _colS < _rowsS){
-                _hcNumS = getHC(_bayS, _colS);
-                if(_hcNumS){ var _spS = hcSpanCenter(_bayS, _hcNumS, _rowsS, _colS); _spanFirstS = _spS.first; }
-              }
-              // Search nearby if not found
-              if(!_hcNumS){
-                var _bestDS = SW * 1.5, _bestHS = 0, _bestFS = -1;
-                for(var _cS = 0; _cS < _rowsS; _cS++){
-                  var _hS = getHC(_bayS, _cS); if(!_hS) continue;
-                  var _spS2 = hcSpanCenter(_bayS, _hS, _rowsS, _cS);
-                  var _dS = Math.abs(_lxS - _spS2.cx);
-                  if(_dS < _bestDS){ _bestDS = _dS; _bestHS = _hS; _bestFS = _spS2.first; }
-                }
-                if(_bestHS){ _hcNumS = _bestHS; _spanFirstS = _bestFS; }
-              }
+            var _colS = Math.floor(_lxS / SW);
+            var _placedS = false;
+            if(_colS >= 0 && _colS < _rowsS){
+              var _hcNumS = getHC(selBay, _colS);
               if(_hcNumS){
-                var _arrS = hcStoppersBay(_bayS);
-                var _existS = _arrS.find(function(s){ return s.hcNum === _hcNumS && s.edge === _edgeS && !s.free; });
-                if(!_existS){
-                  pushUndo();
-                  addHcStopper(_bayS, _hcNumS, _edgeS, _hcStopBrush, _hcStopColor||'black', _spanFirstS);
-                  if(typeof draw === 'function') draw();
+                var _spanS = hcSpanCenter(selBay, _hcNumS, _rowsS, _colS);
+                pushUndo();
+                var _arrS = hcStoppersBay(selBay);
+                var _existS = _arrS.find(function(s){ return !s.free && s.hcNum===_hcNumS && s.edge===_edgeS && s.spanFirst===_spanS.first; });
+                if(!_existS){ addHcStopper(selBay, _hcNumS, _edgeS, _hcStopBrush, 'black', _spanS.first); }
+                if(typeof draw==='function') draw();
+                _placedS = true;
+              }
+            }
+            if(!_placedS && typeof hcCustomShapes !== 'undefined'){
+              var _hitPolyS = hcCustomShapes.find(function(s, idx){
+                if(s.bay !== selBay) return false;
+                var pts = s.points; var inside = false;
+                for(var _i=0,_j=pts.length-1; _i<pts.length; _j=_i++){
+                  var xi=pts[_i].x,yi=pts[_i].y,xj=pts[_j].x,yj=pts[_j].y;
+                  if(((yi>_lyS)!==(yj>_lyS))&&(_lxS<(xj-xi)*(_lyS-yi)/(yj-yi)+xi)) inside=!inside;
                 }
+                return inside;
+              });
+              if(_hitPolyS){
+                var _piS = hcCustomShapes.indexOf(_hitPolyS);
+                var _xsS = _hitPolyS.points.map(function(p){return p.x;});
+                var _cxPS = (Math.min.apply(null,_xsS)+Math.max.apply(null,_xsS))/2;
+                var _psfS = -1000 - _piS;
+                pushUndo();
+                var _arrS2 = hcStoppersBay(selBay);
+                var _existS2 = _arrS2.find(function(s){ return !s.free && s.hcNum===_hitPolyS.hc && s.edge===_edgeS && s.spanFirst===_psfS; });
+                if(!_existS2){ var _newS = addHcStopper(selBay,_hitPolyS.hc,_edgeS,_hcStopBrush,'black',_psfS); _newS._polyCx=_cxPS; }
+                if(typeof draw==='function') draw();
               }
             }
             return;
