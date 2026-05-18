@@ -3364,6 +3364,31 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </head>
 <body>
 
+<!-- iPad split-view / narrow browser hint -->
+<div id="fullscreenHint" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:99998;
+  background:rgba(30,74,116,0.97);border-top:2px solid #5eb8ff;padding:10px 16px;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;color:#c8ddf0;
+  display:none;align-items:center;justify-content:space-between;gap:10px;box-sizing:border-box;">
+  <span>&#128241; For best experience: tap <strong style="color:#5eb8ff;">Share &#8593;</strong> &rarr; <strong style="color:#5eb8ff;">Add to Home Screen</strong> to open full screen</span>
+  <button onclick="document.getElementById('fullscreenHint').style.display='none';localStorage.setItem('fsHintDismissed','1')"
+    style="background:none;border:1px solid #5eb8ff;color:#5eb8ff;padding:4px 10px;font-family:inherit;font-size:9px;cursor:pointer;white-space:nowrap;border-radius:3px;flex-shrink:0;">
+    &#10005; DISMISS
+  </button>
+</div>
+<script>
+(function(){
+  var isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  if(!isStandalone && !localStorage.getItem('fsHintDismissed')){
+    var isIpad = /iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var isMob = /iPhone|iPad|iPod|Android/.test(navigator.userAgent);
+    if((isIpad || isMob) && window.innerWidth < 700){
+      var h = document.getElementById('fullscreenHint');
+      if(h) h.style.display = 'flex';
+    }
+  }
+})();
+</script>
+
 <!-- ══════════════════════════════════════════════════════
      LOGIN SCREEN — shown on every startup, blocks the app
 ════════════════════════════════════════════════════════ -->
