@@ -3905,7 +3905,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
           <div class="dd-section bay-only">HC CREATOR</div>
           <div class="dd-row bay-only">
             <button class="btn" id="bHcN"   onclick="autoSwitchBay();setHcBrush(0)">NONE</button>
-            <button class="btn hc1-on" id="bHc1" onclick="autoSwitchBay();setHcBrush(1)">HC·1</button>
+            <button class="btn" id="bHc1" onclick="autoSwitchBay();setHcBrush(1)">HC·1</button>
             <button class="btn" id="bHc2" onclick="autoSwitchBay();setHcBrush(2)">HC·2</button>
             <button class="btn" id="bHc3" onclick="autoSwitchBay();setHcBrush(3)">HC·3</button>
             <button class="btn" id="bHc4" onclick="autoSwitchBay();setHcBrush(4)">HC·4</button>
@@ -6141,11 +6141,17 @@ font-family:'IBM Plex Mono',monospace;">
         <button id="omBtnDrag" class="om-mode-btn" onclick="omSetMode('drag')">
           <span class="om-icon">⤢</span> DRAG &amp; DROP
         </button>
-        <button id="omBtnCopy" class="om-mode-btn" onclick="omSetMode('copy')">
-          <span class="om-icon">⎘</span> <span id="omLblCopy">COPY FOUNDATION</span>
-        </button>
-        <button id="omBtnPaste" class="om-mode-btn" onclick="omSetMode('paste')">
-          <span class="om-icon">⎙</span> <span id="omLblPaste">PASTE FOUNDATION</span>
+        <button id="omBtnCopyPaste" class="om-mode-btn" onclick="omCopyPasteToggle()" style="display:flex;align-items:center;gap:0;padding:0;overflow:hidden;">
+          <span style="flex:1;display:flex;align-items:center;gap:6px;padding:6px 10px;">
+            <span class="om-icon" id="omCopyPasteIcon">⎘</span>
+            <span id="omLblCopyPaste">COPY FOUNDATION</span>
+          </span>
+          <span id="omCopyPasteClearBtn" onclick="event.stopPropagation();omClearClipboard()" title="Clear clipboard"
+            style="display:none;padding:6px 8px;color:#8060c0;border-left:1px solid #3a1870;background:rgba(80,30,140,0.2);font-size:10px;line-height:1;cursor:pointer;"
+            onmouseover="this.style.color='#ff80ff';this.style.background='rgba(120,40,180,0.3)'"
+            onmouseout="this.style.color='#8060c0';this.style.background='rgba(80,30,140,0.2)'">
+            ✕
+          </span>
         </button>
         <button id="omBtnNudge" class="om-mode-btn" onclick="omSetMode('nudge')">
           <span class="om-icon">✥</span> NUDGE / LINEAR MOVE
@@ -6330,22 +6336,9 @@ font-family:'IBM Plex Mono',monospace;">
       </button>
     </div>
 
-    <!-- Clipboard status -->
-    <div style="padding:0 8px 8px;">
-      <div style="font-size:7px;letter-spacing:0.2em;color:#3a6888;text-transform:uppercase;margin-bottom:4px;margin-top:6px;font-weight:700;">CLIPBOARD</div>
-      <div id="omClipStatus" style="
-        font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.08em;
-        background:rgba(0,10,25,0.6);border:1px solid #1a3a58;padding:5px 8px;
-        color:#4a7898;margin-bottom:4px;min-height:24px;display:flex;align-items:center;border-radius:2px;">
-        EMPTY
-      </div>
-      <button onclick="omClearClipboard()" id="omClearClipBtn" style="display:none;width:100%;
-        font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;
-        background:rgba(40,20,60,0.4);color:#a060ff;border:1px solid #6030c0;padding:4px;cursor:pointer;"
-        onmouseover="this.style.background='rgba(80,40,120,0.4)'" onmouseout="this.style.background='rgba(40,20,60,0.4)'">
-        ✕ CLEAR CLIPBOARD
-      </button>
-    </div>
+    <!-- Clipboard status: now shown inline in the Copy/Paste button -->
+    <div id="omClipStatus" style="display:none;"></div>
+    <div id="omClearClipBtn" style="display:none;"></div>
   </div>
 
   <!-- HC SHAPE EDITOR PALETTE -->
@@ -6777,13 +6770,13 @@ font-family:'IBM Plex Mono',monospace;">
 
     <!-- Action button -->
     <button onclick="lashAutoPlace()"
-      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
+      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
       letter-spacing:0.14em;text-transform:uppercase;
-      background:rgba(45,127,193,0.22);color:#5eb8ff;
-      border:1px solid #2d7fc1;border-top:2px solid #5eb8ff;
-      padding:7px 4px;cursor:pointer;transition:all 0.12s;"
-      onmouseover="this.style.background='rgba(45,127,193,0.40)';this.style.color='#ffffff'"
-      onmouseout="this.style.background='rgba(45,127,193,0.22)';this.style.color='#5eb8ff'">
+      background:#1a7a38;color:#ffffff;
+      border:1px solid #0f5a28;border-top:2px solid #30c060;
+      padding:8px 4px;cursor:pointer;transition:all 0.12s;"
+      onmouseover="this.style.background='#20963f';this.style.color='#ffffff'"
+      onmouseout="this.style.background='#1a7a38';this.style.color='#ffffff'">
       &#9654;&#9654; AUTO PLACE PATTERN
     </button>
     <div id="lashAutoStatus" style="margin-top:5px;min-height:14px;font-size:7px;color:#00c860;letter-spacing:0.10em;text-transform:uppercase;text-align:center;"></div>
@@ -7216,7 +7209,7 @@ function removeFreeFndAt(b, sx, sy, snapPx){
 }
 function getFreeFndById(b, id){ return (freeFnds[b]||[]).find(f=>f.id===id)||null; }
 function setFreeFndById(b, id, props){
-  // Note: pushUndo() is called by callers (omNudge etc.) — do NOT push here
+  pushUndo();
   const arr=freeFndsBay(b);
   const i=arr.findIndex(f=>f.id===id);
   if(i>=0) Object.assign(arr[i], props);
@@ -7703,7 +7696,7 @@ const fndAssignM=[{},{},{},{}]; // type assignments for middle lines
 
 let hcMap = {};
 let editHCMode=false;
-let hcBrush=1;
+let hcBrush=0;
 let hovHcRow=-1;
 
 const HC_PALETTE = {
@@ -9409,13 +9402,15 @@ function _restorePanelPos(el, elId, defaultX, defaultY){
       }
     }
   } catch(e){}
-  // Safety clamp — keep panel sufficiently on screen
-  var vw = window.innerWidth, vh = window.innerHeight;
-  var pw = el.offsetWidth || 220;
-  var ph = Math.min(el.scrollHeight || el.offsetHeight || 200, Math.round(vh * 0.9));
-  // Keep at least half the panel visible, minimum 100px from right/bottom
-  x = Math.max(0, Math.min(vw - Math.max(pw * 0.5, 100), x));
-  y = Math.max(0, Math.min(vh - Math.max(ph * 0.5, 80), y));
+  // Safety clamp — keep FAB within the canvas viewport
+  var _elW = el.offsetWidth || 46;
+  var _elH = el.offsetHeight || 46;
+  var _vpEl = document.getElementById('vp');
+  var _rx = 0, _ry = 0, _rr = window.innerWidth, _rb = window.innerHeight;
+  if(_vpEl){ var _r=_vpEl.getBoundingClientRect(); _rx=_r.left; _ry=_r.top; _rr=_r.right; _rb=_r.bottom; }
+  var _pad = 4;
+  x = Math.max(_rx+_pad, Math.min(_rr-_elW-_pad, x));
+  y = Math.max(_ry+_pad, Math.min(_rb-_elH-_pad, y));
   el.style.left = x + 'px';
   el.style.top  = y + 'px';
   // Brief pointer-events guard: prevents the touchend that triggered the long-press
@@ -12254,11 +12249,29 @@ function openRpAssignPopup(screenX, screenY, rp){
   popup.classList.add('show');
   const vw=window.innerWidth,vh=window.innerHeight;
   const pw=popup.offsetWidth||240,ph=popup.offsetHeight||200;
-  let px=screenX+14,py=screenY-10;
-  if(px+pw>vw-10) px=screenX-pw-14;
-  if(py+ph>vh-10) py=vh-ph-10;
-  if(py<4) py=4;
+  const isTouchDevice=window.matchMedia('(pointer:coarse)').matches;
+  let px,py;
+  if(isTouchDevice){
+    px=screenX-pw/2;
+    py=screenY+40;
+    if(px+pw>vw-8) px=vw-pw-8;
+    if(px<8) px=8;
+    if(py+ph>vh-8) py=screenY-ph-40;
+    if(py<4) py=4;
+  } else {
+    px=screenX+14; py=screenY-10;
+    if(px+pw>vw-10) px=screenX-pw-14;
+    if(py+ph>vh-10) py=vh-ph-10;
+    if(py<4) py=4;
+  }
   popup.style.left=px+'px'; popup.style.top=py+'px';
+  popup.style.pointerEvents='none';
+  setTimeout(function(){ popup.style.pointerEvents=''; }, isTouchDevice?600:120);
+  const _closeBtn=popup.querySelector('button[onclick*="closeRpAssign"]');
+  if(_closeBtn){
+    _closeBtn.style.pointerEvents='none';
+    setTimeout(function(){ _closeBtn.style.pointerEvents=''; }, isTouchDevice?900:120);
+  }
 }
 function closeRpAssignPopup(){
   const p=document.getElementById('rpAssignPopup'); if(p) p.classList.remove('show');
@@ -14276,11 +14289,31 @@ function openFxpAssignPopup(screenX, screenY, fp){
   popup.classList.add('show');
   const vw=window.innerWidth, vh=window.innerHeight;
   const pw=popup.offsetWidth||240, ph=popup.offsetHeight||200;
-  let px=screenX+14, py=screenY-10;
-  if(px+pw>vw-10) px=screenX-pw-14;
-  if(py+ph>vh-10) py=vh-ph-10;
-  if(py<4) py=4;
+  const isTouchDevice=window.matchMedia('(pointer:coarse)').matches;
+  let px, py;
+  if(isTouchDevice){
+    px=screenX-pw/2;
+    py=screenY+40;
+    if(px+pw>vw-8) px=vw-pw-8;
+    if(px<8) px=8;
+    if(py+ph>vh-8) py=screenY-ph-40;
+    if(py<4) py=4;
+  } else {
+    px=screenX+14; py=screenY-10;
+    if(px+pw>vw-10) px=screenX-pw-14;
+    if(py+ph>vh-10) py=vh-ph-10;
+    if(py<4) py=4;
+  }
   popup.style.left=px+'px'; popup.style.top=py+'px';
+  // Block pointer events until finger has safely lifted
+  popup.style.pointerEvents='none';
+  setTimeout(function(){ popup.style.pointerEvents=''; }, isTouchDevice?600:120);
+  // Extra delay for the close button in the header — sits right under the tap point
+  const _closeBtn=popup.querySelector('button[onclick*="closeFxpAssign"]');
+  if(_closeBtn){
+    _closeBtn.style.pointerEvents='none';
+    setTimeout(function(){ _closeBtn.style.pointerEvents=''; }, isTouchDevice?900:120);
+  }
 }
 
 function closeFxpAssignPopup(){
@@ -14626,8 +14659,7 @@ function omSyncTargetUI(){
   } else {
     ['omBtnSwap','omBtnDeleteLine'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=isLash?'none':''; });
     const dl=document.getElementById('omLblDelete'); if(dl) dl.textContent=isLash?'DELETE LASH EYE':'DELETE FOUNDATION';
-    const cl=document.getElementById('omLblCopy');   if(cl) cl.textContent=isLash?'COPY LASH EYE':'COPY FOUNDATION';
-    const pl=document.getElementById('omLblPaste');  if(pl) pl.textContent=isLash?'PASTE LASH EYE':'PASTE FOUNDATION';
+    // merged copy/paste button label is updated in omSyncUI via omCopyPasteToggle logic
     const rl=document.getElementById('omLblRotate'); if(rl) rl.textContent=isLash?'ROTATE EYES':'ROTATE FOUNDATION';
   }
 }
@@ -14676,19 +14708,57 @@ function omCancel(){
 }
 function omClearClipboard(){
   omClipboard=null; omLashClipboard=null;
+  // If currently in paste mode, switch back to copy mode
+  if(omMode==='paste') omSetMode('copy');
   omSyncUI(); draw();
+}
+function omCopyPasteToggle(){
+  const isLash = omTarget==='lashing';
+  const hasClip = isLash ? !!omLashClipboard : !!omClipboard;
+  // If in paste mode already → clicking again cancels back to copy
+  if(omMode==='paste') { omSetMode('copy'); return; }
+  // If clipboard has data → go straight to paste
+  if(hasClip) { omSetMode('paste'); return; }
+  // Otherwise → enter copy mode
+  omSetMode('copy');
 }
 function omSyncUI(){
   omSyncTargetUI();
   const isLash=omTarget==='lashing';
-  ['delete','deleteLine','swap','drag','copy','paste','nudge','rotate'].forEach(m=>{
-    const idMap={delete:'omBtnDelete',deleteLine:'omBtnDeleteLine',swap:'omBtnSwap',drag:'omBtnDrag',copy:'omBtnCopy',paste:'omBtnPaste',nudge:'omBtnNudge',rotate:'omBtnRotate'};
-    const colMap={delete:'om-delete-active',deleteLine:'om-delline-active',swap:'om-swap-active',drag:'om-drag-active',copy:'om-copy-active',paste:'om-paste-active',nudge:'om-nudge-active',rotate:'om-swap-active'};
+  ['delete','deleteLine','swap','drag','nudge','rotate'].forEach(m=>{
+    const idMap={delete:'omBtnDelete',deleteLine:'omBtnDeleteLine',swap:'omBtnSwap',drag:'omBtnDrag',nudge:'omBtnNudge',rotate:'omBtnRotate'};
+    const colMap={delete:'om-delete-active',deleteLine:'om-delline-active',swap:'om-swap-active',drag:'om-drag-active',nudge:'om-nudge-active',rotate:'om-swap-active'};
     const el=document.getElementById(idMap[m]);
     if(!el||!el.classList) return;
     ['om-delete-active','om-delline-active','om-swap-active','om-drag-active','om-copy-active','om-paste-active','om-nudge-active'].forEach(c=>el.classList.remove(c));
     if(m===omMode) el.classList.add(colMap[m]);
   });
+  // Merged copy/paste button
+  const _cpBtn=document.getElementById('omBtnCopyPaste');
+  const _cpIcon=document.getElementById('omCopyPasteIcon');
+  const _cpLbl=document.getElementById('omLblCopyPaste');
+  const _cpClear=document.getElementById('omCopyPasteClearBtn');
+  const _hasClip=isLash?!!omLashClipboard:!!omClipboard;
+  if(_cpBtn){
+    ['om-copy-active','om-paste-active'].forEach(c=>_cpBtn.classList.remove(c));
+    if(omMode==='copy')  _cpBtn.classList.add('om-copy-active');
+    if(omMode==='paste') _cpBtn.classList.add('om-paste-active');
+  }
+  if(_cpIcon) _cpIcon.textContent = (omMode==='paste'||(_hasClip&&omMode!=='copy')) ? '⎙' : '⎘';
+  if(_cpLbl){
+    if(omMode==='paste'){
+      const f=isLash?omLashClipboard:(omClipboard?omClipboard.fnd:null);
+      const clipInfo=f ? (isLash?`${(omLashClipboard.type||'SGL').toUpperCase()} · ${(omLashClipboard.color||'WHT').toUpperCase()}`:`${(f.type||'?').toUpperCase()} · ${(f.colorL||f.color||'?').toUpperCase()}`) : '';
+      _cpLbl.textContent = clipInfo ? 'PASTE  ·  '+clipInfo : 'PASTE FOUNDATION';
+    } else if(_hasClip){
+      const f=isLash?omLashClipboard:(omClipboard?omClipboard.fnd:null);
+      const clipInfo=f ? (isLash?`${(omLashClipboard.type||'SGL').toUpperCase()} · ${(omLashClipboard.color||'WHT').toUpperCase()}`:`${(f.type||'?').toUpperCase()} · ${(f.colorL||f.color||'?').toUpperCase()}`) : '';
+      _cpLbl.textContent = clipInfo ? 'PASTE  ·  '+clipInfo : 'PASTE FOUNDATION';
+    } else {
+      _cpLbl.textContent = isLash ? 'COPY LASH EYE' : 'COPY FOUNDATION';
+    }
+  }
+  if(_cpClear) _cpClear.style.display=_hasClip?'flex':'none';
   const nudgePanel=document.getElementById('omNudgePanel');
   if(nudgePanel) nudgePanel.style.display=(omMode==='nudge'?'block':'none');
   const rotatePanel=document.getElementById('omRotatePanel');
@@ -14699,9 +14769,6 @@ function omSyncUI(){
   if(lashRotatePanel) lashRotatePanel.style.display=_isLashRot?'block':'none';
   if(omMode==='nudge') omUpdateNudgeSelLabel();
   if(omMode==='rotate'){ if(omTarget==='lashing') omUpdateLashRotSelLabel(); else omUpdateRotSelLabel(); }
-  const pasteBtn=document.getElementById('omBtnPaste');
-  const _activeClip=isLash?omLashClipboard:omClipboard;
-  if(pasteBtn) pasteBtn.style.opacity=_activeClip?'1':'0.4';
   const st=document.getElementById('omStatus');
   const cb=document.getElementById('omCancelBtn');
   if(!st||!cb) return;
@@ -14774,21 +14841,7 @@ function omSyncUI(){
       else { st.textContent=total===1?'SELECTED — USE BUTTONS TO ROTATE':`${total} SELECTED — USE BUTTONS TO ROTATE`; st.style.color='#ffd020'; cb.style.display='block'; }
     }
   }
-  const clipStatus = document.getElementById('omClipStatus');
-  const clearClipBtn = document.getElementById('omClearClipBtn');
-  if(clipStatus){
-    if(isLash&&omLashClipboard){
-      clipStatus.textContent=`${(omLashClipboard.type||'SGL').toUpperCase()} · ${(omLashClipboard.color||'white').toUpperCase()}`;
-      clipStatus.style.color='#40d080'; clipStatus.style.borderColor='#00a050';
-    } else if(!isLash&&omClipboard){
-      const f=omClipboard.fnd;
-      clipStatus.textContent=`${(f.type||'?').toUpperCase()} · ${(f.color||f.colorL||'?').toUpperCase()}${omClipboard.assign?' · '+(omClipboard.assign.code||omClipboard.assign.type||'TYPE').substring(0,8).toUpperCase():''}`;
-      clipStatus.style.color='#c090ff'; clipStatus.style.borderColor='#6030c0';
-    } else {
-      clipStatus.textContent='EMPTY'; clipStatus.style.color='#2a5070'; clipStatus.style.borderColor='#1e4a74';
-    }
-  }
-  if(clearClipBtn) clearClipBtn.style.display=(omClipboard||omLashClipboard)?'block':'none';
+  // Clipboard display is now handled by the merged copy/paste button in omSyncUI above
   omSyncMultiDel();
 }
 
@@ -14889,7 +14942,7 @@ function omSetFndRaw(h,data){
 function omDeleteFnd(h){
   if(!h) return;
   if(!layerOn('lyr_foundations')) return;
-  // Note: pushUndo() is called by the caller (omMoveFnd etc.) — do NOT push here
+  pushUndo();
   // Free foundation — remove from array entirely
   if(h.isFree){ deleteFreeFndById(h.bay, h.id); return; }
   const deleted = {type:'deleted', color:'deleted', colorL:'deleted', colorR:'deleted'};
@@ -15126,6 +15179,8 @@ function omCopyFnd(h){
   const rotKey = omRotBaseKey ? omRotBaseKey(h) : null;
   const rot = rotKey ? getFndRot(rotKey) : 0;
   omClipboard = { fnd: {...fnd}, assign, rot };
+  // Auto-enter paste mode immediately after copying
+  omMode = 'paste';
   omSyncUI();
 }
 function omPasteFnd(h){
@@ -15349,8 +15404,7 @@ function omOffsetKey(h){
   if(h.isPlatform) return `PLT${selPlatIdx}_${h.platLine}_${h.rowIdx}`;
   if(h.midLine!==undefined) return `ML${h.midLine}_${h.bayLine}_${h.rowIdx}`;
   if(h.isLine2) return `L2_${fndKey(h.bayLine,h.rowIdx,selBay)}`;
-  // Always use base key (no side suffix) — nudge moves the whole foundation as a unit
-  return fndKey(h.bayLine,h.rowIdx,selBay);
+  return fndKey(h.bayLine,h.rowIdx,selBay) + (h.side ? '_'+h.side : '');
 }
 
 function omGetOffset(h){
@@ -17603,22 +17657,13 @@ function drawDots(ox,oy,bFrom,bTo,rows,bay){
         // else: mixed slot (one side elg, other side single) — keep drawType='elongated'
         // and drawSpan as-is so each side renders with its correct height
       }
-      // Per-side offsets: only active when explicit side-specific offsets were stored
-      // (nudge always uses base key now, so usePerSide only triggers for legacy side data)
-      const usePerSide = !!(fndOffsets[_bk+'_L'] || fndOffsets[_bk+'_R']);
+      // Use per-side offsets only when actively in nudge mode; otherwise use base offset
+      const usePerSide = hasSideOff && omVisible && omMode==='nudge';
       const _rot = getFndRot(_bk);
       if(usePerSide){
-        const effOffL = fndOffsets[_bk+'_L'] ? offL : offBase;
-        const effOffR = fndOffsets[_bk+'_R'] ? offR : offBase;
-        const bothSameOffset = (effOffL.dx===effOffR.dx && effOffL.dy===effOffR.dy);
-        if(bothSameOffset){
-          drawFndDotR(dx+effOffL.dx,dy+effOffL.dy,drawType,isHov,'',edge,fnd.color,drawColorL,drawColorR,hovSide,0,drawSpan,_rot);
-        } else {
-          if(drawColorL!=='deleted') drawFndDotR(dx+effOffL.dx,dy+effOffL.dy,drawTypeL,isHov&&hovSide==='L','',edge,fnd.color,drawColorL,'deleted',isHov?'L':null,0,drawSpan,_rot);
-          if(drawColorR!=='deleted') drawFndDotR(dx+effOffR.dx,dy+effOffR.dy,drawTypeR,isHov&&hovSide==='R','',edge,fnd.color,'deleted',drawColorR,isHov?'R':null,0,drawSpan,_rot);
-        }
-
-
+        // Each sub-dot at its own independent offset
+        if(drawColorL!=='deleted') drawFndDotR(dx+offL.dx,dy+offL.dy,drawTypeL,isHov&&hovSide==='L','',edge,fnd.color,drawColorL,'deleted',isHov?'L':null,0,drawSpan,_rot);
+        if(drawColorR!=='deleted') drawFndDotR(dx+offR.dx,dy+offR.dy,drawTypeR,isHov&&hovSide==='R','',edge,fnd.color,'deleted',drawColorR,isHov?'R':null,0,drawSpan,_rot);
       } else if(drawTypeL !== drawTypeR){
         // Per-side types differ — draw each side independently
         if(drawColorL!=='deleted') drawFndDotR(dx+offBase.dx,dy+offBase.dy,drawTypeL,isHov&&(hovSide==='L'||hovSide===null),'',edge,fnd.color,drawColorL,'deleted',isHov?'L':null,0,drawSpan,_rot);
@@ -21917,11 +21962,11 @@ vp.addEventListener('mouseup', e => {
       } else if(omMode==='nudge'){
         if(!lhit) return;
         if(capCtrl&&omNudgeSelected){
-          const i=omNudgeMultiSel.findIndex(x=>omOffsetKey(x)===omOffsetKey(lhit));
-          if(omOffsetKey(omNudgeSelected)===omOffsetKey(lhit)){ omNudgeSelected=omNudgeMultiSel.length?omNudgeMultiSel.shift():null; }
+          const i=omNudgeMultiSel.findIndex(x=>x.id===lhit.id);
+          if(omNudgeSelected.id===lhit.id){ omNudgeSelected=omNudgeMultiSel.length?omNudgeMultiSel.shift():null; }
           else if(i>=0){ omNudgeMultiSel.splice(i,1); }
-          else { omNudgeMultiSel.push({...lhit}); }
-        } else { omNudgeSelected={...lhit}; omNudgeMultiSel=[]; }
+          else { omNudgeMultiSel.push({id:lhit.id}); }
+        } else { omNudgeSelected={id:lhit.id}; omNudgeMultiSel=[]; }
         omUpdateNudgeSelLabel(); omSyncUI(); draw();
       } else if(omMode==='rotate'){
         omLashRotHandleClick(lhit, capCtrl);
@@ -22247,7 +22292,6 @@ document.addEventListener('mouseup',e=>{
       omLashDragSrc=null; omLashDragPos=null;
     } else {
       if(omDragSrc && omDragSrc.isFree && omFreeDragPos){
-        pushUndo();
         setFreeFndById(omDragSrc.bay, omDragSrc.id, {x:omFreeDragPos.x, y:omFreeDragPos.y});
       } else if(omDragTargetDot && omDragSrc){
         omMoveFnd(omDragSrc, omDragTargetDot);
@@ -22962,7 +23006,7 @@ document.addEventListener('visibilitychange', () => { if(document.hidden) _cance
 canvas.width=vp.clientWidth;
 canvas.height=vp.clientHeight;
 
-setHcBrush(1);
+setHcBrush(0);
 hcSyncHCButtons();
 hcSyncColorSelButtons();
 setCmBrush(1);
@@ -25052,15 +25096,38 @@ function openHeightPicker(screenX, screenY, h){
   const p = document.getElementById('heightPicker');
   p.style.display = 'block';
   const vw = window.innerWidth, vh = window.innerHeight;
-  const pw = p.offsetWidth || 190, ph = p.offsetHeight || 250;
-  let px = screenX + 10, py = screenY - 10;
-  if(px + pw > vw - 8) px = screenX - pw - 10;
-  if(py + ph > vh - 8) py = vh - ph - 8;
-  if(py < 4) py = 4;
+  const pw = p.offsetWidth || 190, ph = p.offsetHeight || 260;
+  const isTouchDevice = window.matchMedia('(pointer:coarse)').matches;
+  // On touch: open below-right of tap so the header/close button is
+  // well away from the finger lift point. On desktop keep existing offset.
+  let px, py;
+  if(isTouchDevice){
+    // Place panel so its top is at least 40px below the tap point,
+    // keeping the close button far from where the finger just was.
+    px = screenX - pw / 2;           // centre horizontally on tap
+    py = screenY + 40;               // well below the tap
+    if(px + pw > vw - 8) px = vw - pw - 8;
+    if(px < 8) px = 8;
+    if(py + ph > vh - 8) py = screenY - ph - 40; // if no room below, go above
+    if(py < 4) py = 4;
+  } else {
+    px = screenX + 10; py = screenY - 10;
+    if(px + pw > vw - 8) px = screenX - pw - 10;
+    if(py + ph > vh - 8) py = vh - ph - 8;
+    if(py < 4) py = 4;
+  }
   p.style.left = px+'px'; p.style.top = py+'px';
-  // Guard against long-press touchend immediately selecting a height value
+  // Block all pointer events on the panel until the finger has lifted
+  // and a safe gap has passed — prevents accidental close-button tap.
   p.style.pointerEvents = 'none';
-  setTimeout(function(){ p.style.pointerEvents = ''; }, 400);
+  setTimeout(function(){ p.style.pointerEvents = ''; }, isTouchDevice ? 600 : 120);
+  // Extra delay specifically for the close button — it sits in the header
+  // exactly where the finger just tapped.
+  const _closeBtn = p.querySelector('.panel-close-btn');
+  if(_closeBtn){
+    _closeBtn.style.pointerEvents = 'none';
+    setTimeout(function(){ _closeBtn.style.pointerEvents = ''; }, isTouchDevice ? 900 : 120);
+  }
 }
 
 function closeHeightPicker(){
@@ -34505,7 +34572,8 @@ async function exportRubberSealsPDF() {
 body.menu-open [id^="float"][id$="Btn"],
 body.panel-open [id^="float"][id$="Btn"],
 body.mob-menu-open [id^="float"][id$="Btn"] {
-  display: none !important;
+  pointer-events: none !important;
+  opacity: 0.35 !important;
 }
 
 /* Float icon visibility controlled per-button by toggleFab */
@@ -35084,15 +35152,10 @@ function fileNew(){
   if(btn) btn.textContent = '💾  SAVE';
 }
 
-let _fileOpenInProgress = false;
 async function fileOpen(){
-  if(_fileOpenInProgress) return;
   if(_unsavedChanges){
     if(!confirm('You have unsaved changes. Open a file and discard them?')) return;
   }
-  _fileOpenInProgress = true;
-  try {
-  // File System Access API — skip in cross-origin iframes
   const inFrame = window.top !== window.self;
   if(!inFrame && window.showOpenFilePicker){
     try {
@@ -35111,23 +35174,20 @@ async function fileOpen(){
       }
       _applyState(state);
       _undoStack.length = 0; _redoStack.length = 0; _syncUndoButtons();
-      _currentFileHandle = handle;
+      _currentFileHandle = handle;   // store so Save can write directly without re-prompting
       _markSaved(handle.name);
       const btn = document.getElementById('fileSaveBtn');
       if(btn) btn.textContent = '💾  SAVE — ' + _truncFilename(handle.name);
       return;
     } catch(err){
-      if(err.name === 'AbortError') return; // user cancelled
-      // Fall through to input fallback silently
+      // AbortError = user cancelled; any other error (SecurityError, InvalidStateError,
+      // NotAllowedError, etc.) means the picker already ran — do NOT fall through to the
+      // legacy input fallback, which would open a second dialog on top.
+      return;
     }
   }
-  // Fallback — hidden file input
   document.getElementById('fileOpenInput').value = '';
   document.getElementById('fileOpenInput').click();
-  } finally {
-    // Reset guard after short delay (input dialog may be async)
-    setTimeout(function(){ _fileOpenInProgress = false; }, 1000);
-  }
 }
 function fileOpenLoad(input){
   const file = input.files[0]; if(!file) return;
@@ -35345,14 +35405,10 @@ async function fileExportFull(){
   const suggested = (_currentFileName || 'hatch-scan').replace(/\.vbp$/i,'') + '-full';
   await _saveWithPicker(blob, suggested + FULL_EXPORT_EXT, 'Vessel Bay Plan Full Export', FULL_EXPORT_EXT);
 }
-let _fileImportInProgress = false;
 async function fileImport(){
-  if(_fileImportInProgress) return;
   if(_unsavedChanges){
     if(!confirm('You have unsaved changes. Import a file and replace current data?')) return;
   }
-  _fileImportInProgress = true;
-  try {
   const inFrame = window.top !== window.self;
   if(!inFrame && window.showOpenFilePicker){
     try {
@@ -35371,15 +35427,13 @@ async function fileImport(){
       _markSaved(handle.name.replace(/\.(vbpx|vbpf)$/i, FILE_EXT));
       return;
     } catch(err){
-      if(err.name === 'AbortError') return;
-      // Fall through to input fallback silently
+      // Any error from showOpenFilePicker (including SecurityError on first file:// load)
+      // means the picker already fired — never fall through to the input fallback.
+      return;
     }
   }
   document.getElementById('fileImportInput').value = '';
   document.getElementById('fileImportInput').click();
-  } finally {
-    setTimeout(function(){ _fileImportInProgress = false; }, 1000);
-  }
 }
 function fileImportLoad(input){
   const file = input.files[0]; if(!file) return;
@@ -35593,29 +35647,29 @@ function renderAccountPanel(){
     // Company Group password setting (super user only)
     if(_isSuperUser){
       const cgLabel = document.createElement('div');
-      cgLabel.style.cssText = 'font-size:8px;letter-spacing:0.18em;color:#b0a040;text-transform:uppercase;margin-bottom:8px;';
+      cgLabel.style.cssText = 'font-size:8px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:8px;';
       cgLabel.textContent = 'COMPANY GROUP ACCOUNT';
       view.appendChild(cgLabel);
 
       const cgRow = document.createElement('div');
-      cgRow.style.cssText = 'padding:10px 14px;border:1px solid #504a20;background:rgba(30,28,8,0.5);margin-bottom:6px;';
+      cgRow.style.cssText = 'padding:10px 14px;border:1px solid var(--line);background:transparent;margin-bottom:6px;';
       const cgEnabled = !!_companyGroupPasswordHash;
       cgRow.innerHTML = `
-        <div style="font-size:8px;color:#9a9040;letter-spacing:0.06em;margin-bottom:8px;line-height:1.5;">
-          When enabled, a <b style="color:#c8c040;">Company Group</b> login appears on the login screen.<br>
+        <div style="font-size:8px;color:var(--text2);letter-spacing:0.06em;margin-bottom:8px;line-height:1.5;">
+          When enabled, a <b style="color:var(--bright);">Company Group</b> login appears on the login screen.<br>
           Company Group users cannot access Accounts, Licence, or create licences.
         </div>
         <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
           <div style="flex:1;min-width:140px;">
-            <div style="font-size:7px;letter-spacing:0.12em;color:#706a30;margin-bottom:4px;">NEW PASSWORD ${cgEnabled?'(CHANGE)':'(SET TO ENABLE)'}</div>
+            <div style="font-size:7px;letter-spacing:0.12em;color:var(--text2);margin-bottom:4px;">NEW PASSWORD ${cgEnabled?'(CHANGE)':'(SET TO ENABLE)'}</div>
             <input id="cgNewPass" type="password" placeholder="${cgEnabled?'Enter new password…':'Set password to enable…'}"
-              style="width:100%;box-sizing:border-box;background:rgba(10,10,4,0.7);color:#d0c860;border:1px solid #504a20;
+              style="width:100%;box-sizing:border-box;background:var(--paper);color:var(--text);border:1px solid var(--line);
                 border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 8px;outline:none;"
               maxlength="64" autocomplete="new-password">
           </div>
           <button onclick="_cgSetPassword()" style="
             font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;
-            background:rgba(80,70,10,0.4);border:1.5px solid #807020;color:#c8c040;
+            background:rgba(45,127,193,0.18);border:1.5px solid var(--blue);color:var(--bright);
             padding:6px 12px;cursor:pointer;white-space:nowrap;">
             ${cgEnabled ? '✓ UPDATE' : '⊞ ENABLE'}
           </button>
@@ -35755,8 +35809,7 @@ function setFloatIconsVisible(on){
     'floatHeightToolBtn','floatFshpBtn','floatObjManipBtn','floatFpalBtn',
     'floatAssignBtn','floatObjEditorBtn','floatFxpPlaceBtn','floatFxpManipBtn',
     'floatFxpAssignBtn','floatFxpLibBtn','floatVentPlaceBtn','floatHddPlaceBtn',
-    'floatRpPlaceBtn','floatRpManipBtn','floatRpAssignBtn','floatRpLibBtn',
-    'floatRpPocketPaintBtn','floatRpClearBtn'];
+    'floatRpPlaceBtn','floatRpManipBtn','floatRpAssignBtn','floatRpLibBtn'];
   _fabIds.forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = 'none';
@@ -40413,6 +40466,8 @@ function _userSettingsApplyDefaults(){
       const el = document.getElementById(id);
       if(el){ el.style.top = pos.top + 'px'; el.style.left = pos.left + 'px'; }
     });
+    // Re-run layout so default positions are clamped inside canvas area
+    if(typeof autoFitIconColumns === 'function') setTimeout(autoFitIconColumns, 0);
   } catch(e) { console.warn('Could not apply default settings:', e); }
 }
 
@@ -40477,13 +40532,20 @@ function toggleFab(fabId, btnId){
   const vis = _loadFabVisibility();
   const isHidden = fab.style.display === 'none';
   if(isHidden){
+    // Clear any stale saved position so autoFitIconColumns will place this
+    // FAB freshly in the grid rather than restoring an off-canvas location.
+    if(typeof _clearFabPos === 'function') _clearFabPos(fabId);
     fab.style.display = 'flex';
     vis[fabId] = true;
     if(btn){ btn.textContent='VISIBLE'; btn.classList.add('lash-speed-active'); }
+    // Reflow all visible FABs into a clean grid after a short layout tick
+    if(typeof autoFitIconColumns === 'function') setTimeout(function(){ autoFitIconColumns(true); }, 0);
   } else {
     fab.style.display = 'none';
     vis[fabId] = false;
     if(btn){ btn.textContent='HIDDEN'; btn.classList.remove('lash-speed-active'); }
+    // Reflow remaining visible FABs to close gaps
+    if(typeof autoFitIconColumns === 'function') setTimeout(function(){ autoFitIconColumns(true); }, 0);
   }
   _saveFabVisibility(vis);
   if(typeof _userSettingsSave === 'function') _userSettingsSave();
@@ -40519,7 +40581,8 @@ function _restoreFabVisibility(){
     'floatFxpManipBtn':    'fabToggleFxpManip',
     'floatFxpAssignBtn':   'fabToggleFxpAssign',
     'floatFxpLibBtn':      'fabToggleFxpLib',
-    'floatVentPlaceBtn':   'fabToggleVentPlace'
+    'floatVentPlaceBtn':   'fabToggleVentPlace',
+    'floatHddPlaceBtn':    'fabToggleHddPlace'
   };
   Object.entries(map).forEach(([fabId, btnId])=>{
     const isVisible = vis[fabId] !== false;
@@ -40530,6 +40593,9 @@ function _restoreFabVisibility(){
       if(btn){ btn.textContent = 'HIDDEN'; btn.classList.remove('lash-speed-active'); }
     } else {
       if(btn){ btn.textContent = 'VISIBLE'; btn.classList.add('lash-speed-active'); }
+      // Clear stale saved positions — autoFitIconColumns (called in init)
+      // will lay them out cleanly in the canvas on every fresh load.
+      if(typeof _clearFabPos === 'function') _clearFabPos(fabId);
     }
   });
 }
@@ -40563,7 +40629,8 @@ function _syncFabMenuLabels(){
     'floatFxpManipBtn':    'fabToggleFxpManip',
     'floatFxpAssignBtn':   'fabToggleFxpAssign',
     'floatFxpLibBtn':      'fabToggleFxpLib',
-    'floatVentPlaceBtn':   'fabToggleVentPlace'
+    'floatVentPlaceBtn':   'fabToggleVentPlace',
+    'floatHddPlaceBtn':    'fabToggleHddPlace'
   };
   Object.entries(map).forEach(([fabId, btnId])=>{
     const fab = document.getElementById(fabId);
@@ -40583,6 +40650,16 @@ function _syncFabMenuLabels(){
   function savePositions(pos){
     try{ localStorage.setItem(POS_KEY, JSON.stringify(pos)); }catch(e){}
   }
+  // Clear a single FAB's saved position from all stores
+  function _clearFabPos(id){
+    try{
+      var all = loadPositions();
+      delete all[id];
+      savePositions(all);
+      localStorage.removeItem('mob_pos_'+id);
+    }catch(e){}
+  }
+  window._clearFabPos = _clearFabPos;
   // Also save/read individual mob_pos_ keys (used by mobile touch drag)
   function _saveMobPos(id, left, top){
     try{ localStorage.setItem('mob_pos_'+id, JSON.stringify({left:left, top:top})); }catch(e){}
@@ -40597,6 +40674,21 @@ function _syncFabMenuLabels(){
   function syncSaveDot(){
     // dot is now inside floatSaveBtn — no position sync needed
   }
+
+  // Returns the canvas viewport rect — FABs must stay within this area
+  function _getFabBounds(elW, elH){
+    const vp = document.getElementById('vp');
+    if(!vp) return {minL:0, minT:0, maxL:window.innerWidth-elW, maxT:window.innerHeight-elH};
+    const r = vp.getBoundingClientRect();
+    const pad = 4;
+    return {
+      minL: r.left + pad,
+      minT: r.top  + pad,
+      maxL: r.right  - elW - pad,
+      maxT: r.bottom - elH - pad,
+    };
+  }
+  window._getFabBounds = _getFabBounds; // expose for touch drag (outside this IIFE)
 
   function makeDraggable(id, onMoved){
     const el = document.getElementById(id);
@@ -40639,11 +40731,9 @@ function _syncFabMenuLabels(){
       if(Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
       if(!moved) return;
 
-      const parent = el.parentElement;
-      const maxL = parent.clientWidth  - el.offsetWidth;
-      const maxT = parent.clientHeight - el.offsetHeight;
-      const newL = Math.max(0, Math.min(maxL, startL + dx));
-      const newT = Math.max(0, Math.min(maxT, startT + dy));
+      const _fb = _getFabBounds(el.offsetWidth, el.offsetHeight);
+      const newL = Math.max(_fb.minL, Math.min(_fb.maxL, startL + dx));
+      const newT = Math.max(_fb.minT, Math.min(_fb.maxT, startT + dy));
       el.style.left = newL + 'px';
       el.style.top  = newT + 'px';
       if(onMoved) onMoved(newL, newT);
@@ -40682,7 +40772,7 @@ function _syncFabMenuLabels(){
     });
   }
 
-  function autoFitIconColumns(){
+  function autoFitIconColumns(forceReflow){
     const savedPos = loadPositions();
 
     const allIds = [
@@ -40693,7 +40783,8 @@ function _syncFabMenuLabels(){
       'floatObjManipBtn','floatFpalBtn','floatAssignBtn','floatObjEditorBtn',
       'floatFxpPlaceBtn','floatFxpManipBtn','floatFxpAssignBtn','floatFxpLibBtn',
       'floatRpPlaceBtn','floatRpManipBtn','floatRpAssignBtn',
-      'floatRpLibBtn','floatRpPocketPaintBtn','floatRpClearBtn'
+      'floatRpLibBtn','floatRpPocketPaintBtn','floatRpClearBtn',
+      'floatVentPlaceBtn','floatHddPlaceBtn'
     ];
 
     const ICON_SIZE  = 38;  // px — icon height (and width)
@@ -40704,31 +40795,43 @@ function _syncFabMenuLabels(){
     const COL_START  = 10;  // px — left edge of first column
 
     const vp     = document.getElementById('vp');
-    const availH = vp ? vp.clientHeight : (window.innerHeight - 160);
+    const vpRect = vp ? vp.getBoundingClientRect() : {left:0, top:0, height: window.innerHeight-160};
+    const availH = vpRect.height;
+    // Offset icon origins so they stay within the canvas area (not over menus)
+    const vpOffL = vpRect.left;   // pixels from page left to canvas left
+    const vpOffT = vpRect.top;    // pixels from page top to canvas top
 
     const perCol = Math.max(1,
       Math.floor((availH - MARGIN_TOP - MARGIN_BOT - ICON_SIZE) / STEP) + 1
     );
 
     const toFlow = allIds.filter(id => {
-      if(savedPos[id]) return false;          // user dragged it — leave alone
+      if(!forceReflow && savedPos[id]) return false;  // user dragged it — leave alone
       const el = document.getElementById(id);
       return el && el.style.display !== 'none';
     });
 
+    const _allPos = loadPositions();
     toFlow.forEach((id, i) => {
       const el  = document.getElementById(id);
       if(!el) return;
       const col = Math.floor(i / perCol);
       const row = i % perCol;
-      el.style.left = (COL_START + col * COL_WIDTH) + 'px';
-      el.style.top  = (MARGIN_TOP + row * STEP) + 'px';
+      const newL = vpOffL + COL_START + col * COL_WIDTH;
+      const newT = vpOffT + MARGIN_TOP + row * STEP;
+      el.style.left = newL + 'px';
+      el.style.top  = newT + 'px';
+      // Persist grid position so drag/restore sees it
+      _allPos[id] = {left: newL, top: newT};
+      try{ localStorage.setItem('mob_pos_'+id, JSON.stringify({left:newL,top:newT})); }catch(e){}
     });
+    savePositions(_allPos);
 
     syncSaveDot();
   }
 
   window.addEventListener('resize', autoFitIconColumns);
+  window.autoFitIconColumns = autoFitIconColumns;
 
   function init(){
     _restoreFabVisibility();
@@ -40763,6 +40866,7 @@ function _syncFabMenuLabels(){
     makeDraggable('floatFxpAssignBtn', null);
     makeDraggable('floatFxpLibBtn', null);
     makeDraggable('floatVentPlaceBtn', null);
+    makeDraggable('floatHddPlaceBtn', null);
     syncSaveDot();
     autoFitIconColumns();
   }
@@ -40932,6 +41036,45 @@ html.dusk-mode .s-tbl tr:hover td,html.forest-mode .s-tbl tr:hover td,
 html.ocean-mode .s-tbl tr:hover td,html.slate-mode .s-tbl tr:hover td,
 html.purple-mode .s-tbl tr:hover td,html.warm-mode .s-tbl tr:hover td
   { background: #1e3040; }
+
+/* ── Stats modal: mobile responsive ─────────────────────── */
+@media(max-width:600px){
+  #statsBox{width:100vw;max-height:100dvh;border-radius:0;border-left:none;border-right:none;}
+  #statsHeader{padding:10px 14px 10px;}
+  #statsLogoMark{font-size:18px;}
+  #statsLogoText{font-size:13px;}
+  #statsSub{font-size:8px;letter-spacing:0.14em;}
+  #statsDate{font-size:9px;}
+  #statsClose{font-size:9px;padding:5px 10px;margin-left:8px;}
+  #statsToolbar{padding:8px 12px;gap:6px;}
+  .stats-export-btn{font-size:8px;padding:6px 10px;}
+  #statsBayScope{font-size:8px;letter-spacing:0.1em;}
+  #statsBody{padding:12px 10px 24px;}
+  .s-toc{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
+  .s-toc-card{padding:10px 12px;}
+  .s-toc-card-val{font-size:20px;}
+  .s-toc-card-title{font-size:8px;}
+  .s-toc-card-sub{font-size:9px;}
+  .s-sec-title{font-size:9px;letter-spacing:0.14em;padding:7px 10px;}
+  .s-sec{margin-bottom:20px;}
+  .s-page{padding-top:0;}
+  .s-grid,.s-grid-3{grid-template-columns:1fr;gap:12px;}
+  .s-tbl-title{font-size:8px;letter-spacing:0.14em;padding-bottom:6px;}
+  /* Scrollable wide tables on narrow screens */
+  .s-tbl-scroll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px;}
+  .s-tbl{font-size:10px;}
+  .s-tbl th{font-size:8px;padding:6px 8px;letter-spacing:0.08em;}
+  .s-tbl td{font-size:10px;padding:5px 8px;}
+  .s-tbl td.r{font-size:11px;}
+  .s-tbl .tot td{font-size:11px;}
+  .s-tbl .tot td.r{font-size:12px;}
+  .s-dot{width:9px;height:9px;margin-right:5px;}
+}
+@media(max-width:380px){
+  .s-toc{grid-template-columns:1fr 1fr;}
+  #statsHeader{gap:8px;}
+  #statsLogoText{font-size:11px;}
+}
 </style>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -40984,13 +41127,16 @@ function collectStats(){
     function addFndEntry(f){
       function add(col, t){
         if(!col||col==='deleted') return;
-        if(!fnd[col]) fnd[col]={single:0,double:0,elongated:0};
+        if(!fnd[col]) fnd[col]={single:0,double:0,elongated:0,combination:0,lifting:0};
         if(t==='double'||t==='double_elg') fnd[col].double++;
-        else if(t==='elongated') fnd[col].elongated++;
+        else if(t==='elongated'||t==='dbl_elg_unit') fnd[col].elongated++;
+        else if(t==='comb_left'||t==='comb_right') fnd[col].combination++;
+        else if(t==='lift_single'||t==='lift_double_l'||t==='lift_double_r'||
+                t==='lift_eye_c'||t==='lift_eye_l'||t==='lift_eye_r') fnd[col].lifting++;
         else fnd[col].single++;
       }
       add(f.colorL, f.type);
-      if(f.colorR && f.colorR!=='deleted' && f.colorR!==f.colorL) add(f.colorR, f.type);
+      if(f.colorR&&f.colorR!=='deleted'&&f.colorR!==f.colorL) add(f.colorR, f.type);
     }
     [fnds, fnds2].forEach(function(store){
       Object.keys(store).forEach(function(k){
@@ -41000,6 +41146,16 @@ function collectStats(){
     fndsML.forEach(function(store){
       Object.keys(store).forEach(function(k){
         if(k.indexOf('b'+b+'_')===0) addFndEntry(store[k]);
+      });
+    });
+    platFnds.forEach(function(store){
+      if(!store) return;
+      Object.keys(store).forEach(function(li){
+        var layer=store[li];
+        if(typeof layer!=='object'||!layer) return;
+        Object.keys(layer).forEach(function(k){
+          if(k.indexOf('b'+b+'_')===0) addFndEntry(layer[k]);
+        });
       });
     });
 
@@ -41046,10 +41202,12 @@ function aggregate(bays){
   bays.forEach(function(bay){
     S_COLORS.forEach(function(c){
       if(bay.fnd[c]){
-        if(!tot.fnd[c]) tot.fnd[c]={single:0,double:0,elongated:0};
-        tot.fnd[c].single   +=(bay.fnd[c].single||0);
-        tot.fnd[c].double   +=(bay.fnd[c].double||0);
-        tot.fnd[c].elongated+=(bay.fnd[c].elongated||0);
+        if(!tot.fnd[c]) tot.fnd[c]={single:0,double:0,elongated:0,combination:0,lifting:0};
+        tot.fnd[c].single     +=(bay.fnd[c].single||0);
+        tot.fnd[c].double     +=(bay.fnd[c].double||0);
+        tot.fnd[c].elongated  +=(bay.fnd[c].elongated||0);
+        tot.fnd[c].combination+=(bay.fnd[c].combination||0);
+        tot.fnd[c].lifting    +=(bay.fnd[c].lifting||0);
       }
       if(bay.le[c]){
         if(!tot.le[c]) tot.le[c]={single:0,double:0};
@@ -41108,7 +41266,7 @@ function buildHTML(bayData, tot, forPrint){
   // ══════════════════════════════════════════════════════════
   // SECTION 0: GRAND TOTALS OVERVIEW CARD
   // ══════════════════════════════════════════════════════════
-  var fndGrand  = usedFndColors.reduce(function(a,c){var f=tot.fnd[c];return a+(f.single||0)+(f.double||0)+(f.elongated||0);},0);
+  var fndGrand  = usedFndColors.reduce(function(a,c){var f=tot.fnd[c];return a+(f.single||0)+(f.double||0)+(f.elongated||0)+(f.combination||0)+(f.lifting||0);},0);
   var leGrand   = usedLeColors.reduce(function(a,c){var e=tot.le[c];return a+(e.single||0)+(e.double||0);},0);
   var hcGrand   = usedHcColors.reduce(function(a,c){var s=tot.hc[c];return a+(s.fxy||0)+(s.fy||0)+(s.other||0);},0);
   var rpGrand   = usedRpColors.reduce(function(a,c){return a+(tot.rp[c].pads||0);},0);
@@ -41135,7 +41293,7 @@ function buildHTML(bayData, tot, forPrint){
 
   h+='<div class="s-sec">';
   h+='<div class="s-sec-title"><span class="s-sec-icon">▦</span> Grand Totals — All Items On Board <span class="s-sec-num">SECTION 1 OF 4</span></div>';
-  h+='<table class="s-tbl"><thead><tr>';
+  h+='<div class="s-tbl-scroll-wrap"><table class="s-tbl"><thead><tr>';
   h+='<th>Equipment Type</th><th class="r">Total On Board</th>';
   S_COLORS.forEach(function(c){ h+='<th class="r">'+sLabel(c)+'</th>'; });
   h+='<th>Color Distribution</th></tr></thead><tbody>';
@@ -41157,7 +41315,7 @@ function buildHTML(bayData, tot, forPrint){
   }
 
   grandRow('Container Foundations', fndGrand, function(c){
-    return tot.fnd[c]?((tot.fnd[c].single||0)+(tot.fnd[c].double||0)+(tot.fnd[c].elongated||0)):0;
+    return tot.fnd[c]?((tot.fnd[c].single||0)+(tot.fnd[c].double||0)+(tot.fnd[c].elongated||0)+(tot.fnd[c].combination||0)+(tot.fnd[c].lifting||0)):0;
   }, usedFndColors);
   grandRow('Lashing Eyes', leGrand, function(c){
     return tot.le[c]?((tot.le[c].single||0)+(tot.le[c].double||0)):0;
@@ -41174,7 +41332,7 @@ function buildHTML(bayData, tot, forPrint){
   fpTypes.forEach(function(t){ Object.keys(tot.fp[t]).forEach(function(c){ fpColorCounts[c]=(fpColorCounts[c]||0)+tot.fp[t][c]; }); });
   grandRow('Flexipads', fpGrandAll, function(c){ return fpColorCounts[c]||0; }, []);
 
-  h+='</tbody></table></div>';
+  h+='</tbody></table></div></div>';
 
   // ══════════════════════════════════════════════════════════
   // SECTION 1: DETAILED SUMMARY GRID  (new page)
@@ -41184,29 +41342,29 @@ function buildHTML(bayData, tot, forPrint){
   h+='<div class="s-grid">';
 
   // Foundations
-  var fT=[0,0,0];
+  var fT=[0,0,0,0,0];
   h+='<div><div class="s-tbl-title">Container Foundations</div><table class="s-tbl"><thead><tr>';
-  h+='<th>Color</th><th class="r">Single</th><th class="r">Double</th><th class="r">Elongated</th><th class="r">Total</th><th class="r">% of All</th>';
+  h+='<th>Color</th><th class="r">Single</th><th class="r">Double</th><th class="r">Elongated</th><th class="r">Combo</th><th class="r">Lifting</th><th class="r">Total</th><th class="r">% of All</th>';
   h+='</tr></thead><tbody>';
   if(!usedFndColors.length){
-    h+='<tr><td colspan="6" class="s-empty">No foundations recorded</td></tr>';
+    h+='<tr><td colspan="8" class="s-empty">No foundations recorded</td></tr>';
   } else {
     usedFndColors.forEach(function(c){
-      var f=tot.fnd[c]; var t=(f.single||0)+(f.double||0)+(f.elongated||0);
-      fT[0]+=(f.single||0);fT[1]+=(f.double||0);fT[2]+=(f.elongated||0);
+      var f=tot.fnd[c]; var t=(f.single||0)+(f.double||0)+(f.elongated||0)+(f.combination||0)+(f.lifting||0);
+      fT[0]+=(f.single||0);fT[1]+=(f.double||0);fT[2]+=(f.elongated||0);fT[3]+=(f.combination||0);fT[4]+=(f.lifting||0);
       h+='<tr><td>'+sDot(c)+sLabel(c)+'</td>';
       h+='<td class="r">'+(f.single||0)+'</td><td class="r">'+(f.double||0)+'</td>';
-      h+='<td class="r">'+(f.elongated||0)+'</td><td class="r">'+t+'</td>';
+      h+='<td class="r">'+(f.elongated||0)+'</td><td class="r">'+(f.combination||0)+'</td><td class="r">'+(f.lifting||0)+'</td><td class="r">'+t+'</td>';
       h+='<td class="r" style="color:'+S_COLOR_HEX[c]+';font-weight:700">'+pctStr(t,fndGrand)+'</td></tr>';
     });
     h+='<tr class="tot"><td>TOTAL</td><td class="r">'+fT[0]+'</td><td class="r">'+fT[1]+'</td>';
-    h+='<td class="r">'+fT[2]+'</td><td class="r">'+(fT[0]+fT[1]+fT[2])+'</td><td class="r">100%</td></tr>';
+    h+='<td class="r">'+fT[2]+'</td><td class="r">'+fT[3]+'</td><td class="r">'+fT[4]+'</td><td class="r">'+(fT[0]+fT[1]+fT[2]+fT[3]+fT[4])+'</td><td class="r">100%</td></tr>';
   }
   h+='</tbody></table></div>';
 
   // Lashing Eyes
   var lT=[0,0];
-  h+='<div><div class="s-tbl-title">Lashing Eyes</div><table class="s-tbl"><thead><tr>';
+  h+='<div><div class="s-tbl-title">Lashing Eyes</div><div class="s-tbl-scroll-wrap"><table class="s-tbl"><thead><tr>';
   h+='<th>Color</th><th class="r">Single</th><th class="r">Double</th><th class="r">Total</th><th class="r">% of All</th>';
   h+='</tr></thead><tbody>';
   if(!usedLeColors.length){
@@ -41223,11 +41381,11 @@ function buildHTML(bayData, tot, forPrint){
     h+='<tr class="tot"><td>TOTAL</td><td class="r">'+lT[0]+'</td><td class="r">'+lT[1]+'</td>';
     h+='<td class="r">'+(lT[0]+lT[1])+'</td><td class="r">100%</td></tr>';
   }
-  h+='</tbody></table></div>';
+  h+='</tbody></table></div></div>';
 
   // HC Stoppers
   var hT=[0,0,0];
-  h+='<div><div class="s-tbl-title">HC Stoppers</div><table class="s-tbl"><thead><tr>';
+  h+='<div><div class="s-tbl-title">HC Stoppers</div><div class="s-tbl-scroll-wrap"><table class="s-tbl"><thead><tr>';
   h+='<th>Color</th><th class="r">FXY</th><th class="r">FY</th><th class="r">Other</th><th class="r">Total</th><th class="r">% of All</th>';
   h+='</tr></thead><tbody>';
   if(!usedHcColors.length){
@@ -41244,11 +41402,11 @@ function buildHTML(bayData, tot, forPrint){
     h+='<tr class="tot"><td>TOTAL</td><td class="r">'+hT[0]+'</td><td class="r">'+hT[1]+'</td>';
     h+='<td class="r">'+hT[2]+'</td><td class="r">'+(hT[0]+hT[1]+hT[2])+'</td><td class="r">100%</td></tr>';
   }
-  h+='</tbody></table></div>';
+  h+='</tbody></table></div></div>';
 
   // Resting Pads
   var rT=[0,0];
-  h+='<div><div class="s-tbl-title">Resting Pads</div><table class="s-tbl"><thead><tr>';
+  h+='<div><div class="s-tbl-title">Resting Pads</div><div class="s-tbl-scroll-wrap"><table class="s-tbl"><thead><tr>';
   h+='<th>Color</th><th class="r">Holders</th><th class="r">Pads</th><th class="r">% of All Pads</th>';
   h+='</tr></thead><tbody>';
   if(!usedRpColors.length){
@@ -41263,7 +41421,7 @@ function buildHTML(bayData, tot, forPrint){
     });
     h+='<tr class="tot"><td>TOTAL</td><td class="r">'+rT[0]+'</td><td class="r">'+rT[1]+'</td><td class="r">100%</td></tr>';
   }
-  h+='</tbody></table></div>';
+  h+='</tbody></table></div></div>';
 
   h+='</div></div></div>'; // close grid + section + s-page
 
@@ -41278,7 +41436,7 @@ function buildHTML(bayData, tot, forPrint){
     var fpUsedColors = S_COLORS.filter(function(c){
       return fpTypes.some(function(t){return tot.fp[t][c];});
     });
-    h+='<table class="s-tbl"><thead><tr><th>Code / Type</th><th>Dimensions</th><th>Material</th>';
+    h+='<div class="s-tbl-scroll-wrap"><table class="s-tbl"><thead><tr><th>Code / Type</th><th>Dimensions</th><th>Material</th>';
     fpUsedColors.forEach(function(c){ h+='<th class="r">'+sLabel(c)+'</th>'; });
     h+='<th class="r">Total</th><th class="r">% of All</th></tr></thead><tbody>';
     var fpGrandTotal=0;
@@ -41308,7 +41466,7 @@ function buildHTML(bayData, tot, forPrint){
       h+='<td class="r">'+n+' <span style="font-size:10px;font-weight:400;color:var(--s-pct-muted)">('+pctStr(n,fpGrandTotal)+')</span></td>';
     });
     h+='<td class="r">'+fpGrandTotal+'</td><td class="r">100%</td></tr>';
-    h+='</tbody></table>';
+    h+='</tbody></table></div>';
   }
   h+='</div></div>'; // close section + s-page
 
@@ -41317,7 +41475,7 @@ function buildHTML(bayData, tot, forPrint){
   // ══════════════════════════════════════════════════════════
   h+='<div class="s-page"><div class="s-sec">';
   h+='<div class="s-sec-title"><span class="s-sec-icon">▤</span> Per-Bay Breakdown <span class="s-sec-num">SECTION 4 OF 4</span></div>';
-  h+='<table class="s-tbl"><thead><tr>';
+  h+='<div class="s-tbl-scroll-wrap"><table class="s-tbl"><thead><tr>';
   h+='<th>Bay</th>';
   S_COLORS.forEach(function(c){
     if(usedFndColors.indexOf(c)>=0) h+='<th class="r">Fnd '+sLabel(c)+'</th>';
@@ -41327,7 +41485,7 @@ function buildHTML(bayData, tot, forPrint){
 
   bayData.forEach(function(bay){
     var bayFndTot=0;
-    S_COLORS.forEach(function(c){ var f=bay.fnd[c]; if(f) bayFndTot+=(f.single||0)+(f.double||0)+(f.elongated||0); });
+    S_COLORS.forEach(function(c){ var f=bay.fnd[c]; if(f) bayFndTot+=(f.single||0)+(f.double||0)+(f.elongated||0)+(f.combination||0)+(f.lifting||0); });
     var leTot=0; Object.keys(bay.le).forEach(function(c){leTot+=(bay.le[c].single||0)+(bay.le[c].double||0);});
     var hcTot=0; Object.keys(bay.hc).forEach(function(c){hcTot+=(bay.hc[c].fxy||0)+(bay.hc[c].fy||0)+(bay.hc[c].other||0);});
     var rpTot=0; Object.keys(bay.rp).forEach(function(c){rpTot+=(bay.rp[c].pads||0);});
@@ -41335,7 +41493,7 @@ function buildHTML(bayData, tot, forPrint){
     h+='<tr><td style="color:var(--s-bay-name);font-weight:700">'+bay.name+'</td>';
     S_COLORS.forEach(function(c){
       if(usedFndColors.indexOf(c)<0) return;
-      var f=bay.fnd[c]; var n=f?(f.single+f.double+f.elongated):0;
+      var f=bay.fnd[c]; var n=f?(f.single+f.double+f.elongated+(f.combination||0)+(f.lifting||0)):0;
       h+='<td class="r" style="color:'+S_COLOR_HEX[c]+'">'+(n||'')+'</td>';
     });
     h+='<td class="r" style="font-weight:700">'+(bayFndTot||'')+'</td>';
@@ -41345,7 +41503,7 @@ function buildHTML(bayData, tot, forPrint){
     h+='<td class="r">'+(fpTot||'')+'</td>';
     h+='</tr>';
   });
-  h+='</tbody></table></div></div>'; // close s-sec + s-page
+  h+='</tbody></table></div></div></div>'; // close scroll-wrap + s-sec + s-page
   return h;
 }
 
@@ -41614,6 +41772,23 @@ html.slate-mode #subStatsToolbar,html.purple-mode #subStatsToolbar,html.warm-mod
 html.dusk-mode #subStatsBody,html.forest-mode #subStatsBody,html.ocean-mode #subStatsBody,
 html.slate-mode #subStatsBody,html.purple-mode #subStatsBody,html.warm-mode #subStatsBody
   { background: #151f2b; }
+
+/* ── Sub-stats modal: mobile responsive ─────────────────── */
+@media(max-width:600px){
+  #subStatsBox{width:100vw;max-height:100dvh;border-radius:0;border-left:none;border-right:none;}
+  #subStatsHeader{padding:10px 14px 10px;}
+  #subStatsLogoMark{font-size:18px;}
+  #subStatsLogoText{font-size:13px;}
+  #subStatsSub{font-size:8px;letter-spacing:0.14em;}
+  #subStatsDate{font-size:9px;}
+  #subStatsClose{font-size:9px;padding:5px 10px;margin-left:8px;}
+  #subStatsToolbar{padding:8px 12px;gap:6px;}
+  #subStatsBody{padding:12px 10px 24px;}
+  /* Scrollable wide tables */
+  #subStatsBody .s-tbl-scroll-wrap,
+  #subStatsBody table{overflow-x:auto;-webkit-overflow-scrolling:touch;display:block;width:100%;}
+  #subStatsBody .s-tbl{display:table;width:100%;min-width:340px;}
+}
 </style>
 
 <div id="subStatsModal">
@@ -41739,9 +41914,12 @@ function buildFoundations(){
     function addF(f){
       function add(col,t){
         if(!col||col==='deleted') return;
-        if(!byColor[col]) byColor[col]={single:0,double:0,elongated:0};
+        if(!byColor[col]) byColor[col]={single:0,double:0,elongated:0,combination:0,lifting:0};
         if(t==='double'||t==='double_elg') byColor[col].double++;
-        else if(t==='elongated') byColor[col].elongated++;
+        else if(t==='elongated'||t==='dbl_elg_unit') byColor[col].elongated++;
+        else if(t==='comb_left'||t==='comb_right') byColor[col].combination++;
+        else if(t==='lift_single'||t==='lift_double_l'||t==='lift_double_r'||
+                t==='lift_eye_c'||t==='lift_eye_l'||t==='lift_eye_r') byColor[col].lifting++;
         else byColor[col].single++;
       }
       add(f.colorL, f.type);
@@ -41753,12 +41931,22 @@ function buildFoundations(){
     fndsML.forEach(function(store){
       Object.keys(store).forEach(function(k){if(k.indexOf('b'+b+'_')===0)addF(store[k]);});
     });
+    platFnds.forEach(function(store){
+      if(!store) return;
+      Object.keys(store).forEach(function(li){
+        var layer=store[li];
+        if(typeof layer!=='object'||!layer) return;
+        Object.keys(layer).forEach(function(k){
+          if(k.indexOf('b'+b+'_')===0) addF(layer[k]);
+        });
+      });
+    });
     SC.forEach(function(c){
       if(!byColor[c]) return;
-      var tot=(byColor[c].single||0)+(byColor[c].double||0)+(byColor[c].elongated||0);
+      var tot=(byColor[c].single||0)+(byColor[c].double||0)+(byColor[c].elongated||0)+(byColor[c].combination||0)+(byColor[c].lifting||0);
       colorTot[c]=(colorTot[c]||0)+tot;
       grandTot+=tot;
-      ['single','double','elongated'].forEach(function(t){
+      ['single','double','elongated','combination','lifting'].forEach(function(t){
         typeTot[t]=(typeTot[t]||0)+(byColor[c][t]||0);
       });
     });
@@ -41772,31 +41960,26 @@ function buildFoundations(){
   h+='<div class="s-grid">';
 
   h+='<div><div class="s-tbl-title">By Color</div><table class="s-tbl"><thead><tr>';
-  h+='<th>Color</th><th class="r">Single</th><th class="r">Double</th><th class="r">Elongated</th><th class="r">Total</th><th class="r">% Fleet</th>';
+  h+='<th>Color</th><th class="r">Single</th><th class="r">Double</th><th class="r">Elongated</th><th class="r">Combo</th><th class="r">Lifting</th><th class="r">Total</th><th class="r">% Fleet</th>';
   h+='</tr></thead><tbody>';
   usedC.forEach(function(c){
-    var f=SC.reduce(function(acc,_c){
-      var tot=0;
-      allData.forEach(function(d){if(d.byColor[c])tot+=(d.byColor[c][_c==='single'?'single':_c==='double'?'double':'elongated']||0);});
-      return acc;
-    },{});
-    var sg=0,db=0,el=0;
-    allData.forEach(function(d){if(d.byColor[c]){sg+=(d.byColor[c].single||0);db+=(d.byColor[c].double||0);el+=(d.byColor[c].elongated||0);}});
-    var t=sg+db+el;
+    var sg=0,db=0,el=0,cb=0,lf=0;
+    allData.forEach(function(d){if(d.byColor[c]){sg+=(d.byColor[c].single||0);db+=(d.byColor[c].double||0);el+=(d.byColor[c].elongated||0);cb+=(d.byColor[c].combination||0);lf+=(d.byColor[c].lifting||0);}});
+    var t=sg+db+el+cb+lf;
     h+='<tr><td>'+dot(c)+lbl(c)+'</td>';
-    h+='<td class="r">'+sg+'</td><td class="r">'+db+'</td><td class="r">'+el+'</td>';
+    h+='<td class="r">'+sg+'</td><td class="r">'+db+'</td><td class="r">'+el+'</td><td class="r">'+cb+'</td><td class="r">'+lf+'</td>';
     h+='<td class="r" style="font-weight:700">'+t+'</td>';
     h+='<td class="r" style="color:'+SH[c]+';font-weight:700">'+pct(t,grandTot)+'</td></tr>';
   });
   h+='<tr class="tot"><td>TOTAL</td>';
-  h+='<td class="r">'+(typeTot.single||0)+'</td><td class="r">'+(typeTot.double||0)+'</td><td class="r">'+(typeTot.elongated||0)+'</td>';
+  h+='<td class="r">'+(typeTot.single||0)+'</td><td class="r">'+(typeTot.double||0)+'</td><td class="r">'+(typeTot.elongated||0)+'</td><td class="r">'+(typeTot.combination||0)+'</td><td class="r">'+(typeTot.lifting||0)+'</td>';
   h+='<td class="r">'+grandTot+'</td><td class="r">100%</td></tr>';
   h+='</tbody></table></div>';
 
   h+='<div><div class="s-tbl-title">By Type</div><table class="s-tbl"><thead><tr>';
   h+='<th>Type</th><th class="r">Count</th><th class="r">% of Total</th><th>Distribution</th>';
   h+='</tr></thead><tbody>';
-  [{key:'single',label:'Single'},{key:'double',label:'Double'},{key:'elongated',label:'Elongated'}].forEach(function(tp){
+  [{key:'single',label:'Single'},{key:'double',label:'Double'},{key:'elongated',label:'Elongated'},{key:'combination',label:'Combination'},{key:'lifting',label:'Lifting'}].forEach(function(tp){
     var n=typeTot[tp.key]||0;
     h+='<tr><td style="font-weight:700">'+tp.label+'</td><td class="r">'+n+'</td>';
     h+='<td class="r">'+pct(n,grandTot)+'</td>';
@@ -41818,19 +42001,19 @@ function buildFoundations(){
   h+='<th class="r">Bay Total</th><th>Color Mix</th></tr>';
   h+='<tr><th>—</th>';
   usedC.forEach(function(c){
-    h+='<th class="r" style="font-size:8px">SGL</th><th class="r" style="font-size:8px">DBL</th><th class="r" style="font-size:8px">ELG</th><th></th>';
+    h+='<th class="r" style="font-size:8px">SGL</th><th class="r" style="font-size:8px">DBL</th><th class="r" style="font-size:8px">ELG</th><th class="r" style="font-size:8px">CMB</th><th class="r" style="font-size:8px">LFT</th><th></th>';
   });
   h+='<th></th><th></th></tr></thead><tbody>';
 
   allData.forEach(function(d){
     var bayTot=0;
     var bc={};
-    usedC.forEach(function(c){var f=d.byColor[c];if(f){var t=(f.single||0)+(f.double||0)+(f.elongated||0);bayTot+=t;bc[c]=t;}});
+    usedC.forEach(function(c){var f=d.byColor[c];if(f){var t=(f.single||0)+(f.double||0)+(f.elongated||0)+(f.combination||0)+(f.lifting||0);bayTot+=t;bc[c]=t;}});
     h+='<tr><td style="color:var(--s-bay-name);font-weight:700">'+d.bay+'</td>';
     usedC.forEach(function(c){
-      var f=d.byColor[c]||{single:0,double:0,elongated:0};
-      var t=(f.single||0)+(f.double||0)+(f.elongated||0);
-      h+='<td class="r">'+(f.single||'')+'</td><td class="r">'+(f.double||'')+'</td><td class="r">'+(f.elongated||'')+'</td>';
+      var f=d.byColor[c]||{single:0,double:0,elongated:0,combination:0,lifting:0};
+      var t=(f.single||0)+(f.double||0)+(f.elongated||0)+(f.combination||0)+(f.lifting||0);
+      h+='<td class="r">'+(f.single||'')+'</td><td class="r">'+(f.double||'')+'</td><td class="r">'+(f.elongated||'')+'</td><td class="r">'+(f.combination||'')+'</td><td class="r">'+(f.lifting||'')+'</td>';
       h+='<td class="r" style="color:'+SH[c]+';font-weight:700">'+(t||'')+'</td>';
     });
     h+='<td class="r" style="font-weight:700">'+bayTot+'</td>';
@@ -41838,10 +42021,10 @@ function buildFoundations(){
   });
   h+='<tr class="tot"><td>TOTAL</td>';
   usedC.forEach(function(c){
-    var sg=0,db=0,el=0;
-    allData.forEach(function(d){if(d.byColor[c]){sg+=(d.byColor[c].single||0);db+=(d.byColor[c].double||0);el+=(d.byColor[c].elongated||0);}});
-    h+='<td class="r">'+sg+'</td><td class="r">'+db+'</td><td class="r">'+el+'</td>';
-    h+='<td class="r">'+(sg+db+el)+'</td>';
+    var sg=0,db=0,el=0,cb=0,lf=0;
+    allData.forEach(function(d){if(d.byColor[c]){sg+=(d.byColor[c].single||0);db+=(d.byColor[c].double||0);el+=(d.byColor[c].elongated||0);cb+=(d.byColor[c].combination||0);lf+=(d.byColor[c].lifting||0);}});
+    h+='<td class="r">'+sg+'</td><td class="r">'+db+'</td><td class="r">'+el+'</td><td class="r">'+cb+'</td><td class="r">'+lf+'</td>';
+    h+='<td class="r">'+(sg+db+el+cb+lf)+'</td>';
   });
   h+='<td class="r">'+grandTot+'</td><td>'+bar(colorTot,grandTot)+'</td></tr>';
   h+='</tbody></table></div></div>'; // close s-sec + s-page
@@ -53412,13 +53595,13 @@ document.addEventListener('mousedown', function(e){
       </label>
     </div>
     <button onclick="_lbAutoPlace()"
-      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
+      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
       letter-spacing:0.14em;text-transform:uppercase;
-      background:rgba(224,160,0,0.18);color:#e0a000;
-      border:1px solid #a07000;border-top:2px solid #e0a000;
-      padding:7px 4px;cursor:pointer;"
-      onmouseover="this.style.background='rgba(224,160,0,0.38)'"
-      onmouseout="this.style.background='rgba(224,160,0,0.18)'">
+      background:#1a7a38;color:#ffffff;
+      border:1px solid #0f5a28;border-top:2px solid #30c060;
+      padding:8px 4px;cursor:pointer;transition:all 0.12s;"
+      onmouseover="this.style.background='#20963f';this.style.color='#ffffff'"
+      onmouseout="this.style.background='#1a7a38';this.style.color='#ffffff'">
       &#9654;&#9654; AUTO PLACE PATTERN
     </button>
     <div id="lbAutoStatus" style="margin-top:5px;min-height:14px;font-size:7px;color:#00c860;letter-spacing:0.10em;text-transform:uppercase;text-align:center;"></div>
@@ -59694,10 +59877,9 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
       var t = e.touches[0];
       var dx = t.clientX - _startX;
       var dy = t.clientY - _startY;
-      var vw = window.innerWidth, vh = window.innerHeight;
-      var w = el.offsetWidth, h = el.offsetHeight;
-      var newL = Math.max(0, Math.min(vw - w, _startL + dx));
-      var newT = Math.max(0, Math.min(vh - h, _startT + dy));
+      var _fb = (typeof _getFabBounds==='function') ? _getFabBounds(el.offsetWidth, el.offsetHeight) : {minL:0,minT:0,maxL:window.innerWidth-el.offsetWidth,maxT:window.innerHeight-el.offsetHeight};
+      var newL = Math.max(_fb.minL, Math.min(_fb.maxL, _startL + dx));
+      var newT = Math.max(_fb.minT, Math.min(_fb.maxT, _startT + dy));
       el.style.left = newL + 'px';
       el.style.top  = newT + 'px';
     }, {passive: false});
@@ -59729,6 +59911,13 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobil
       'lbEyePlacerPal','lbPalette','floatBayCopyBtn','floatSmartGridBtn',
       'floatHcShapeBtn','floatHcManipBtn','floatMarkToolBtn','floatMarkLegendBtn',
       'cranePal','floatHeightToolBtn','floatObjEditorBtn',
+      // Previously missing — all other float icon buttons:
+      'floatHcNamingBtn','floatLashEyeBtn','floatHcStopPlaceBtn','floatHcStopManipBtn',
+      'floatFshpBtn','floatObjManipBtn','floatFpalBtn','floatAssignBtn',
+      'floatFxpPlaceBtn','floatFxpManipBtn','floatFxpAssignBtn','floatFxpLibBtn',
+      'floatVentPlaceBtn','floatHddPlaceBtn',
+      'floatRpPlaceBtn','floatRpManipBtn','floatRpAssignBtn','floatRpLibBtn',
+      'floatRpPocketPaintBtn','floatRpClearBtn',
       'dropFile','dropSettings','dropEdit','dropView','dropTools',
       'dropObjects','dropStats','dropExport',
       'rsDropSettings','rsDropExport','rsDropStats',
@@ -59844,7 +60033,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
               openHeightPicker(t0.clientX, t0.clientY, h);
             }
           }
-        }, 900);
+        }, 500);
       }
     }
   },{passive:false});
@@ -59956,6 +60145,58 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
         }
       } else {
         if(!_placementActive) _lastTap=now; else _lastTap=0;
+
+        // Single tap in overview mode — navigate directly to tapped bay
+        if(!_placementActive && typeof viewMode!=='undefined' && viewMode==='ov'){
+          var rect_ov2 = vp2.getBoundingClientRect();
+          var _stMx = t2.clientX - rect_ov2.left;
+          var _stMy = t2.clientY - rect_ov2.top;
+          var _stWx = (_stMx - panX) / zoom;
+          var _stWy = (_stMy - panY) / zoom;
+          if(typeof ovRotation !== 'undefined' && ovRotation !== 0){
+            var _sr2 = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
+            var _stH2 = typeof computeItemYPositions==='function' ? computeItemYPositions(0).totalH : 0;
+            var _sbH = typeof BOWH!=='undefined' ? BOWH : 40;
+            var _svW = _sr2*(typeof SW!=='undefined'?SW:52)+(typeof VPX!=='undefined'?VPX:20)*2;
+            var _svH = _stH2+(typeof VPY!=='undefined'?VPY:20)*2+_sbH;
+            var _scx = _svW/2, _scy = _svH/2-_sbH/2;
+            var _sang = -ovRotation*Math.PI/2;
+            var _sdx = _stWx-_scx, _sdy = _stWy-_scy;
+            _stWx = _scx + _sdx*Math.cos(_sang) - _sdy*Math.sin(_sang);
+            _stWy = _scy + _sdx*Math.sin(_sang) + _sdy*Math.cos(_sang);
+          }
+          var _sGx = typeof VPX!=='undefined' ? VPX : 20;
+          var _sGy = (typeof BOWH!=='undefined'?BOWH:40)+(typeof VPY!=='undefined'?VPY:20);
+          var _sPos = typeof computeItemYPositions==='function' ? computeItemYPositions(_sGy) : {baysY:[],platsY:[]};
+          var _sRows = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
+          var _sSW = typeof SW!=='undefined' ? SW : 52;
+          var _sSH = typeof SH!=='undefined' ? SH : 600;
+          var _sNav = false;
+          for(var _sb=0; _sb<cfg.bays; _sb++){
+            var _sbY = _sPos.baysY[_sb];
+            if(_stWy>=_sbY && _stWy<_sbY+_sSH && _stWx>=_sGx && _stWx<_sGx+_sRows*_sSW){
+              if(typeof selectBay==='function') selectBay(_sb);
+              if(typeof setView==='function') setView('bay');
+              _sNav = true; break;
+            }
+          }
+          // If not a bay, check platforms
+          if(!_sNav && typeof platforms!=='undefined'){
+            platforms.forEach(function(p,pi){
+              if(_sNav) return;
+              var _pRows = typeof totalRowsForPlat==='function' ? totalRowsForPlat(pi) : _sRows;
+              var _pOx = Math.floor((_sRows-_pRows)/2)*_sSW;
+              var _ppH = typeof PLAT_H!=='undefined' ? PLAT_H : 40;
+              if(_stWy>=_sPos.platsY[pi] && _stWy<_sPos.platsY[pi]+_ppH &&
+                 _stWx>=_sGx+_pOx && _stWx<_sGx+_pOx+_pRows*_sSW){
+                if(typeof selectPlatform==='function') selectPlatform(pi);
+                if(typeof setView==='function') setView('bay');
+                _sNav = true;
+              }
+            });
+          }
+          if(_sNav) return;
+        }
         // Fire synthetic events — target the canvas element for edit modes
         // that check e.target === canvas (markTool, craneTool etc.)
         var target = document.getElementById('c') || vp2;
