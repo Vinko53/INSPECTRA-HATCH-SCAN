@@ -7216,7 +7216,7 @@ function removeFreeFndAt(b, sx, sy, snapPx){
 }
 function getFreeFndById(b, id){ return (freeFnds[b]||[]).find(f=>f.id===id)||null; }
 function setFreeFndById(b, id, props){
-  pushUndo();
+  // Note: pushUndo() is called by callers (omNudge etc.) — do NOT push here
   const arr=freeFndsBay(b);
   const i=arr.findIndex(f=>f.id===id);
   if(i>=0) Object.assign(arr[i], props);
@@ -14889,7 +14889,7 @@ function omSetFndRaw(h,data){
 function omDeleteFnd(h){
   if(!h) return;
   if(!layerOn('lyr_foundations')) return;
-  pushUndo();
+  // Note: pushUndo() is called by the caller (omMoveFnd etc.) — do NOT push here
   // Free foundation — remove from array entirely
   if(h.isFree){ deleteFreeFndById(h.bay, h.id); return; }
   const deleted = {type:'deleted', color:'deleted', colorL:'deleted', colorR:'deleted'};
@@ -15349,7 +15349,8 @@ function omOffsetKey(h){
   if(h.isPlatform) return `PLT${selPlatIdx}_${h.platLine}_${h.rowIdx}`;
   if(h.midLine!==undefined) return `ML${h.midLine}_${h.bayLine}_${h.rowIdx}`;
   if(h.isLine2) return `L2_${fndKey(h.bayLine,h.rowIdx,selBay)}`;
-  return fndKey(h.bayLine,h.rowIdx,selBay) + (h.side ? '_'+h.side : '');
+  // Always use base key (no side suffix) — nudge moves the whole foundation as a unit
+  return fndKey(h.bayLine,h.rowIdx,selBay);
 }
 
 function omGetOffset(h){
@@ -17602,13 +17603,22 @@ function drawDots(ox,oy,bFrom,bTo,rows,bay){
         // else: mixed slot (one side elg, other side single) — keep drawType='elongated'
         // and drawSpan as-is so each side renders with its correct height
       }
-      // Use per-side offsets only when actively in nudge mode; otherwise use base offset
-      const usePerSide = hasSideOff && omVisible && omMode==='nudge';
+      // Per-side offsets: only active when explicit side-specific offsets were stored
+      // (nudge always uses base key now, so usePerSide only triggers for legacy side data)
+      const usePerSide = !!(fndOffsets[_bk+'_L'] || fndOffsets[_bk+'_R']);
       const _rot = getFndRot(_bk);
       if(usePerSide){
-        // Each sub-dot at its own independent offset
-        if(drawColorL!=='deleted') drawFndDotR(dx+offL.dx,dy+offL.dy,drawTypeL,isHov&&hovSide==='L','',edge,fnd.color,drawColorL,'deleted',isHov?'L':null,0,drawSpan,_rot);
-        if(drawColorR!=='deleted') drawFndDotR(dx+offR.dx,dy+offR.dy,drawTypeR,isHov&&hovSide==='R','',edge,fnd.color,'deleted',drawColorR,isHov?'R':null,0,drawSpan,_rot);
+        const effOffL = fndOffsets[_bk+'_L'] ? offL : offBase;
+        const effOffR = fndOffsets[_bk+'_R'] ? offR : offBase;
+        const bothSameOffset = (effOffL.dx===effOffR.dx && effOffL.dy===effOffR.dy);
+        if(bothSameOffset){
+          drawFndDotR(dx+effOffL.dx,dy+effOffL.dy,drawType,isHov,'',edge,fnd.color,drawColorL,drawColorR,hovSide,0,drawSpan,_rot);
+        } else {
+          if(drawColorL!=='deleted') drawFndDotR(dx+effOffL.dx,dy+effOffL.dy,drawTypeL,isHov&&hovSide==='L','',edge,fnd.color,drawColorL,'deleted',isHov?'L':null,0,drawSpan,_rot);
+          if(drawColorR!=='deleted') drawFndDotR(dx+effOffR.dx,dy+effOffR.dy,drawTypeR,isHov&&hovSide==='R','',edge,fnd.color,'deleted',drawColorR,isHov?'R':null,0,drawSpan,_rot);
+        }
+
+
       } else if(drawTypeL !== drawTypeR){
         // Per-side types differ — draw each side independently
         if(drawColorL!=='deleted') drawFndDotR(dx+offBase.dx,dy+offBase.dy,drawTypeL,isHov&&(hovSide==='L'||hovSide===null),'',edge,fnd.color,drawColorL,'deleted',isHov?'L':null,0,drawSpan,_rot);
@@ -21907,11 +21917,11 @@ vp.addEventListener('mouseup', e => {
       } else if(omMode==='nudge'){
         if(!lhit) return;
         if(capCtrl&&omNudgeSelected){
-          const i=omNudgeMultiSel.findIndex(x=>x.id===lhit.id);
-          if(omNudgeSelected.id===lhit.id){ omNudgeSelected=omNudgeMultiSel.length?omNudgeMultiSel.shift():null; }
+          const i=omNudgeMultiSel.findIndex(x=>omOffsetKey(x)===omOffsetKey(lhit));
+          if(omOffsetKey(omNudgeSelected)===omOffsetKey(lhit)){ omNudgeSelected=omNudgeMultiSel.length?omNudgeMultiSel.shift():null; }
           else if(i>=0){ omNudgeMultiSel.splice(i,1); }
-          else { omNudgeMultiSel.push({id:lhit.id}); }
-        } else { omNudgeSelected={id:lhit.id}; omNudgeMultiSel=[]; }
+          else { omNudgeMultiSel.push({...lhit}); }
+        } else { omNudgeSelected={...lhit}; omNudgeMultiSel=[]; }
         omUpdateNudgeSelLabel(); omSyncUI(); draw();
       } else if(omMode==='rotate'){
         omLashRotHandleClick(lhit, capCtrl);
@@ -22237,6 +22247,7 @@ document.addEventListener('mouseup',e=>{
       omLashDragSrc=null; omLashDragPos=null;
     } else {
       if(omDragSrc && omDragSrc.isFree && omFreeDragPos){
+        pushUndo();
         setFreeFndById(omDragSrc.bay, omDragSrc.id, {x:omFreeDragPos.x, y:omFreeDragPos.y});
       } else if(omDragTargetDot && omDragSrc){
         omMoveFnd(omDragSrc, omDragTargetDot);
@@ -34494,8 +34505,7 @@ async function exportRubberSealsPDF() {
 body.menu-open [id^="float"][id$="Btn"],
 body.panel-open [id^="float"][id$="Btn"],
 body.mob-menu-open [id^="float"][id$="Btn"] {
-  pointer-events: none !important;
-  opacity: 0.35 !important;
+  display: none !important;
 }
 
 /* Float icon visibility controlled per-button by toggleFab */
@@ -35074,10 +35084,15 @@ function fileNew(){
   if(btn) btn.textContent = '💾  SAVE';
 }
 
+let _fileOpenInProgress = false;
 async function fileOpen(){
+  if(_fileOpenInProgress) return;
   if(_unsavedChanges){
     if(!confirm('You have unsaved changes. Open a file and discard them?')) return;
   }
+  _fileOpenInProgress = true;
+  try {
+  // File System Access API — skip in cross-origin iframes
   const inFrame = window.top !== window.self;
   if(!inFrame && window.showOpenFilePicker){
     try {
@@ -35096,17 +35111,23 @@ async function fileOpen(){
       }
       _applyState(state);
       _undoStack.length = 0; _redoStack.length = 0; _syncUndoButtons();
-      _currentFileHandle = handle;   // store so Save can write directly without re-prompting
+      _currentFileHandle = handle;
       _markSaved(handle.name);
       const btn = document.getElementById('fileSaveBtn');
       if(btn) btn.textContent = '💾  SAVE — ' + _truncFilename(handle.name);
       return;
     } catch(err){
       if(err.name === 'AbortError') return; // user cancelled
+      // Fall through to input fallback silently
     }
   }
+  // Fallback — hidden file input
   document.getElementById('fileOpenInput').value = '';
   document.getElementById('fileOpenInput').click();
+  } finally {
+    // Reset guard after short delay (input dialog may be async)
+    setTimeout(function(){ _fileOpenInProgress = false; }, 1000);
+  }
 }
 function fileOpenLoad(input){
   const file = input.files[0]; if(!file) return;
@@ -35324,10 +35345,14 @@ async function fileExportFull(){
   const suggested = (_currentFileName || 'hatch-scan').replace(/\.vbp$/i,'') + '-full';
   await _saveWithPicker(blob, suggested + FULL_EXPORT_EXT, 'Vessel Bay Plan Full Export', FULL_EXPORT_EXT);
 }
+let _fileImportInProgress = false;
 async function fileImport(){
+  if(_fileImportInProgress) return;
   if(_unsavedChanges){
     if(!confirm('You have unsaved changes. Import a file and replace current data?')) return;
   }
+  _fileImportInProgress = true;
+  try {
   const inFrame = window.top !== window.self;
   if(!inFrame && window.showOpenFilePicker){
     try {
@@ -35347,10 +35372,14 @@ async function fileImport(){
       return;
     } catch(err){
       if(err.name === 'AbortError') return;
+      // Fall through to input fallback silently
     }
   }
   document.getElementById('fileImportInput').value = '';
   document.getElementById('fileImportInput').click();
+  } finally {
+    setTimeout(function(){ _fileImportInProgress = false; }, 1000);
+  }
 }
 function fileImportLoad(input){
   const file = input.files[0]; if(!file) return;
@@ -35726,7 +35755,8 @@ function setFloatIconsVisible(on){
     'floatHeightToolBtn','floatFshpBtn','floatObjManipBtn','floatFpalBtn',
     'floatAssignBtn','floatObjEditorBtn','floatFxpPlaceBtn','floatFxpManipBtn',
     'floatFxpAssignBtn','floatFxpLibBtn','floatVentPlaceBtn','floatHddPlaceBtn',
-    'floatRpPlaceBtn','floatRpManipBtn','floatRpAssignBtn','floatRpLibBtn'];
+    'floatRpPlaceBtn','floatRpManipBtn','floatRpAssignBtn','floatRpLibBtn',
+    'floatRpPocketPaintBtn','floatRpClearBtn'];
   _fabIds.forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = 'none';
@@ -59814,7 +59844,7 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
               openHeightPicker(t0.clientX, t0.clientY, h);
             }
           }
-        }, 500);
+        }, 900);
       }
     }
   },{passive:false});
@@ -59926,58 +59956,6 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
         }
       } else {
         if(!_placementActive) _lastTap=now; else _lastTap=0;
-
-        // Single tap in overview mode — navigate directly to tapped bay
-        if(!_placementActive && typeof viewMode!=='undefined' && viewMode==='ov'){
-          var rect_ov2 = vp2.getBoundingClientRect();
-          var _stMx = t2.clientX - rect_ov2.left;
-          var _stMy = t2.clientY - rect_ov2.top;
-          var _stWx = (_stMx - panX) / zoom;
-          var _stWy = (_stMy - panY) / zoom;
-          if(typeof ovRotation !== 'undefined' && ovRotation !== 0){
-            var _sr2 = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
-            var _stH2 = typeof computeItemYPositions==='function' ? computeItemYPositions(0).totalH : 0;
-            var _sbH = typeof BOWH!=='undefined' ? BOWH : 40;
-            var _svW = _sr2*(typeof SW!=='undefined'?SW:52)+(typeof VPX!=='undefined'?VPX:20)*2;
-            var _svH = _stH2+(typeof VPY!=='undefined'?VPY:20)*2+_sbH;
-            var _scx = _svW/2, _scy = _svH/2-_sbH/2;
-            var _sang = -ovRotation*Math.PI/2;
-            var _sdx = _stWx-_scx, _sdy = _stWy-_scy;
-            _stWx = _scx + _sdx*Math.cos(_sang) - _sdy*Math.sin(_sang);
-            _stWy = _scy + _sdx*Math.sin(_sang) + _sdy*Math.cos(_sang);
-          }
-          var _sGx = typeof VPX!=='undefined' ? VPX : 20;
-          var _sGy = (typeof BOWH!=='undefined'?BOWH:40)+(typeof VPY!=='undefined'?VPY:20);
-          var _sPos = typeof computeItemYPositions==='function' ? computeItemYPositions(_sGy) : {baysY:[],platsY:[]};
-          var _sRows = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
-          var _sSW = typeof SW!=='undefined' ? SW : 52;
-          var _sSH = typeof SH!=='undefined' ? SH : 600;
-          var _sNav = false;
-          for(var _sb=0; _sb<cfg.bays; _sb++){
-            var _sbY = _sPos.baysY[_sb];
-            if(_stWy>=_sbY && _stWy<_sbY+_sSH && _stWx>=_sGx && _stWx<_sGx+_sRows*_sSW){
-              if(typeof selectBay==='function') selectBay(_sb);
-              if(typeof setView==='function') setView('bay');
-              _sNav = true; break;
-            }
-          }
-          // If not a bay, check platforms
-          if(!_sNav && typeof platforms!=='undefined'){
-            platforms.forEach(function(p,pi){
-              if(_sNav) return;
-              var _pRows = typeof totalRowsForPlat==='function' ? totalRowsForPlat(pi) : _sRows;
-              var _pOx = Math.floor((_sRows-_pRows)/2)*_sSW;
-              var _ppH = typeof PLAT_H!=='undefined' ? PLAT_H : 40;
-              if(_stWy>=_sPos.platsY[pi] && _stWy<_sPos.platsY[pi]+_ppH &&
-                 _stWx>=_sGx+_pOx && _stWx<_sGx+_pOx+_pRows*_sSW){
-                if(typeof selectPlatform==='function') selectPlatform(pi);
-                if(typeof setView==='function') setView('bay');
-                _sNav = true;
-              }
-            });
-          }
-          if(_sNav) return;
-        }
         // Fire synthetic events — target the canvas element for edit modes
         // that check e.target === canvas (markTool, craneTool etc.)
         var target = document.getElementById('c') || vp2;
