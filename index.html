@@ -8,6 +8,47 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-touch-fullscreen" content="yes">
 <meta name="theme-color" content="#080c12">
+<script>
+// ── iOS 12 / Safari 12 compatibility patches ─────────────────────────────
+// Array.prototype.at (ES2022) — polyfill
+if(!Array.prototype.at){
+  Array.prototype.at=function(n){
+    var i=Math.trunc(n)||0;
+    if(i<0) i+=this.length;
+    if(i<0||i>=this.length) return undefined;
+    return this[i];
+  };
+}
+// String.prototype.at
+if(!String.prototype.at){
+  String.prototype.at=function(n){
+    var i=Math.trunc(n)||0;
+    if(i<0) i+=this.length;
+    if(i<0||i>=this.length) return undefined;
+    return this[i];
+  };
+}
+// Object.fromEntries (ES2019) — not in Safari 12
+if(!Object.fromEntries){
+  Object.fromEntries=function(entries){
+    var o={};
+    for(var i=0;i<entries.length;i++) o[entries[i][0]]=entries[i][1];
+    return o;
+  };
+}
+// queueMicrotask
+if(!window.queueMicrotask){
+  window.queueMicrotask=function(fn){ Promise.resolve().then(fn); };
+}
+// --app-height: set real inner height accounting for iOS Safari chrome
+function _setAppHeight(){
+  document.documentElement.style.setProperty('--app-height', window.innerHeight+'px');
+}
+_setAppHeight();
+window.addEventListener('resize', _setAppHeight);
+window.addEventListener('orientationchange', function(){ setTimeout(_setAppHeight, 200); });
+</script>
+
 <!-- iOS home screen icons -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23080c12'/><text y='.9em' font-size='90'>⬡</text></svg>">
 <title>INSPECTRA — HATCH SCAN</title>
@@ -922,7 +963,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    height: 100dvh;
+    height: 100vh;
     height: var(--app-height, 100vh);
     overflow: hidden;
     cursor: default;
@@ -2022,13 +2063,13 @@
 
   #objEditorOverlay {
     position: fixed;
-    inset: 0;
+    top:0;right:0;bottom:0;left:0;
     background: rgba(4,10,20,0.82);
     z-index: 9000;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);backdrop-filter: blur(3px);
   }
   #objEditorPanel {
     width: min(1400px, 97vw);
@@ -2962,7 +3003,7 @@ body { transform-origin: top center; will-change: transform; }
   transform: translateX(-110%); transition: transform 0.22s ease;
 }
 #mobileMenuDrawer.open { transform: translateX(0); }
-#mobileMenuOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99998; }
+#mobileMenuOverlay { display: none; position: fixed; top:0;right:0;bottom:0;left:0; background: rgba(0,0,0,0.55); z-index: 99998; }
 #mobileMenuOverlay.open { display: block; }
 
 /* Drawer internals */
@@ -3219,14 +3260,14 @@ a, button, [onclick], label, select, .btn, .mob-action, .mob-group-hdr,
 html {
   height: 100%;
   height: -webkit-fill-available;
-  height: 100dvh;
+  height: 100vh;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 body {
   height: 100%;
   height: -webkit-fill-available;
-  height: 100dvh;
+  height: 100vh;
   overflow: hidden !important;
   /* NO position:fixed — breaks Safari toolbar height detection */
 }
@@ -3431,7 +3472,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 <style>
 #loginOverlay {
   position: fixed;
-  inset: 0;
+  top:0;right:0;bottom:0;left:0;
   /* Use var(--app-height) so it matches actual visible area on iOS Safari */
   height: var(--app-height, 100vh);
   z-index: 99999;
@@ -3505,11 +3546,14 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
   margin-bottom: 8px;
 }
 .lg-field {
+  display: -webkit-flex;
   display: flex;
+  -webkit-flex-direction: column;
   flex-direction: column;
   gap: 4px;
   margin-bottom: 8px;
 }
+.lg-field > * + * { margin-top: 4px; }
 .lg-label {
   font-size: 8px;
   letter-spacing: 0.16em;
@@ -4236,7 +4280,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 
 
 <!-- RESTING PAD LIBRARY MODAL -->
-<div id="rpLibOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,10,20,0.78);z-index:9400;align-items:center;justify-content:center;">
+<div id="rpLibOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,10,20,0.78);z-index:9400;align-items:center;justify-content:center;">
   <div id="rpLibPanel" style="background:#0c0718;border:1px solid #7050a0;border-top:3px solid #c090f0;
     width:min(820px,95vw);max-height:85vh;display:flex;flex-direction:column;
     box-shadow:0 24px 80px rgba(0,0,0,0.85);font-family:'IBM Plex Mono',monospace;">
@@ -4298,7 +4342,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- FLEXIPAD LIBRARY MODAL -->
-<div id="fxpLibOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,10,20,0.78);z-index:9400;align-items:center;justify-content:center;">
+<div id="fxpLibOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,10,20,0.78);z-index:9400;align-items:center;justify-content:center;">
   <div id="fxpLibPanel" style="background:#071624;border:1px solid #308060;border-top:3px solid #60d890;
     width:min(820px,95vw);max-height:85vh;display:flex;flex-direction:column;
     box-shadow:0 24px 80px rgba(0,0,0,0.85);font-family:'IBM Plex Mono',monospace;">
@@ -4396,8 +4440,8 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- ══ NAME COMPATIBILITY CHART MODAL ══ -->
-<div id="compatChartOverlay" style="display:none;position:fixed;inset:0;z-index:99600;
-  background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+<div id="compatChartOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:99600;
+  background:rgba(0,0,0,0.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
   <div id="compatChartPanel" style="
     background:#071624;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
     border-radius:6px;width:min(860px,96vw);max-height:88vh;
@@ -4828,7 +4872,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 </div>
 
 <!-- SHAPE PICKER MODAL -->
-<div id="shapePickerOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,10,20,0.7);z-index:9500;align-items:center;justify-content:center;">
+<div id="shapePickerOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,10,20,0.7);z-index:9500;align-items:center;justify-content:center;">
   <div id="shapePickerPanel" style="background:#071624;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;width:min(820px,94vw);max-height:85vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.85);">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:42px;background:#0a1e30;border-bottom:1px solid #1e4a74;flex-shrink:0;">
       <span style="font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.2em;color:#5eb8ff;text-transform:uppercase;">SELECT FOUNDATION SHAPE</span>
@@ -4998,7 +5042,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
       padding:6px 12px;
       cursor:pointer;
       transition:all 0.18s;
-      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
       white-space:nowrap;
       display:flex;
       align-items:center;
@@ -6807,7 +6851,7 @@ font-family:'IBM Plex Mono',monospace;">
 </div>
 
 <!-- LASHING EYE LIBRARY OVERLAY -->
-<div id="lashEyeLibOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,10,20,0.78);z-index:9400;align-items:center;justify-content:center;">
+<div id="lashEyeLibOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,10,20,0.78);z-index:9400;align-items:center;justify-content:center;">
   <div id="lashEyeLibPanel" style="background:#060e1a;border:1px solid #2d7fc1;border-top:3px solid #5eb8ff;
     width:min(1100px,96vw);max-height:85vh;display:flex;flex-direction:column;
     box-shadow:0 24px 80px rgba(0,0,0,0.85);font-family:'IBM Plex Mono',monospace;">
@@ -7435,7 +7479,7 @@ let showLine2Top=false, showLine2Bot=false;
 
 const _gDef = { l2t:false, l3:false, l4:false, l5:false, l6:false, l7:false };
 
-function getFnd2(bl,ri,bay){ return fnds2[fndKey(bl,ri,bay??selBay)]||_defFnd(ri,bay??selBay); }
+function getFnd2(bl,ri,bay){ return fnds2[fndKey(bl,ri,(bay!=null?bay:selBay))]||_defFnd(ri,(bay!=null?bay:selBay)); }
 function setFnd2(bl,ri,t,c,side,bay){
   if(side===undefined) side=null;
   if(bay===undefined) bay=selBay;
@@ -8185,7 +8229,7 @@ function updateStatusLabel(){
   if(viewMode==='ov'){
     viewCtx = 'OVERVIEW \u2014 ALL BAYS';
   } else if(viewMode==='bay'){
-    if(selIsPlat) viewCtx = `PLATFORM VIEW \u2014 ${platforms[selPlatIdx]?.name||'PLATFORM'}`;
+    if(selIsPlat) viewCtx = `PLATFORM VIEW \u2014 ${(platforms[selPlatIdx]&&platforms[selPlatIdx].name)||'PLATFORM'}`;
     else viewCtx = `BAY VIEW \u2014 BAY ${bayDisplay(selBay)}`;
   } else {
     viewCtx = `HC VIEW \u2014 ${getHcName(selBay, selHcV).toUpperCase()} \u2014 BAY ${bayDisplay(selBay)}`;
@@ -8207,7 +8251,7 @@ function updateStatusLabel(){
   const _applyBtn = document.getElementById('btnApplyDefCurrent');
   const _applyColBtn = document.getElementById('btnApplyColCurrent');
   const _currentLabel = (viewMode==='bay' && selIsPlat)
-    ? `⟳ ${(platforms[selPlatIdx]?.name||'PLATFORM').toUpperCase()}`
+    ? `⟳ ${((platforms[selPlatIdx]&&platforms[selPlatIdx].name)||'PLATFORM').toUpperCase()}`
     : (viewMode==='bay')
     ? `⟳ BAY ${bayDisplay(selBay)}`
     : `⟳ CURRENT`;
@@ -8302,13 +8346,13 @@ function selectPlat(pi){
 
 function prevBay(){
   if(selIsPlat){
-    const ab=platforms[selPlatIdx]?.afterBay??0;
+    const ab=((platforms[selPlatIdx]&&platforms[selPlatIdx].afterBay)||0);
     if(ab>=0) selectBay(ab);
   } else if(selBay>0) selectBay(selBay-1);
 }
 function nextBay(){
   if(selIsPlat){
-    const ab=platforms[selPlatIdx]?.afterBay??0;
+    const ab=((platforms[selPlatIdx]&&platforms[selPlatIdx].afterBay)||0);
     if(ab===-1) selectBay(0); // platform is before bay 0, next is bay 0
     else if(ab+1<cfg.bays) selectBay(ab+1);
   } else if(selBay<cfg.bays-1) selectBay(selBay+1);
@@ -9525,7 +9569,7 @@ function hcStoppersBay(b){ if(!hcStoppers[b]) hcStoppers[b]=[]; return hcStopper
 
 function addHcStopper(bay, hcNum, edge, type, color, spanFirst){
   const c = color || 'black';
-  const s = { id: ++_hcStopperId, bay, hcNum, edge, type, color: c, spanFirst: spanFirst ?? -1, free: false, x: 0, y: 0 };
+  const s = { id: ++_hcStopperId, bay, hcNum, edge, type, color: c, spanFirst: (spanFirst!=null?spanFirst:-1), free: false, x: 0, y: 0 };
   hcStoppersBay(bay).push(s);
   return s;
 }
@@ -11083,7 +11127,7 @@ function rpHolderW(n){ return n*RP_PAD_W + Math.max(0,n-1)*RP_CELL_GAP + 2*RP_BO
 function rpBay(b){ if(!restingPads[b]) restingPads[b]=[]; return restingPads[b]; }
 function addRp(bay,hcNum,edge,color,padCount,spanFirst){
   const rp={id:++_rpId,bay,hcNum,edge,free:false,x:0,y:0,
-            color:color||'black',padCount:padCount||1,spanFirst:spanFirst??-1,rotAngle:0};
+            color:color||'black',padCount:padCount||1,spanFirst:(spanFirst!=null?spanFirst:-1),rotAngle:0};
   rpBay(bay).push(rp); return rp;
 }
 function addRpFree(bay,lx,ly,color,padCount){
@@ -11117,7 +11161,7 @@ function flexipadsBay(b){ if(!flexipads[b]) flexipads[b]=[]; return flexipads[b]
 
 function addFlexipad(bay, hcNum, edge, color, spanFirst, typeId){
   const c = color||'green';
-  const fp = { id:++_fxpId, bay, hcNum, edge, free:false, x:0, y:0, color:c, typeIdx:null, typeId:typeId||null, spanFirst: spanFirst??-1 };
+  const fp = { id:++_fxpId, bay, hcNum, edge, free:false, x:0, y:0, color:c, typeIdx:null, typeId:typeId||null, spanFirst: (spanFirst!=null?spanFirst:-1) };
   flexipadsBay(bay).push(fp);
   return fp;
 }
@@ -12249,7 +12293,7 @@ function openRpAssignPopup(screenX, screenY, rp){
   popup.classList.add('show');
   const vw=window.innerWidth,vh=window.innerHeight;
   const pw=popup.offsetWidth||240,ph=popup.offsetHeight||200;
-  const isTouchDevice=window.matchMedia('(pointer:coarse)').matches;
+  const isTouchDevice=(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
   let px,py;
   if(isTouchDevice){
     px=screenX-pw/2;
@@ -14289,7 +14333,7 @@ function openFxpAssignPopup(screenX, screenY, fp){
   popup.classList.add('show');
   const vw=window.innerWidth, vh=window.innerHeight;
   const pw=popup.offsetWidth||240, ph=popup.offsetHeight||200;
-  const isTouchDevice=window.matchMedia('(pointer:coarse)').matches;
+  const isTouchDevice=(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
   let px, py;
   if(isTouchDevice){
     px=screenX-pw/2;
@@ -15532,7 +15576,7 @@ function omNudgeResetAll(){
   }
   const count = matchKeys.length;
   if(count===0){ alert('No moved foundations in this view.'); return; }
-  const viewLabel = selIsPlat ? `platform "${platforms[selPlatIdx]?.name||selPlatIdx}"` : `bay ${selBay+1}`;
+  const viewLabel = selIsPlat ? `platform "${(platforms[selPlatIdx]&&platforms[selPlatIdx].name)||selPlatIdx}"` : `bay ${selBay+1}`;
   if(!confirm(`Reset all ${count} moved foundation${count===1?'':'s'} in ${viewLabel} back to their original grid positions?`)) return;
   matchKeys.forEach(k => delete fndOffsets[k]);
   omUpdateNudgeSelLabel();
@@ -15822,7 +15866,7 @@ function omUpdateRotSelLabel(){
   if(!omRotSel){ el.textContent = ''; return; }
   const k = omRotBaseKey(omRotSel);
   const rot = omRotSel.isFree
-    ? ((freeFnds[omRotSel.bay]||[]).find(x=>x.id===omRotSel.id)?.rot||0)
+    ? ((freeFnds[omRotSel.bay]||[]).find(x=>x.id===omRotSel.id)||0)
     : getFndRot(k);
   const deg = [0,90,180,270][rot%4];
   el.textContent = total===1
@@ -15933,7 +15977,7 @@ function toggleHcShapeEditor(){
     if(_fhcs) _fhcs.classList.add('hc-on');
     const rows=totalRowsForBay(selBay), half=portRowsForBay(selBay);
     const hcXMap={1:0, 2:half*SW, 3:(half+(hasCenterForBay(selBay)?1:0))*SW, 4:rows*SW};
-    hcShapeLiveX = hcXMap[hcShapeHcBrush] ?? rows*SW/2;
+    hcShapeLiveX = (hcXMap[hcShapeHcBrush]!=null?hcXMap[hcShapeHcBrush]:rows)*SW/2;
     hcShapeLiveY = SH/2;
   } else {
     hcShapeWaiting=false;
@@ -16178,7 +16222,7 @@ function hcShapeLoadPreset(idx){
     3: (half + (hasCenterForBay(selBay) ? 1 : 0)) * SW,
     4: rows * SW,
   };
-  const hcX = hcXMap[hcShapeHcBrush] ?? (rows * SW / 2);
+  const hcX = (hcXMap[hcShapeHcBrush]!=null?hcXMap[hcShapeHcBrush]:(rows * SW / 2));
 
   const snap = v => Math.round(v / 8) * 8;
 
@@ -18817,9 +18861,9 @@ function drawEditOverlays(){
       const rows=totalRowsForPlat(selPlatIdx);
       gx=panX+dotX(0,hovDot.rowIdx,rows)*zoom;
       const li=hovDot.platLine;
-      if(li===0 && platforms[selPlatIdx]?.lines[1] && platSpan12(selPlatIdx,hovDot.rowIdx))
+      if(li===0 && (platforms[selPlatIdx]&&platforms[selPlatIdx].lines)[1] && platSpan12(selPlatIdx,hovDot.rowIdx))
         dy=panY+PLAT_SPAN12_Y*zoom;
-      else if(li===2 && platforms[selPlatIdx]?.lines[3] && platSpan34(selPlatIdx,hovDot.rowIdx))
+      else if(li===2 && (platforms[selPlatIdx]&&platforms[selPlatIdx].lines)[3] && platSpan34(selPlatIdx,hovDot.rowIdx))
         dy=panY+PLAT_SPAN34_Y*zoom;
       else
         dy=panY+PLAT_LINE_Y[li]*zoom;
@@ -18906,8 +18950,8 @@ function drawEditOverlays(){
       if(hit.isPlatform){
         const li=hit.platLine, pi=selPlatIdx;
         sx=panX+hit.rowIdx*SW*zoom;
-        if(li===0 && platforms[pi]?.lines[1] && platSpan12(pi,hit.rowIdx)) sy=panY+PLAT_SPAN12_Y*zoom;
-        else if(li===2 && platforms[pi]?.lines[3] && platSpan34(pi,hit.rowIdx)) sy=panY+PLAT_SPAN34_Y*zoom;
+        if(li===0 && (platforms[pi]&&platforms[pi].lines)[1] && platSpan12(pi,hit.rowIdx)) sy=panY+PLAT_SPAN12_Y*zoom;
+        else if(li===2 && (platforms[pi]&&platforms[pi].lines)[3] && platSpan34(pi,hit.rowIdx)) sy=panY+PLAT_SPAN34_Y*zoom;
         else sy=panY+PLAT_LINE_Y[li]*zoom;
       } else if(hit.midLine!==undefined){
         sx=panX+dotX(0,hit.rowIdx,totalRows())*zoom;
@@ -18950,8 +18994,8 @@ function drawEditOverlays(){
       if(hit.isPlatform){
         const li=hit.platLine, pi=selPlatIdx;
         sx=panX+hit.rowIdx*SW*zoom;
-        if(li===0&&platforms[pi]?.lines[1]&&platSpan12(pi,hit.rowIdx)) sy=panY+PLAT_SPAN12_Y*zoom;
-        else if(li===2&&platforms[pi]?.lines[3]&&platSpan34(pi,hit.rowIdx)) sy=panY+PLAT_SPAN34_Y*zoom;
+        if(li===0&&(platforms[pi]&&platforms[pi].lines)[1]&&platSpan12(pi,hit.rowIdx)) sy=panY+PLAT_SPAN12_Y*zoom;
+        else if(li===2&&(platforms[pi]&&platforms[pi].lines)[3]&&platSpan34(pi,hit.rowIdx)) sy=panY+PLAT_SPAN34_Y*zoom;
         else sy=panY+PLAT_LINE_Y[li]*zoom;
       } else if(hit.midLine!==undefined){
         sx=panX+dotX(0,hit.rowIdx,totalRows())*zoom;
@@ -19152,9 +19196,9 @@ function omDotScreenPos(h){
   if(h.isPlatform){
     gx=panX+dotX(0,h.rowIdx,rows)*zoom;
     const li=h.platLine;
-    if(li===0 && platforms[selPlatIdx]?.lines[1] && platSpan12(selPlatIdx,h.rowIdx))
+    if(li===0 && (platforms[selPlatIdx]&&platforms[selPlatIdx].lines)[1] && platSpan12(selPlatIdx,h.rowIdx))
       gy=panY+PLAT_SPAN12_Y*zoom;
-    else if(li===2 && platforms[selPlatIdx]?.lines[3] && platSpan34(selPlatIdx,h.rowIdx))
+    else if(li===2 && (platforms[selPlatIdx]&&platforms[selPlatIdx].lines)[3] && platSpan34(selPlatIdx,h.rowIdx))
       gy=panY+PLAT_SPAN34_Y*zoom;
     else
       gy=panY+PLAT_LINE_Y[li]*zoom;
@@ -19533,7 +19577,7 @@ function drawObjManipOverlay(){
       if(!pos) return;
       const rr=ringRadius(h);
       const k=omRotBaseKey(h);
-      const rot=h.isFree?((freeFnds[h.bay]||[]).find(x=>x.id===h.id)?.rot||0):getFndRot(k);
+      const rot=h.isFree?((freeFnds[h.bay]||[]).find(function(x){return x.id===h.id;}).rot||0):getFndRot(k);
       ctx.save();
       ctx.strokeStyle='rgba(255,200,30,0.75)'; ctx.lineWidth=2; ctx.setLineDash([3,3]);
       ctx.beginPath(); ctx.arc(pos.x,pos.y,rr+3,0,Math.PI*2); ctx.stroke();
@@ -19549,7 +19593,7 @@ function drawObjManipOverlay(){
     if(pRot){
       const rr=ringRadius(omRotSel);
       const k=omRotBaseKey(omRotSel);
-      const rot=omRotSel.isFree?((freeFnds[omRotSel.bay]||[]).find(x=>x.id===omRotSel.id)?.rot||0):getFndRot(k);
+      const rot=omRotSel.isFree?((freeFnds[omRotSel.bay]||[]).find(x=>x.id===omRotSel.id)||0):getFndRot(k);
       const deg=[0,90,180,270][rot%4];
       ringAt(pRot,'rgba(255,220,40,0.95)',[],'↻ '+deg+'°','#ffe040',rr);
       ctx.beginPath(); ctx.arc(pRot.x,pRot.y,R*0.4,0,Math.PI*2);
@@ -21697,8 +21741,8 @@ vp.addEventListener('mousemove',e=>{
       const rF=wx/SW, fr=Math.floor(rF);
       if(fr>=0&&fr<rows){
         const isP=fr<portR, isC=platHasCenter&&fr===portR;
-        coord.textContent=`${p?.name||'PLATFORM'}  /  ROW ${rowLabel(fr)}  /  ${isC?'CENTER-LINE':isP?'PORT':'STARBOARD'}`;
-      } else coord.textContent=p?.name||'PLATFORM';
+        coord.textContent=`${(p&&p.name)||'PLATFORM'}  /  ROW ${rowLabel(fr)}  /  ${isC?'CENTER-LINE':isP?'PORT':'STARBOARD'}`;
+      } else coord.textContent=(p&&p.name)||'PLATFORM';
     } else {
     const rows=totalRowsForBay(selBay);
     const rF=wx/SW;
@@ -22339,9 +22383,9 @@ document.addEventListener('mouseup',e=>{
       const hits=dotsInsideRect(typeSelX0,typeSelY0,typeSelX1,typeSelY1);
       const rect2=vp.getBoundingClientRect();
       hits.forEach(h=>{
-        const key=`${h.bayLine},${h.rowIdx},${h.isLine2?1:0},${h.midLine??-1},${h.side||''}`;
+        const key=`${h.bayLine},${h.rowIdx},${h.isLine2?1:0},${(h.midLine!=null?h.midLine:-1)},${h.side||''}`;
         const already=_assignMultiSel.findIndex(s=>
-          `${s.bayLine},${s.rowIdx},${s.isLine2?1:0},${s.midLine??-1},${s.side||''}`===key)>=0;
+          `${s.bayLine},${s.rowIdx},${s.isLine2?1:0},${(s.midLine!=null?s.midLine:-1)},${s.side||''}`===key)>=0;
         if(!already){
           let sx, sy;
           const inset=2.85*zoom;
@@ -23333,7 +23377,7 @@ let shapePickerRowIdx=null;
 function openShapePicker(rowIdx){
   shapePickerRowIdx=rowIdx;
   const grid=document.getElementById('shapePickerGrid');
-  const current=oeTypes[rowIdx]?.shape||'double_bridge';
+  const current=(oeTypes[rowIdx]&&oeTypes[rowIdx].shape)||'double_bridge';
   grid.innerHTML='';
   Object.entries(SHAPE_LIB).forEach(([key,sh])=>{
     const card=document.createElement('div');
@@ -24109,18 +24153,18 @@ document.addEventListener('keydown', e=>{
 
     if(e.ctrlKey || e.metaKey){
       closeAssignPopup();
-      const key = `${h.bayLine},${h.rowIdx},${h.isLine2?1:0},${h.midLine??-1},${h.side||''}`;
+      const key = `${h.bayLine},${h.rowIdx},${h.isLine2?1:0},${(h.midLine!=null?h.midLine:-1)},${h.side||''}`;
       const idx = _assignMultiSel.findIndex(s =>
-        `${s.bayLine},${s.rowIdx},${s.isLine2?1:0},${s.midLine??-1},${s.side||''}` === key);
+        `${s.bayLine},${s.rowIdx},${s.isLine2?1:0},${(s.midLine!=null?s.midLine:-1)},${s.side||''}` === key);
       h._sx = mx; h._sy = my;
       if(idx >= 0){ _assignMultiSel.splice(idx,1); }
       else { _assignMultiSel.push(h); }
       draw();
     } else {
       if(_assignMultiSel.length > 0){
-        const key = `${h.bayLine},${h.rowIdx},${h.isLine2?1:0},${h.midLine??-1},${h.side||''}`;
+        const key = `${h.bayLine},${h.rowIdx},${h.isLine2?1:0},${(h.midLine!=null?h.midLine:-1)},${h.side||''}`;
         const already = _assignMultiSel.find(s =>
-          `${s.bayLine},${s.rowIdx},${s.isLine2?1:0},${s.midLine??-1},${s.side||''}` === key);
+          `${s.bayLine},${s.rowIdx},${s.isLine2?1:0},${(s.midLine!=null?s.midLine:-1)},${s.side||''}` === key);
         if(!already){ h._sx=mx; h._sy=my; _assignMultiSel.push(h); }
       }
       openAssignPopup(e.clientX, e.clientY, h.bayLine, h.rowIdx, h.isLine2||false, h.midLine, h.side||null);
@@ -24281,6 +24325,14 @@ document.addEventListener('keydown', e=>{
 
   document.addEventListener('mousedown', e => {
     if(document.getElementById('heightPicker').style.display !== 'none'){
+      // Guard 1: don't close if this event was the one that triggered the open
+      // (synthesised mousedown arrives in the same batch as the mouseup that opens)
+      if(window._heightPickerOpenTime && Date.now() - window._heightPickerOpenTime < 700) return;
+      // Guard 2: don't close when tapping the canvas — the paired mouseup will
+      // either open the picker at a new dot or assign the active height.
+      // Closing here would fight with that logic and cause instant dismissal.
+      var _vp = document.getElementById('vp');
+      if(_vp && (e.target === _vp || _vp.contains(e.target))) return;
       if(!e.target.closest('#heightPicker')) closeHeightPicker();
     }
   });
@@ -24525,7 +24577,7 @@ function renderAutoGrids(){
   if(summary) summary.innerHTML = summaryLines.length ? summaryLines.join(' &nbsp;|&nbsp; ') : '<span style="color:#6a9ac0">Select a source bay in each group above</span>';
 
   const execBtn = document.getElementById('bc-exec-btn');
-  const hasWork = BC_COLORS.some(c=>bcAutoPairs[c]?.src!==null && bcAutoPairs[c]?.tgts?.size>0);
+  const hasWork = BC_COLORS.some(c=>(bcAutoPairs[c]&&bcAutoPairs[c].src)!==null && bcAutoPairs[c]?.(tgts&&tgts.size)>0);
   if(execBtn){ execBtn.disabled=!hasWork; execBtn.style.opacity=hasWork?'1':'0.4'; }
 }
 
@@ -24928,28 +24980,28 @@ document.addEventListener('keydown',e=>{
     if(e.key==='Escape') closeObjEditor();
     e.stopPropagation();
   }
-  if(document.getElementById('shapePickerOverlay')?.style.display!=='none'){
+  if((document.getElementById('shapePickerOverlay')||{style:{}}).style.display!=='none'){
     if(e.key==='Escape') closeShapePicker();
     e.stopPropagation();
   }
-  if(document.getElementById('bayCopyOverlay')?.style.display!=='none'){
+  if((document.getElementById('bayCopyOverlay')||{style:{}}).style.display!=='none'){
     if(e.key==='Escape') closeBayCopyTool();
     e.stopPropagation();
   }
-  if(document.getElementById('sameBaysOverlay')?.style.display!=='none'){
+  if((document.getElementById('sameBaysOverlay')||{style:{}}).style.display!=='none'){
     if(e.key==='Escape') closeSameBaysPanel();
     e.stopPropagation();
   }
-  if(document.getElementById('platCopyOverlay')?.style.display!=='none'){
+  if((document.getElementById('platCopyOverlay')||{style:{}}).style.display!=='none'){
     if(e.key==='Escape') closePlatCopyTool();
     e.stopPropagation();
   }
-  if(document.getElementById('fxpLibOverlay')?.style.display!=='none'){
+  if((document.getElementById('fxpLibOverlay')||{style:{}}).style.display!=='none'){
     if(e.key==='Escape') closeFxpLib();
     e.stopPropagation();
     return;
   }
-  if(document.getElementById('bayNameOverlay')?.style.display!=='none'){
+  if((document.getElementById('bayNameOverlay')||{style:{}}).style.display!=='none'){
     if(e.key==='Escape') closeBayNameTool();
     e.stopPropagation();
   }
@@ -25097,7 +25149,7 @@ function openHeightPicker(screenX, screenY, h){
   p.style.display = 'block';
   const vw = window.innerWidth, vh = window.innerHeight;
   const pw = p.offsetWidth || 190, ph = p.offsetHeight || 260;
-  const isTouchDevice = window.matchMedia('(pointer:coarse)').matches;
+  const isTouchDevice = (window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
   // On touch: open below-right of tap so the header/close button is
   // well away from the finger lift point. On desktop keep existing offset.
   let px, py;
@@ -25119,6 +25171,8 @@ function openHeightPicker(screenX, screenY, h){
   p.style.left = px+'px'; p.style.top = py+'px';
   // Block all pointer events on the panel until the finger has lifted
   // and a safe gap has passed — prevents accidental close-button tap.
+  // Record open time so the mousedown close-guard can ignore the triggering event
+  window._heightPickerOpenTime = Date.now();
   p.style.pointerEvents = 'none';
   setTimeout(function(){ p.style.pointerEvents = ''; }, isTouchDevice ? 600 : 120);
   // Extra delay specifically for the close button — it sits in the header
@@ -25133,6 +25187,7 @@ function openHeightPicker(screenX, screenY, h){
 function closeHeightPicker(){
   document.getElementById('heightPicker').style.display = 'none';
   _heightPickerTarget = null;
+  window._heightPickerOpenTime = 0;
 }
 
 function _assignHeightToTarget(h, val){
@@ -25248,7 +25303,7 @@ function drawCustomHeightsForBay(b){
     const isSplit = _SPLIT_TYPES.has(fndRec.type);
     if(isSplit){
       for(const [suffix, side] of [['_L','L'],['_R','R']]){
-        const v = store[baseKey+suffix] ?? store[baseKey];
+        const v = (store[baseKey+suffix]!=null?store[baseKey+suffix]:store)[baseKey];
         if(v !== undefined){
           const isLDel = fndRec.colorL === 'deleted';
           const isRDel = fndRec.colorR === 'deleted';
@@ -25930,8 +25985,8 @@ const VENT_GAP_STEP = VENT_W + 4; // grid spacing along rail
 
 function ventBay(b){ if(!hcVents[b]) hcVents[b]=[]; return hcVents[b]; }
 function addVent(bay, hcNum, side, spanFirst, gi, color){
-  const v={id:++_ventId, bay, hcNum, side, spanFirst:spanFirst??-1,
-           gridOffset:gi??0, free:false, x:0, y:0, color:color||'black'};
+  const v={id:++_ventId, bay, hcNum, side, spanFirst:(spanFirst!=null?spanFirst:-1),
+           gridOffset:(gi!=null?gi:0), free:false, x:0, y:0, color:color||'black'};
   ventBay(bay).push(v); return v;
 }
 function addVentFree(bay, lx, ly, side, color){
@@ -25964,7 +26019,7 @@ function ventLogicalPos(bay, v, rows){
   const r2 = rows!==undefined ? rows : totalRowsForBay(bay);
   if(v.free) return {x:v.x, y:v.y};
 
-  const gi = v.gridOffset??0;
+  const gi = (v.gridOffset!=null?v.gridOffset:0);
   const nPts = Math.max(1, Math.floor(SH / VENT_GAP_STEP));
   const totalUsed = (nPts-1)*VENT_GAP_STEP;
   const startY = (SH-totalUsed)/2;
@@ -27449,7 +27504,7 @@ function _initHddDrag(){
 
 </script>
 <!-- SAME BAYS PANEL -->
-<div id="sameBaysOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.82);z-index:2000;align-items:center;justify-content:center;">
+<div id="sameBaysOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,12,22,0.82);z-index:2000;align-items:center;justify-content:center;">
   <div id="sameBaysPanel">
     <div class="bc-header">
       <span class="bc-title">⇄ SAME BAYS — SISTER BAY GROUPS</span>
@@ -27502,7 +27557,7 @@ function _initHddDrag(){
 </style>
 
 <!-- BAY COPY TOOL MODAL -->
-<div id="bayCopyOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.82);z-index:2000;align-items:center;justify-content:center;">
+<div id="bayCopyOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,12,22,0.82);z-index:2000;align-items:center;justify-content:center;">
   <div id="bayCopyPanel">
     <div class="bc-header">
       <span class="bc-title">⧉ BAY COPY TOOL</span>
@@ -27749,7 +27804,7 @@ function _initHddDrag(){
 </style>
 
 <!-- BAY NAMING TOOL MODAL -->
-<div id="bayNameOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.82);z-index:2000;align-items:center;justify-content:center;">
+<div id="bayNameOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,12,22,0.82);z-index:2000;align-items:center;justify-content:center;">
   <div id="bayNamePanel">
     <div class="bc-header" style="background:#0e2240;padding:14px 22px;border-bottom:2px solid #2a5a90;">
       <span class="bc-title" style="font-size:15px;letter-spacing:0.2em;color:#ffffff;font-weight:800;">✎ BAY NAMING TOOL</span>
@@ -27884,7 +27939,7 @@ document.addEventListener('mousedown',e=>{
 <!-- ══════════════════════════════════════════════════════
      HC NAMING TOOL MODAL
 ════════════════════════════════════════════════════════ -->
-<div id="hcNameOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.85);z-index:2000;align-items:center;justify-content:center;">
+<div id="hcNameOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,12,22,0.85);z-index:2000;align-items:center;justify-content:center;">
   <div id="hcNamePanel">
     <div class="bc-header">
       <span class="bc-title">⬡ HC NAMING TOOL</span>
@@ -28640,7 +28695,7 @@ function hcnApplyAutoFill(){
 <!-- ══════════════════════════════════════════════════════
      ACCOMMODATION MANAGER OVERLAY
      ══════════════════════════════════════════════════════ -->
-<div id="accomMgrOverlay" style="display:none;position:fixed;inset:0;background:rgba(2,6,14,0.88);z-index:2000;align-items:center;justify-content:center;">
+<div id="accomMgrOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(2,6,14,0.88);z-index:2000;align-items:center;justify-content:center;">
   <div id="accomMgrPanel">
     <div class="bc-header">
       <span class="bc-title">⬛ BLOCK MANAGER</span>
@@ -28770,7 +28825,7 @@ html.day-mode .acm-add-btn { border-color:rgba(140,80,10,0.6); color:#000000; ba
 html.day-mode .acm-add-btn:hover { color:#000000; border-color:#8a5000; background:rgba(140,80,10,0.20); }
 </style>
 
-<div id="platMgrOverlay" style="display:none;position:fixed;inset:0;background:rgba(2,6,14,0.88);z-index:2000;align-items:center;justify-content:center;">
+<div id="platMgrOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(2,6,14,0.88);z-index:2000;align-items:center;justify-content:center;">
   <div id="platMgrPanel">
     <div class="bc-header">
       <span class="bc-title">▤ PLATFORM MANAGER</span>
@@ -29380,7 +29435,7 @@ function confirmAddPlat(){
   draw();
 }
 function deletePlat(pi){
-  if(!confirm(`Delete "${platforms[pi]?.name}"? All its foundation data will be lost.`)) return;
+  if(!confirm(`Delete "${(platforms[pi]&&platforms[pi].name)}"? All its foundation data will be lost.`)) return;
   for(let i = marks.length-1; i >= 0; i--){ if(marks[i].view==='plat' && marks[i].platIdx===pi) marks.splice(i,1); }
   marks.forEach(m => { if(m.view === 'plat' && m.platIdx > pi) m.platIdx--; });
   if(selMarkIdx >= marks.length) selMarkIdx = -1;
@@ -29543,7 +29598,7 @@ document.addEventListener('keydown',e=>{
 <!-- ════════════════════════════════════════════════════════════════
      PLATFORM COPY TOOL
      ════════════════════════════════════════════════════════════════ -->
-<div id="platCopyOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,12,22,0.85);z-index:2000;align-items:center;justify-content:center;">
+<div id="platCopyOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,12,22,0.85);z-index:2000;align-items:center;justify-content:center;">
   <div id="platCopyPanel">
     <div class="bc-header">
       <span class="bc-title">⧉ PLATFORM COPY TOOL</span>
@@ -30985,7 +31040,7 @@ function _closeOccupiedTool(){
   draw();
 }
 function clearOccupiedRows(){
-  const label = selIsPlat ? (platforms[selPlatIdx]?.name || 'platform') : 'bay ' + bayDisplay(selBay);
+  const label = selIsPlat ? ((platforms[selPlatIdx]&&platforms[selPlatIdx].name) || 'platform') : 'bay ' + bayDisplay(selBay);
   if(!confirm('Clear all occupied row markings in ' + label + '?')) return;
   delete occupiedRows[_occKey()];
   draw();
@@ -31197,9 +31252,9 @@ function mlRender(){
   const tbody = document.getElementById('ml-tbody');
   tbody.innerHTML = '';
   // Apply filters
-  const fText = (document.getElementById('mlFilterText')?.value||'').toLowerCase();
-  const fHC   = document.getElementById('mlFilterHC')?.value||'';
-  const fCol  = document.getElementById('mlFilterColor')?.value||'';
+  const fText = ((document.getElementById('mlFilterText')||{value:''}).value||'').toLowerCase();
+  const fHC   = (document.getElementById('mlFilterHC')||{value:''}).value||'';
+  const fCol  = (document.getElementById('mlFilterColor')||{value:''}).value||'';
   const filtered = mlEntries.map((e,i)=>({e,i})).filter(({e})=>{
     if(fHC  && e.hcName!==fHC) return false;
     if(fCol && e.color!==fCol) return false;
@@ -31925,8 +31980,8 @@ function hcmExecuteAlign(){
   if(!hcmAlignRefId || hcmAlignTargIds.length===0) return;
   const refSh = hcmGetById(hcmAlignRefId); if(!refSh) return;
   const refBB = hcmBBox(refSh);
-  const alignFore = document.getElementById('hcmAlignFore')?.checked ?? true;
-  const alignAft  = document.getElementById('hcmAlignAft')?.checked ?? true;
+  const alignFore = document.getElementById('hcmAlignFore')?.(checked!=null?checked:true);
+  const alignAft  = document.getElementById('hcmAlignAft')?.(checked!=null?checked:true);
   if(!alignFore && !alignAft){ alert('Select at least one edge to align.'); return; }
 
   hcmAlignTargIds.forEach(tid=>{
@@ -32191,7 +32246,7 @@ function hcmFlip(axis){
 function hcmNudge(dx,dy){
   const targets=hcmGetMoveTargets();
   if(targets.length===0) return;
-  const step=parseInt(document.getElementById('hcmNudgeStep')?.value||8,10);
+  const step=parseInt((document.getElementById('hcmNudgeStep')||{value:'8'}).value||8,10);
   targets.forEach(id=>{
     const sh=hcmGetById(id); if(!sh) return;
     let workSh=sh;
@@ -32303,8 +32358,8 @@ function drawHcManipOverlay(){
       const refSh=hcmGetById(hcmAlignRefId);
       if(refSh){
         const refBB=hcmBBox(refSh);
-        const alignFore=document.getElementById('hcmAlignFore')?.checked??true;
-        const alignAft =document.getElementById('hcmAlignAft')?.checked??true;
+        const alignFore=document.getElementById('hcmAlignFore')?.(checked!=null?checked:true);
+        const alignAft =document.getElementById('hcmAlignAft')?.(checked!=null?checked:true);
         const vpW=canvas.width;
         ctx.save();
         ctx.globalAlpha=0.35;
@@ -32716,7 +32771,7 @@ function setUITheme(theme){
   html.classList.remove(..._THEME_CLASSES);
   // Map theme key → _themeMode for _applyThemeInlinePatches compatibility
   const modeMap = {night:0, dusk:1, day:2, forest:0, ocean:0, slate:0, purple:0, warm:0};
-  _themeMode = modeMap[theme] ?? 0;
+  _themeMode = (modeMap[theme]!=null?modeMap[theme]:0);
   // Apply class
   if(theme !== 'night') html.classList.add(theme+'-mode');
   // Day mode always uses light panels (gray-panels) — they are kept in sync
@@ -33914,7 +33969,7 @@ async function exportRubberSealsPDF() {
 <input type="file" id="fileImportInput" accept=".vbpx,.vbpf" style="display:none" onchange="fileImportLoad(this)">
 
 <!-- ── LICENCE PANEL ── -->
-<div id="licenceOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.88);z-index:3000;align-items:center;justify-content:center;touch-action:none;" onclick="if(event.target===this)closeLicencePanel()">
+<div id="licenceOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.88);z-index:3000;align-items:center;justify-content:center;touch-action:none;" onclick="if(event.target===this)closeLicencePanel()">
   <div id="licencePanel" class="fm-panel">
     <div class="fm-header">
       <span class="fm-title">🔑 LICENCE &amp; SUBSCRIPTION</span>
@@ -33927,7 +33982,7 @@ async function exportRubberSealsPDF() {
 </div>
 
 <!-- ── LICENCE EXPIRED WALL ── -->
-<div id="licenceExpiredWall" style="display:none;position:fixed;inset:0;background:radial-gradient(ellipse at 50% 40%, #1a3a5a 0%, #0f2540 45%, #081828 100%);z-index:9000;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
+<div id="licenceExpiredWall" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:radial-gradient(ellipse at 50% 40%, #1a3a5a 0%, #0f2540 45%, #081828 100%);z-index:9000;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
   <div id="licExpiredCard" style="
     width:min(420px,92vw);
     background:#070f1c;
@@ -34011,7 +34066,7 @@ async function exportRubberSealsPDF() {
 </div>
 
 <!-- ── ACCOUNT PANEL ── -->
-<div id="accountOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
+<div id="accountOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
   <div id="accountPanel" class="fm-panel">
     <div class="fm-header">
       <span class="fm-title">👤 ACCOUNT</span>
@@ -34036,7 +34091,7 @@ async function exportRubberSealsPDF() {
 </div>
 
 <!-- ── OPTIONS PANEL ── -->
-<div id="optionsOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
+<div id="optionsOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
   <div id="optionsPanel" class="fm-panel">
     <div class="fm-header">
       <span class="fm-title">⚙ OPTIONS</span>
@@ -36624,7 +36679,7 @@ renderAccountPanel = function(){
 <!-- ══════════════════════════════════════════════════════
      VESSEL STATIC SETTINGS MODAL
 ════════════════════════════════════════════════════════ -->
-<div id="vsOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
+<div id="vsOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
   <div id="vsPanel">
     <div class="bc-header" style="background:#0e2240;padding:12px 20px;border-bottom:2px solid #2a5a90;">
       <span class="bc-title" style="font-size:15px;letter-spacing:0.2em;color:#ffffff;font-weight:800;">⛴ VESSEL STATIC SETTINGS</span>
@@ -36748,7 +36803,7 @@ renderAccountPanel = function(){
 <!-- ════════════════════════════════════════════════════════
      PROJECT NUMBER MODAL
 ════════════════════════════════════════════════════════ -->
-<div id="pnOverlay" style="display:none;position:fixed;inset:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
+<div id="pnOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;height:var(--app-height,100vh);background:rgba(4,12,22,0.85);z-index:3000;align-items:center;justify-content:center;touch-action:none;">
   <div id="pnPanel">
     <div class="bc-header" style="background:#0e2240;padding:12px 20px;border-bottom:2px solid #2a5a90;">
       <span class="bc-title" style="font-size:15px;letter-spacing:0.2em;color:#ffffff;font-weight:800;">🗂 PROJECT NUMBER</span>
@@ -37266,7 +37321,7 @@ document.addEventListener('keydown', e => {
      PER-BAY ROW OVERRIDE PANEL
 ════════════════════════════════════════════════════════════════════════════ -->
 <!-- ── BAY LINE SELECTOR PANEL ── -->
-<div id="blsOverlay" style="display:none;position:fixed;inset:0;background:rgba(2,8,18,0.88);z-index:8000;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
+<div id="blsOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(2,8,18,0.88);z-index:8000;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
   <div id="blsPanel">
     <div id="blsHeader">
       <div style="display:flex;align-items:center;gap:12px;">
@@ -37337,7 +37392,7 @@ document.addEventListener('keydown', e => {
 .bls-clear-btn:hover { color:#ff8080;border-color:#a04040;background:rgba(200,40,40,0.10); }
 </style>
 
-<div id="perBayRowsOverlay" style="display:none;position:fixed;inset:0;background:rgba(2,8,18,0.88);z-index:8000;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
+<div id="perBayRowsOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(2,8,18,0.88);z-index:8000;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
   <div id="perBayRowsPanel">
     <div id="pbrHeader">
       <div id="pbrHeaderLeft">
@@ -37621,7 +37676,7 @@ html.dusk-mode, html.forest-mode, html.ocean-mode, html.slate-mode, html.purple-
 <!-- ══════════════════════════════════════════════════════════════════════════
      ABOUT PANEL
 ════════════════════════════════════════════════════════════════════════════ -->
-<div id="aboutOverlay" style="display:none;position:fixed;inset:0;background:rgba(4,10,22,0.82);z-index:3000;align-items:center;justify-content:center;backdrop-filter:blur(3px);" onclick="if(event.target===this)closeAboutPanel()">
+<div id="aboutOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(4,10,22,0.82);z-index:3000;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);" onclick="if(event.target===this)closeAboutPanel()">
   <div id="aboutPanel">
     <div class="bc-header">
       <div style="display:flex;align-items:center;gap:14px;">
@@ -37667,20 +37722,6 @@ html.dusk-mode, html.forest-mode, html.ocean-mode, html.slate-mode, html.purple-
           <span class="about-rn-tag">REL 01-2026 · REV 00</span>
           <span class="about-rn-date">2026</span>
         </div>
-        <div class="about-rn-section">INITIAL RELEASE</div>
-        <ul class="about-rn-list">
-          <li>First official release of INSPECTRA — HATCH SCAN bay plan drawing system</li>
-          <li>Multi-bay vessel grid editor with configurable rows, columns and foundation lines per bay</li>
-          <li>Foundation types: Single, Double, Elongated, Combination L/R, Double Elongated (2ELG), Double Elongated Container Foundation (DEU — connected pair), free-placement</li>
-          <li>Hatch cover (HC) creator with four color-coded groups and free-polygon shape editor</li>
-          <li>Platform support: add platforms fore or aft of any bay with independent foundation lines</li>
-          <li>Per-bay line selector and per-bay row configuration panels</li>
-          <li>PDF export — all bays and platforms in vessel overview order (A4 landscape)</li>
-          <li>Eight UI color themes: Night, Day, Dusk, Forest, Ocean, Slate, Purple, Warm</li>
-          <li>Dark and Gray panel mode toggle</li>
-          <li>Project save / load (.vbp), full data export/import (JSON)</li>
-          <li>Lashing eyes, HC stoppers, marking tool, crane tool</li>
-        </ul>
       </div>
 
       <!-- EULA tab -->
@@ -37890,7 +37931,7 @@ function aboutSwitchTab(tab){
 }
 </script>
 
-<div id="eulaOverlay" style="display:none;position:fixed;inset:0;background:rgba(2,8,18,0.96);z-index:9999;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
+<div id="eulaOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(2,8,18,0.96);z-index:9999;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
   <div id="eulaPanel">
 
     <!-- Header -->
@@ -40884,8 +40925,8 @@ function _syncFabMenuLabels(){
 ═══════════════════════════════════════════════════════════ -->
 <style>
 #statsModal{
-  display:none;position:fixed;inset:0;z-index:99999;
-  background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+  display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:99999;
+  background:rgba(0,0,0,0.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   font-family:'IBM Plex Mono',monospace;
   align-items:center;justify-content:center;
 }
@@ -41039,7 +41080,7 @@ html.purple-mode .s-tbl tr:hover td,html.warm-mode .s-tbl tr:hover td
 
 /* ── Stats modal: mobile responsive ─────────────────────── */
 @media(max-width:600px){
-  #statsBox{width:100vw;max-height:100dvh;border-radius:0;border-left:none;border-right:none;}
+  #statsBox{width:100vw;max-height:100vh;border-radius:0;border-left:none;border-right:none;}
   #statsHeader{padding:10px 14px 10px;}
   #statsLogoMark{font-size:18px;}
   #statsLogoText{font-size:13px;}
@@ -41343,7 +41384,7 @@ function buildHTML(bayData, tot, forPrint){
 
   // Foundations
   var fT=[0,0,0,0,0];
-  h+='<div><div class="s-tbl-title">Container Foundations</div><table class="s-tbl"><thead><tr>';
+  h+='<div><div class="s-tbl-title">Container Foundations</div><div class="s-tbl-scroll-wrap"><table class="s-tbl"><thead><tr>';
   h+='<th>Color</th><th class="r">Single</th><th class="r">Double</th><th class="r">Elongated</th><th class="r">Combo</th><th class="r">Lifting</th><th class="r">Total</th><th class="r">% of All</th>';
   h+='</tr></thead><tbody>';
   if(!usedFndColors.length){
@@ -41360,7 +41401,7 @@ function buildHTML(bayData, tot, forPrint){
     h+='<tr class="tot"><td>TOTAL</td><td class="r">'+fT[0]+'</td><td class="r">'+fT[1]+'</td>';
     h+='<td class="r">'+fT[2]+'</td><td class="r">'+fT[3]+'</td><td class="r">'+fT[4]+'</td><td class="r">'+(fT[0]+fT[1]+fT[2]+fT[3]+fT[4])+'</td><td class="r">100%</td></tr>';
   }
-  h+='</tbody></table></div>';
+  h+='</tbody></table></div></div>';
 
   // Lashing Eyes
   var lT=[0,0];
@@ -41715,8 +41756,8 @@ window.statsExportWord = function(){
 ═══════════════════════════════════════════════════════════ -->
 <style>
 #subStatsModal{
-  display:none;position:fixed;inset:0;z-index:99999;
-  background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+  display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:99999;
+  background:rgba(0,0,0,0.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   font-family:'IBM Plex Mono',monospace;align-items:center;justify-content:center;
 }
 #subStatsModal.open{display:flex;}
@@ -41775,7 +41816,7 @@ html.slate-mode #subStatsBody,html.purple-mode #subStatsBody,html.warm-mode #sub
 
 /* ── Sub-stats modal: mobile responsive ─────────────────── */
 @media(max-width:600px){
-  #subStatsBox{width:100vw;max-height:100dvh;border-radius:0;border-left:none;border-right:none;}
+  #subStatsBox{width:100vw;max-height:100vh;border-radius:0;border-left:none;border-right:none;}
   #subStatsHeader{padding:10px 14px 10px;}
   #subStatsLogoMark{font-size:18px;}
   #subStatsLogoText{font-size:13px;}
@@ -41784,10 +41825,35 @@ html.slate-mode #subStatsBody,html.purple-mode #subStatsBody,html.warm-mode #sub
   #subStatsClose{font-size:9px;padding:5px 10px;margin-left:8px;}
   #subStatsToolbar{padding:8px 12px;gap:6px;}
   #subStatsBody{padding:12px 10px 24px;}
-  /* Scrollable wide tables */
-  #subStatsBody .s-tbl-scroll-wrap,
-  #subStatsBody table{overflow-x:auto;-webkit-overflow-scrolling:touch;display:block;width:100%;}
-  #subStatsBody .s-tbl{display:table;width:100%;min-width:340px;}
+  /* Scrollable wide tables handled globally below */
+}
+/* ── Stats tables: horizontally scrollable at all widths ─────────────── */
+#subStatsBody .s-tbl,
+#statsBody .s-tbl {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+#subStatsBody .s-tbl thead,
+#statsBody .s-tbl thead { display: table-header-group; }
+#subStatsBody .s-tbl tbody,
+#statsBody .s-tbl tbody { display: table-row-group; }
+#subStatsBody .s-tbl tr,
+#statsBody .s-tbl tr { display: table-row; }
+#subStatsBody .s-tbl th,
+#subStatsBody .s-tbl td,
+#statsBody .s-tbl th,
+#statsBody .s-tbl td { display: table-cell; white-space: nowrap; }
+/* Scroll wrapper divs */
+#subStatsBody .s-tbl-scroll-wrap,
+#statsBody .s-tbl-scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
 }
 </style>
 
@@ -44331,7 +44397,7 @@ html.gray-panels #sealPaintBar {
 <!-- ═══════════════════════════════════════════════════════════
      RUBBER SEAL CONDITION STATISTICS MODAL
 ═══════════════════════════════════════════════════════════ -->
-<div id="rsCondStatsModal" style="display:none;position:fixed;inset:0;z-index:6000;
+<div id="rsCondStatsModal" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:6000;
   background:rgba(4,10,20,0.88);align-items:center;justify-content:center;"
   onwheel="event.stopPropagation()">
   <div id="rsCondStatsBox" style="
@@ -44426,7 +44492,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 </style>
 
 <!-- ══ BULK MARK DIALOG ══ -->
-<div id="bulkMarkDialog" style="display:none;position:fixed;inset:0;z-index:5500;
+<div id="bulkMarkDialog" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:5500;
   background:rgba(4,10,20,0.85);align-items:center;justify-content:center;
   font-family:'IBM Plex Mono',monospace;">
   <div style="background:var(--paper);border:1.5px solid var(--bright);border-radius:6px;
@@ -44535,7 +44601,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   </div>
 </div>
 
-<div id="rsOverlay" style="display:none;position:fixed;inset:0;z-index:3500;
+<div id="rsOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:3500;
   background:var(--bg);flex-direction:column;overflow:hidden;">
 
   <!-- ══ TOP BAR ══ -->
@@ -47839,8 +47905,8 @@ function _dimHasArea(bay, hcNum){
 }
 function _dimCalcArea(d){
   if(!d) return null;
-  const W = (d.fore!=null&&d.aft!=null) ? (d.fore+d.aft)/2 : (d.fore??d.aft);
-  const L = (d.port!=null&&d.stbd!=null) ? (d.port+d.stbd)/2 : (d.port??d.stbd);
+  const W = (d.fore!=null&&d.aft!=null) ? (d.fore+d.aft)/2 : ((d.fore!=null?d.fore:d.aft));
+  const L = (d.port!=null&&d.stbd!=null) ? (d.port+d.stbd)/2 : ((d.port!=null?d.port:d.stbd));
   if(W==null||L==null) return null;
   return W * L;
 }
@@ -48254,7 +48320,7 @@ function _dimOpenModal(bay, hcNum, focusSide){
         // Also update total fore/aft/port/stbd by summing edge lengths per direction
         const sums = { fore:0, aft:0, port:0, stbd:0, foren:0, aftn:0, portn:0, stbdn:0 };
         _dimGetPolyEdges(_dimModalBay, _dimModalHc).forEach(e2 => {
-          const v = parseFloat(document.getElementById('dimPolyIn_'+e2.edgeIdx)?.value);
+          const v = parseFloat((document.getElementById('dimPolyIn_'+e2.edgeIdx)||{value:''}).value);
           if(!isNaN(v) && v > 0){
             rec.polyEdges[e2.edgeIdx] = v;
             sums[e2.sideKey] = (sums[e2.sideKey]||0) + v;
@@ -48293,7 +48359,7 @@ function _dimOpenModal(bay, hcNum, focusSide){
 
     // Focus the clicked edge input
     const focusEdgeIdx = focusSide && focusSide.startsWith('edge_')
-      ? parseInt(focusSide.split('_')[1]) : (polyEdges[0]?.edgeIdx ?? 0);
+      ? parseInt(focusSide.split('_')[1]) : (((polyEdges[0]&&polyEdges[0].edgeIdx)!=null?(polyEdges[0]&&polyEdges[0].edgeIdx):0));
     setTimeout(()=>{
       const el = document.getElementById('dimPolyIn_'+focusEdgeIdx);
       if(el){ el.focus(); el.select(); }
@@ -49466,8 +49532,8 @@ function _msrPolyScale(bay, hcNum, bbW_px, bbH_px){
     return { isPolyReal:true, bay, hcNum };
   }
 
-  const realW = (d.fore!=null&&d.aft!=null) ?(d.fore+d.aft)/2 :(d.fore??d.aft);  // horizontal width
-  const realH = (d.port!=null&&d.stbd!=null)?(d.port+d.stbd)/2:(d.port??d.stbd); // vertical length
+  const realW = (d.fore!=null&&d.aft!=null) ?(d.fore+d.aft)/2 :((d.fore!=null?d.fore:d.aft));  // horizontal width
+  const realH = (d.port!=null&&d.stbd!=null)?(d.port+d.stbd)/2:((d.port!=null?d.port:d.stbd)); // vertical length
   return { scX: (realW && bbW_px) ? bbW_px/realW : null,
            scY: (realH && bbH_px) ? bbH_px/realH : null };
 }
@@ -50350,10 +50416,10 @@ function _rscRealSideLengths(bay, hcNum){
 
   if(!d) return null;
   return {
-    fore: d.fore ?? d.aft  ?? null,
-    aft:  d.aft  ?? d.fore ?? null,
-    port: d.port ?? d.stbd ?? null,
-    stbd: d.stbd ?? d.port ?? null,
+    fore: (d.fore!=null?d.fore:d.aft),
+    aft:  (d.aft!=null?d.aft:d.fore) || null,
+    port: (d.port!=null?d.port:d.stbd) || null,
+    stbd: (d.stbd!=null?d.stbd:d.port) || null,
   };
 }
 
@@ -50367,8 +50433,8 @@ function _rscMetresForStroke(stroke, bay, hcNum){
 
   const sides = _rscRealSideLengths(bay, hcNum);
   if(!sides) return 0;
-  const realW = sides.fore ?? 0;  // metres across (port/stbd axis)
-  const realH = sides.port ?? 0;  // metres tall   (fore/aft  axis)
+  const realW = (sides.fore!=null?sides.fore:0);  // metres across (port/stbd axis)
+  const realH = (sides.port!=null?sides.port:0);  // metres tall   (fore/aft  axis)
   if(realW <= 0 || realH <= 0) return 0;
 
   // Get slot count for this HC
@@ -50520,10 +50586,10 @@ function _rscCollect(){
     }
     // Fallback: entered dims
     if(!d) return null;
-    if(side === 'fore') return d.fore ?? d.aft  ?? null;
-    if(side === 'aft')  return d.aft  ?? d.fore ?? null;
-    if(side === 'port') return d.port ?? d.stbd ?? null;
-    if(side === 'stbd') return d.stbd ?? d.port ?? null;
+    if(side === 'fore') return (d.fore!=null?d.fore:d.aft);
+    if(side === 'aft')  return (d.aft!=null?d.aft:d.fore) || null;
+    if(side === 'port') return (d.port!=null?d.port:d.stbd) || null;
+    if(side === 'stbd') return (d.stbd!=null?d.stbd:d.port) || null;
     return null;
   }
 
@@ -50693,10 +50759,10 @@ function _rccCollect(){
         if(side==='stbd') return real.stbd;
       }
       if(!d) return null;
-      if(side==='fore') return d.fore ?? d.aft  ?? null;
-      if(side==='aft')  return d.aft  ?? d.fore ?? null;
-      if(side==='port') return d.port ?? d.stbd ?? null;
-      if(side==='stbd') return d.stbd ?? d.port ?? null;
+      if(side==='fore') return (d.fore!=null?d.fore:d.aft);
+      if(side==='aft')  return (d.aft!=null?d.aft:d.fore) || null;
+      if(side==='port') return (d.port!=null?d.port:d.stbd) || null;
+      if(side==='stbd') return (d.stbd!=null?d.stbd:d.port) || null;
       return null;
     }
 
@@ -53030,7 +53096,7 @@ function _licDownloadCustomerFile(){
   if(errEl) errEl.textContent='';
   if(msgEl) msgEl.textContent='';
 
-  const customer = (document.getElementById('genCustomer')||{}).value?.trim()||'';
+  const el_genCustomer = document.getElementById('genCustomer'); const customer = (el_genCustomer && el_genCustomer.value) ? el_genCustomer.value.trim() : '';
   const dd   = String((document.getElementById('genDD')||{}).value||'').trim().padStart(2,'0');
   const mm   = String((document.getElementById('genMM')||{}).value||'').trim().padStart(2,'0');
   const yyyy = String((document.getElementById('genYYYY')||{}).value||'').trim();
@@ -53238,7 +53304,7 @@ document.addEventListener('mousedown', function(e){
      ════════════════════════════════════════════════════════════════════════════ -->
 
 <!-- ── LB OVERLAY ── -->
-<div id="lbOverlay" style="display:none;position:fixed;inset:0;z-index:3500;
+<div id="lbOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:3500;
   background:var(--bg);flex-direction:column;overflow:hidden;">
 
   <!-- ══ LB TOP BAR ══ -->
@@ -53678,7 +53744,7 @@ document.addEventListener('mousedown', function(e){
 </div>
 
 <!-- ══ LB BRIDGE EDITOR MODAL ══ -->
-<div id="lbEditorOverlay" style="display:none;position:fixed;inset:0;z-index:7000;
+<div id="lbEditorOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:7000;
   background:rgba(4,10,20,0.82);align-items:center;justify-content:center;">
   <div id="lbEditorBox" style="background:var(--paper);border:1px solid var(--line);
     border-top:3px solid var(--bright);border-radius:4px;width:960px;max-width:96vw;
@@ -53761,8 +53827,8 @@ document.addEventListener('mousedown', function(e){
 </div>
 
 <!-- ══ LB STATS MODAL ══ -->
-<div id="lbStatsOverlay" style="display:none;position:fixed;inset:0;z-index:7000;
-  background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+<div id="lbStatsOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:7000;
+  background:rgba(0,0,0,0.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
   <div id="lbStatsBox" style="background:#111820;border:1.5px solid #2d6090;border-radius:8px;
     width:min(96vw,1100px);max-height:92vh;display:flex;flex-direction:column;
@@ -54911,7 +54977,7 @@ function _lbOvInitCanvas(){
       _lbOvDragBridgeId  = hit.id;
       _lbOvDragMoved     = false;
       _lbOvDragGapList   = _lbOvBuildGapList();
-      _lbOvDragTargetGap = lbData.bridges.find(b=>b.id===hit.id)?.gapIndex ?? null;
+      _lbOvDragTargetGap = lbData.bridges.find(b=>b.id===hit.id)?.(gapIndex!=null?gapIndex:null);
       wrap.style.cursor = 'grab';
     } else {
       // Start canvas pan
@@ -54979,7 +55045,7 @@ function _lbOvInitCanvas(){
           if(!conflict){
             bridge.gapIndex = targetGi;
             // Re-sort bridges by gapIndex so list stays in vessel order
-            lbData.bridges.sort((a,b)=>(a.gapIndex??0)-(b.gapIndex??0));
+            lbData.bridges.sort((a,b)=>((a.gapIndex!=null?a.gapIndex:0))-((b.gapIndex!=null?b.gapIndex:0)));
             // Rename bridges in order
             lbData.bridges.forEach((b,i)=>{
               b.name = 'Lashing Bridge No.' + (i+1);
@@ -56002,7 +56068,7 @@ function _lbEditorAutoGen(){
 
   // Gap 0: FWD end (before first sequence item)
   if(sequence.length > 0){
-    const firstBayAB = sequence.find(s=>s.type==='bay')?.afterBay ?? 0;
+    const firstBayAB = sequence.find(s=>s.type==='bay')?.(afterBay!=null?afterBay:0);
     pushBridge(gapIdx++, firstBayAB);
   }
 
@@ -56011,13 +56077,13 @@ function _lbEditorAutoGen(){
     const cur = sequence[i];
     // afterBay for row lookup: use nearest bay
     const rowBay = cur.type==='bay' ? cur.afterBay
-                 : (sequence.slice(i+1).find(s=>s.type==='bay')?.afterBay ?? cur.afterBay);
+                 : (sequence.slice(i+1).find(s=>s.type==='bay')?.(afterBay!=null?afterBay:cur.afterBay));
     pushBridge(gapIdx++, rowBay);
   }
 
   // Last gap: AFT end (after last sequence item)
   if(sequence.length > 0){
-    const lastBayAB = [...sequence].reverse().find(s=>s.type==='bay')?.afterBay ?? totalBays-1;
+    const lastBayAB = [...sequence].reverse().find(s=>s.type==='bay')?.(afterBay!=null?afterBay:totalBays)-1;
     pushBridge(gapIdx++, lastBayAB);
   }
 
