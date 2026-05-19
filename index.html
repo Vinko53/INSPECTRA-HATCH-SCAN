@@ -752,6 +752,8 @@ window.addEventListener('orientationchange', function(){ setTimeout(_setAppHeigh
     font-weight: 700;
   }
   html.day-mode .om-mode-btn.om-delete-active  { color:#ffffff!important; border-color:#880000!important; background:#e01010!important; font-weight:700!important; box-shadow:0 0 0 2px rgba(220,20,20,0.35)!important; }
+  html.day-mode .om-mode-btn--danger { background:rgba(200,30,30,0.18)!important; color:#aa0000!important; border-color:#cc2020!important; }
+  html.day-mode .om-mode-btn--danger:hover { background:rgba(220,40,40,0.35)!important; color:#800000!important; }
   html.day-mode .om-mode-btn.om-swap-active    { color:#ffffff!important; border-color:#7a6000!important; background:#c09800!important; font-weight:700!important; box-shadow:0 0 0 2px rgba(180,150,0,0.35)!important; }
   html.day-mode .om-mode-btn.om-drag-active    { color:#ffffff!important; border-color:#086030!important; background:#0aaa48!important; font-weight:700!important; box-shadow:0 0 0 2px rgba(10,170,72,0.35)!important; }
   html.day-mode .om-mode-btn.om-copy-active    { color:#ffffff!important; border-color:#3a1888!important; background:#6030c0!important; font-weight:700!important; box-shadow:0 0 0 2px rgba(96,48,192,0.35)!important; }
@@ -1960,6 +1962,8 @@ window.addEventListener('orientationchange', function(){ setTimeout(_setAppHeigh
     font-weight: 700;
   }
   .om-mode-btn.om-delete-active  { color:#ff8080!important; border-color:#ff4040!important; background:rgba(200,40,40,0.30)!important; font-weight:700!important; }
+  .om-mode-btn--danger { background:rgba(160,20,20,0.55)!important; color:#ff9090!important; border-color:#cc2020!important; }
+  .om-mode-btn--danger:hover { background:rgba(200,30,30,0.75)!important; color:#ffffff!important; border-color:#ff4040!important; }
   .om-mode-btn.om-swap-active    { color:#ffe060!important; border-color:#e0b800!important; background:rgba(200,160,0,0.25)!important;  font-weight:700!important; }
   .om-mode-btn.om-drag-active    { color:#60f0a0!important; border-color:#20d070!important; background:rgba(20,180,90,0.25)!important;  font-weight:700!important; }
   .om-mode-btn.om-copy-active    { color:#c890ff!important; border-color:#9050e0!important; background:rgba(130,60,210,0.28)!important; font-weight:700!important; }
@@ -2081,16 +2085,27 @@ window.addEventListener('orientationchange', function(){ setTimeout(_setAppHeigh
     flex-direction: column;
     box-shadow: 0 24px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(94,184,255,0.08);
   }
+  @media(max-width:700px){
+    #objEditorOverlay { align-items: flex-start !important; }
+    #objEditorPanel {
+      width: 100vw !important;
+      height: 100vh !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-radius: 0 !important;
+    }
+  }
   #oe-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
-    height: 44px;
+    padding: 6px 12px;
+    min-height: 44px;
     background: #0a1e30;
     border-bottom: 1px solid #1e4a74;
     flex-shrink: 0;
-    gap: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   #oe-title {
     display: flex;
@@ -2112,7 +2127,8 @@ window.addEventListener('orientationchange', function(){ setTimeout(_setAppHeigh
   #oe-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+    flex-wrap: wrap;
   }
   .oe-btn {
     font-family: var(--mono);
@@ -2189,6 +2205,16 @@ window.addEventListener('orientationchange', function(){ setTimeout(_setAppHeigh
     color: #000000;
     vertical-align: middle;
   }
+  /* Mobile: table scrolls horizontally, cells are touch-sized */
+  @media(max-width:700px){
+    #oe-table-wrap { -webkit-overflow-scrolling: touch; }
+    #oe-table { font-size: 11px !important; min-width: 770px; }
+    #oe-table th { font-size: 9px !important; padding: 8px 10px 6px !important; }
+    #oe-table td input, #oe-table td select { font-size: 11px !important; }
+    .oe-btn { font-size: 8px !important; padding: 6px 10px !important; touch-action: manipulation; }
+    #oe-title { font-size: 10px !important; }
+    #oe-subtitle { display: none; }
+  }
   #oe-table td:last-child { border-right: none; }
   .oe-td-sel {
     text-align: center;
@@ -2248,13 +2274,19 @@ window.addEventListener('orientationchange', function(){ setTimeout(_setAppHeigh
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 30px;
-    padding: 0 16px;
+    min-height: 30px;
+    padding: 4px 16px;
     background: #040e1a;
     border-top: 1px solid #1e4a74;
     flex-shrink: 0;
     font-family: var(--mono);
     font-size: 9px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  @media(max-width:700px){
+    #oe-footer { font-size: 8px; padding: 5px 10px; }
+    #oe-hint { font-size: 7px; }
   }
   #oe-count { color: #5eb8ff; letter-spacing: 0.1em; }
   #oe-hint { color: #2d5878; letter-spacing: 0.08em; }
@@ -4012,7 +4044,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
           <div class="dd-row" style="flex-direction:column;align-items:stretch;gap:4px;padding:4px 10px 6px;">
             <span style="font-size:8px;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">LABEL FIELD</span>
             <select id="fndLabelField" onchange="setFndLabelField(this.value)" style="
-              font-family:var(--mono);font-size:9px;letter-spacing:0.1em;font-weight:600;
+              font-family:var(--mono);font-size:6px;letter-spacing:0.1em;font-weight:600;
               text-transform:uppercase;background:var(--bg);color:var(--accent);
               border:1px solid var(--line);padding:4px 8px;outline:none;cursor:pointer;
               width:100%;
@@ -4081,7 +4113,6 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
           <button class="dd-action bay-only" onclick="autoSwitchBay();toggleHcStopManip();closeMenus()">⊗  HC STOPPER MANIPULATOR</button>
           <div class="dd-sep"></div>
 
-          <div class="dd-section">HC BEARING SYSTEM — FLEXIPADS</div>
           <button class="dd-action bay-only" id="btnFlexipadPlace" onclick="autoSwitchBay();toggleFlexipadPlacer();closeMenus()">▣  PLACE FLEXIPAD</button>
           <button class="dd-action bay-only" id="btnFlexipadAssign" onclick="autoSwitchBay();toggleFlexipadAssignMode();closeMenus()">▣  ASSIGN TYPE TO FLEXIPAD</button>
           <button class="dd-action" onclick="openFxpLib();closeMenus()">▣  FLEXIPAD LIBRARY — TYPE CATALOGUE</button>
@@ -4101,7 +4132,6 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
           </div>
           <div class="dd-sep"></div>
 
-          <div class="dd-section">HC BEARING SYSTEM — RESTING PADS</div>
           <button class="dd-action bay-only" id="btnRpPlace" onclick="autoSwitchBay();toggleRpPlacer();closeMenus()">⊞  PLACE RESTING PAD</button>
           <button class="dd-action bay-only" id="btnRpAssign" onclick="autoSwitchBay();toggleRpAssignMode();closeMenus()">⊞  ASSIGN TYPE TO RESTING PAD</button>
           <button class="dd-action" onclick="openRpLib();closeMenus()">⊞  RESTING PAD LIBRARY — TYPE CATALOGUE</button>
@@ -4222,7 +4252,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
         <span id="oe-subtitle">— TYPE CATALOGUE</span>
       </div>
       <div id="oe-actions">
-        <button class="oe-btn oe-btn-add" onclick="oeAddRow()">＋ ADD TYPE</button>
+        <button class="oe-btn oe-btn-add" onclick="oeAddRow()" style="touch-action:manipulation;">＋ ADD TYPE</button>
         <button class="oe-btn" onclick="oeDuplicateRow()">⧉ DUPLICATE</button>
         <button class="oe-btn oe-btn-del" onclick="oeDeleteRow()">⌫ DELETE</button>
         <div style="width:1px;background:#1e4a74;align-self:stretch;margin:0 8px"></div>
@@ -4247,7 +4277,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
         <button class="oe-btn oe-btn-close" onclick="closeObjEditor()">✕ CLOSE</button>
       </div>
     </div>
-    <div id="oe-table-wrap">
+    <div id="oe-table-wrap" style="-webkit-overflow-scrolling:touch;">
       <table id="oe-table">
         <thead>
           <tr>
@@ -4764,7 +4794,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
       <button id="fxpmBtn_rotate" class="om-mode-btn" onclick="fxpManipSetMode('rotate')"><span class="om-icon">↻</span> ROTATE</button>
       <button id="fxpmBtn_copy"   class="om-mode-btn" onclick="fxpManipSetMode('copy')"><span class="om-icon">⎘</span> COPY</button>
       <button id="fxpmBtn_paste"  class="om-mode-btn" onclick="fxpManipSetMode('paste')" style="display:none;"><span class="om-icon">⎗</span> PASTE</button>
-      <button id="fxpmBtn_delete" class="om-mode-btn" onclick="fxpManipSetMode('delete')"><span class="om-icon">⌫</span> DELETE</button>
+      <button id="fxpmBtn_delete" class="om-mode-btn om-mode-btn--danger" onclick="fxpManipSetMode('delete')"><span class="om-icon">⌫</span> DELETE</button>
     </div>
   </div>
 
@@ -4821,6 +4851,16 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
         onmouseover="this.style.background='rgba(0,90,170,0.5)'" onmouseout="this.style.background='rgba(0,60,120,0.4)'">↻ +90°</button>
     </div>
     <div id="fxpRotateInfo" style="font-size:7px;letter-spacing:0.08em;color:#7ab8d8;text-align:center;min-height:14px;">Click a flexipad to select for rotation</div>
+    <button onclick="fxpRotateConfirm()"
+      style="width:100%;margin-top:7px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+        letter-spacing:0.12em;text-transform:uppercase;
+        background:#1a7a38;color:#ffffff;
+        border:1px solid #0f5a28;border-top:2px solid #30c060;
+        padding:7px 4px;cursor:pointer;transition:all 0.12s;border-radius:2px;"
+      onmouseover="this.style.background='#20963f'"
+      onmouseout="this.style.background='#1a7a38'">
+      ✓ CONFIRM ROTATION
+    </button>
   </div>
   <div style="padding:6px 8px 4px;border-bottom:1px solid #1e4a74;">
     <div id="fxpmInfo" style="font-size:7px;letter-spacing:0.08em;color:#7ab8d8;min-height:14px;line-height:1.5;">Click a flexipad to select</div>
@@ -5125,7 +5165,7 @@ font-family:'IBM Plex Mono',monospace;">
       <button id="rpmBtn_nudge"  class="om-mode-btn" onclick="rpManipSetMode('nudge')"><span class="om-icon">✥</span> NUDGE / LINEAR MOVE</button>
       <button id="rpmBtn_rotate" class="om-mode-btn" onclick="rpManipSetMode('rotate')"><span class="om-icon">↻</span> ROTATE</button>
       <button id="rpmBtn_copy"   class="om-mode-btn" onclick="rpManipSetMode('copy')"><span class="om-icon">⎘</span> COPY</button>
-      <button id="rpmBtn_delete" class="om-mode-btn" onclick="rpManipSetMode('delete')"><span class="om-icon">⌫</span> DELETE</button>
+      <button id="rpmBtn_delete" class="om-mode-btn om-mode-btn--danger" onclick="rpManipSetMode('delete')"><span class="om-icon">⌫</span> DELETE</button>
     </div>
   </div>
   <!-- Nudge controls -->
@@ -5190,7 +5230,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5222,7 +5262,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5246,7 +5286,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5272,7 +5312,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5302,7 +5342,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5330,7 +5370,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5355,7 +5395,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5382,7 +5422,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5412,7 +5452,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5435,7 +5475,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5462,7 +5502,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5485,7 +5525,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5511,7 +5551,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5537,7 +5577,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5565,7 +5605,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5597,7 +5637,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5621,7 +5661,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5645,7 +5685,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5673,7 +5713,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5698,7 +5738,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5724,7 +5764,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5752,7 +5792,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5779,7 +5819,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,18,32,0.92);
       border:1.5px solid #3a7aaa;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5808,7 +5848,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(20,10,0,0.92);
       border:1.5px solid #c07020;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5833,7 +5873,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5858,7 +5898,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5884,7 +5924,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5911,7 +5951,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5938,7 +5978,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -5964,7 +6004,7 @@ font-family:'IBM Plex Mono',monospace;">
       width:38px;height:38px;border-radius:8px;
       background:rgba(8,8,24,0.92);
       border:1.5px solid #8060a0;
-      display:flex;align-items:center;justify-content:center;
+      display:none;align-items:center;justify-content:center;
       cursor:grab;transition:all 0.15s;
       opacity:0.72;
       box-shadow:0 2px 12px rgba(0,0,0,0.6);">
@@ -6128,7 +6168,7 @@ font-family:'IBM Plex Mono',monospace;">
         <button id="omFxpBtn_nudge"  class="om-mode-btn" onclick="omFxpSetMode('nudge')"><span class="om-icon">✥</span> NUDGE / LINEAR MOVE</button>
         <button id="omFxpBtn_rotate" class="om-mode-btn" onclick="omFxpSetMode('rotate')"><span class="om-icon">↻</span> ROTATE</button>
         <button id="omFxpBtn_copy"   class="om-mode-btn" onclick="omFxpSetMode('copy')"><span class="om-icon">⎘</span> COPY</button>
-        <button id="omFxpBtn_delete" class="om-mode-btn" onclick="omFxpSetMode('delete')"><span class="om-icon">⌫</span> DELETE</button>
+        <button id="omFxpBtn_delete" class="om-mode-btn om-mode-btn--danger" onclick="omFxpSetMode('delete')"><span class="om-icon">⌫</span> DELETE</button>
       </div>
       <!-- Nudge sub-panel -->
       <div id="omFxpNudgePanel" style="display:none;margin-top:6px;">
@@ -6162,21 +6202,29 @@ font-family:'IBM Plex Mono',monospace;">
           <button onclick="omPadsRotate(90)"  style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;background:rgba(0,60,120,0.4);color:#5eb8ff;border:1px solid #1e5080;padding:6px 2px;cursor:pointer;transition:all 0.12s;">↻ +90°</button>
         </div>
         <div id="omFxpRotateInfo" style="font-size:7px;letter-spacing:0.08em;color:#7ab8d8;text-align:center;min-height:14px;">Click a pad to select</div>
+        <button onclick="omPadsRotateConfirm()"
+          style="width:100%;margin-top:7px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+            letter-spacing:0.12em;text-transform:uppercase;
+            background:#1a7a38;color:#ffffff;
+            border:1px solid #0f5a28;border-top:2px solid #30c060;
+            padding:7px 4px;cursor:pointer;transition:all 0.12s;border-radius:2px;"
+          onmouseover="this.style.background='#20963f'"
+          onmouseout="this.style.background='#1a7a38'">
+          ✓ CONFIRM ROTATION
+        </button>
       </div>
       <!-- Info + actions -->
       <div id="omFxpInfo" style="font-size:7px;letter-spacing:0.08em;color:#7ab8d8;min-height:14px;margin-top:6px;">Click a pad to select</div>
-      <button class="om-pad-btn om-pad-btn--paint" onclick="omPadsPaintSelected()" style="width:100%;margin-top:5px;font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 4px;cursor:pointer;transition:all 0.1s;">◉ PAINT SELECTED — ACTIVE COLOR</button>
-      <button id="omPadAssignBtn" class="om-pad-btn om-pad-btn--assign" onclick="omPadsAssignSelected()" style="width:100%;margin-top:3px;font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 4px;cursor:pointer;transition:all 0.1s;">⊕ ASSIGN TYPE TO SELECTED</button>
-      <button class="om-pad-btn om-pad-btn--clear" onclick="omPadsClearBay()" style="width:100%;margin-top:3px;font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 4px;cursor:pointer;transition:all 0.1s;">⌫ CLEAR ALL — CURRENT BAY</button>
+      <button class="om-pad-btn om-pad-btn--clear om-mode-btn--danger" onclick="omPadsClearBay()" style="width:100%;margin-top:3px;font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 4px;cursor:pointer;transition:all 0.1s;">⌫ CLEAR ALL — CURRENT BAY</button>
     </div>
     <!-- Mode selector (foundations / lashing eyes) -->
     <div id="omFndLashPanel" style="padding:7px 8px 6px;border-bottom:1px solid #1a3a58;">
       <div style="font-size:7px;letter-spacing:0.2em;color:#3a6888;text-transform:uppercase;margin-bottom:6px;font-weight:700;">OPERATION MODE</div>
       <div style="display:flex;flex-direction:column;gap:3px;">
-        <button id="omBtnDelete" class="om-mode-btn" onclick="omSetMode('delete')">
+        <button id="omBtnDelete" class="om-mode-btn om-mode-btn--danger" onclick="omSetMode('delete')">
           <span class="om-icon">⌫</span> <span id="omLblDelete">DELETE FOUNDATION</span>
         </button>
-        <button id="omBtnDeleteLine" class="om-mode-btn" onclick="omSetMode('deleteLine')">
+        <button id="omBtnDeleteLine" class="om-mode-btn om-mode-btn--danger" onclick="omSetMode('deleteLine')">
           <span class="om-icon">▬</span> DELETE FOUNDATION LINE
         </button>
         <button id="omBtnSwap" class="om-mode-btn" onclick="omSetMode('swap')">
@@ -6305,7 +6353,19 @@ font-family:'IBM Plex Mono',monospace;">
       </div>
       <div id="omNudgeSel" style="margin-top:7px;font-size:7px;letter-spacing:0.08em;color:#7ab8d8;text-align:center;min-height:14px;text-transform:uppercase;"></div>
       <div id="omNudgeOffset" style="margin-top:2px;font-size:7px;letter-spacing:0.06em;color:#1e4a74;text-align:center;min-height:12px;"></div>
-      <div style="display:flex;gap:3px;margin-top:7px;">
+      <!-- Confirm placement button -->
+      <button id="omNudgeConfirmBtn" onclick="omNudgeCommit()"
+        style="width:100%;margin-top:7px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+          letter-spacing:0.12em;text-transform:uppercase;
+          background:#1a7a38;color:#ffffff;
+          border:1px solid #0f5a28;border-top:2px solid #30c060;
+          padding:7px 4px;cursor:pointer;transition:all 0.12s;border-radius:2px;
+          display:none;"  <!-- hidden until a foundation is selected -->
+        onmouseover="this.style.background='#20963f';this.style.color='#ffffff'"
+        onmouseout="this.style.background='#1a7a38';this.style.color='#ffffff'">
+        ✓ CONFIRM MOVE
+      </button>
+      <div style="display:flex;gap:3px;margin-top:5px;">
         <button onclick="omNudgeResetOffset()" title="Reset selected foundations to grid"
           style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
             background:rgba(80,15,15,0.5);color:#d05050;border:1px solid #702020;padding:4px 2px;cursor:pointer;transition:all 0.1s;border-radius:2px;"
@@ -6541,7 +6601,7 @@ font-family:'IBM Plex Mono',monospace;">
       <button id="hcmBtnEdge"   class="om-mode-btn" onclick="hcmSetMode('edge')"  ><span class="om-icon">&#x2194;</span> RESIZE EDGE</button>
       <button id="hcmBtnAlign"  class="om-mode-btn" onclick="hcmSetMode('align')" ><span class="om-icon">&#x29FA;</span> FORE/AFT ALIGN</button>
       <button id="hcmBtnRow00"  class="om-mode-btn" onclick="hcmSetMode('row00meet')" title="Stretch two shapes so their inner edges meet at centre of row 00"><span class="om-icon">&#x2194;</span> ROW 00 MEET</button>
-      <button id="hcmBtnDelete" class="om-mode-btn" onclick="hcmSetMode('delete')"><span class="om-icon">&#x2715;</span> DELETE SHAPE</button>
+      <button id="hcmBtnDelete" class="om-mode-btn om-mode-btn--danger" onclick="hcmSetMode('delete')"><span class="om-icon">&#x2715;</span> DELETE SHAPE</button>
       <button class="om-mode-btn" onclick="hcEqualiseWidths()" title="Redistribute columns equally across all HCs in this bay" style="margin-top:4px;border-top:1px solid #1e4a74;padding-top:5px;color:#5eb8ff;border-color:#2d7fc1;"><span class="om-icon">&#x229F;</span> EQUALISE HC WIDTHS</button>
     </div>
   </div>
@@ -6966,7 +7026,7 @@ font-family:'IBM Plex Mono',monospace;">
       <button id="hcsmBtn_move"   class="om-mode-btn" onclick="hcStopManipSetMode('move')"  ><span class="om-icon">⤢</span> MOVE</button>
       <button id="hcsmBtn_swap"   class="om-mode-btn" onclick="hcStopManipSetMode('swap')"  ><span class="om-icon">⇄</span> SWAP</button>
       <button id="hcsmBtn_copy"   class="om-mode-btn" onclick="hcStopManipSetMode('copy')"  ><span class="om-icon">⎘</span> COPY</button>
-      <button id="hcsmBtn_delete" class="om-mode-btn" onclick="hcStopManipSetMode('delete')"><span class="om-icon">⌫</span> DELETE</button>
+      <button id="hcsmBtn_delete" class="om-mode-btn om-mode-btn--danger" onclick="hcStopManipSetMode('delete')"><span class="om-icon">⌫</span> DELETE</button>
     </div>
   </div>
   <div style="padding:6px 8px 4px;border-bottom:1px solid #1e4a74;">
@@ -9412,7 +9472,6 @@ const LAYERS = [
   { id: 'lyr_hc_stoppers',        label: 'HC Stoppers',               icon: '⊗', on: true  },
   { id: 'lyr_flexipads',          label: 'Flexipads',                 icon: '▣', on: true  },
   { id: 'lyr_resting_pads',        label: 'Resting Pads',              icon: '⊞', on: true  },
-  { id: 'lyr_hc_bearing',         label: 'HC Bearing System',         icon: '⬡', on: true  },
   { id: 'lyr_hc_ventilators',     label: 'HC Ventilators',            icon: '◈', on: true  },
   { id: 'lyr_hc_holddown',        label: 'HC Hold-Down Devices',      icon: '⊕', on: true  },
   { id: 'lyr_rubber_seals',       label: 'Rubber Seals',              icon: '◯', on: true  },
@@ -11393,7 +11452,7 @@ function drawRestingPadSymbol(lx, ly, edge, hovered, selected, color, padCount, 
 }
 
 function drawRestingPads(bay, rows, ox, oy){
-  if(!layerOn('lyr_resting_pads') || !layerOn('lyr_hc_bearing')) return;
+  if(!layerOn('lyr_resting_pads') || !true) return;
   const arr = restingPads[bay]||[];
   arr.forEach(rp => {
     const pos = rpLogicalPos(bay, rp, rows);
@@ -11695,7 +11754,7 @@ function drawRestingPadGuides(bay, rows){
 }
 function rpHandleClick(sx, sy){
   if(!rpMode) return false;
-  if(!layerOn('lyr_resting_pads') || !layerOn('lyr_hc_bearing')) return false;
+  if(!layerOn('lyr_resting_pads') || !true) return false;
   const _nowRp = performance.now();
   if(_nowRp - _objLastPlaceTime < LASH_SPEED_MAP[_lashPlaceSpeed]) return false;
   _objLastPlaceTime = _nowRp;
@@ -12443,7 +12502,7 @@ function drawFlexipadSymbol(lx, ly, edge, hovered, selected, color, typeIdx, rot
 }
 
 function drawFlexipads(bay, rows, ox, oy){
-  if(!layerOn('lyr_flexipads') || !layerOn('lyr_hc_bearing')) return;
+  if(!layerOn('lyr_flexipads') || !true) return;
   const arr = flexipads[bay]||[];
   arr.forEach(fp => {
     const pos = fxpLogicalPos(bay, fp, rows);
@@ -13761,7 +13820,7 @@ function fxpPlaceMirrorPad(bay, rows, origX, origY, origEdge, origHcNum, origSpa
 
 function fxpHandleClick(sx, sy){
   if(!fxpMode) return false;
-  if(!layerOn('lyr_flexipads') || !layerOn('lyr_hc_bearing')) return false;
+  if(!layerOn('lyr_flexipads') || !true) return false;
   const _nowFxp = performance.now();
   if(_nowFxp - _objLastPlaceTime < LASH_SPEED_MAP[_lashPlaceSpeed]) return false;
   _objLastPlaceTime = _nowFxp;
@@ -14376,7 +14435,7 @@ function fxpTriggerAssignSelected(){
 }
 
 function fxpPaintColor(sx, sy){
-  if(!layerOn('lyr_flexipads') || !layerOn('lyr_hc_bearing')) return false;
+  if(!layerOn('lyr_flexipads') || !true) return false;
   if(fxpManipVisible && _fxpSelIds.length > 0){
     const c = fndColorBrush||'green';
     const arr = flexipads[selBay]||[];
@@ -14389,7 +14448,7 @@ function fxpPaintColor(sx, sy){
 }
 
 function rpPaintColor(sx, sy){
-  if(!layerOn('lyr_resting_pads') || !layerOn('lyr_hc_bearing')) return false;
+  if(!layerOn('lyr_resting_pads') || !true) return false;
   if(rpManipVisible && _rpSelIds.length > 0){
     const c = fndColorBrush || 'green';
     const arr = restingPads[selBay] || [];
@@ -14443,7 +14502,7 @@ function toggleRpPocketPaintMode(){
 }
 
 function rpPocketHitTest(sx, sy){
-  if(!layerOn('lyr_resting_pads') || !layerOn('lyr_hc_bearing')) return null;
+  if(!layerOn('lyr_resting_pads') || !true) return null;
   const bay = selBay, rows = totalRowsForBay(bay);
   const lx = (sx - panX) / zoom, ly = (sy - panY) / zoom;
   const arr = restingPads[bay] || [];
@@ -14481,7 +14540,7 @@ function rpPocketHitTest(sx, sy){
 }
 
 function rpPocketPaintClick(sx, sy){
-  if(!rpPocketPaintMode || !layerOn('lyr_resting_pads') || !layerOn('lyr_hc_bearing')) return false;
+  if(!rpPocketPaintMode || !layerOn('lyr_resting_pads') || !true) return false;
   const hit = rpPocketHitTest(sx, sy);
   if(!hit) return false;
   pushUndo();
@@ -14617,9 +14676,20 @@ function omSetTarget(t){
 
 function omFxpSetMode(m){
   if(omPadType==='restingpad'){
+    // Preserve resting pad selection across mode switches
+    const _savedRpSel = [..._rpSelIds];
     rpManipSetMode(m);
+    if(_savedRpSel.length) _rpSelIds = _savedRpSel;
+    if(m==='nudge'||m==='rotate') _rpNudgeSel = [..._savedRpSel];
   } else {
+    // Preserve flexipad selection across mode switches
+    const _savedFxpSel = [..._fxpSelIds];
     fxpManipSetMode(m);
+    if(_savedFxpSel.length){
+      _fxpSelIds = _savedFxpSel;
+      if(m==='nudge') _fxpNudgeSel = [..._savedFxpSel];
+      if(m==='rotate') _fxpRotSel = [..._savedFxpSel];
+    }
   }
   ['select','move','drag','nudge','rotate','copy','delete'].forEach(k=>{
     const b=document.getElementById('omFxpBtn_'+k);
@@ -14662,9 +14732,26 @@ function omPadsNudge(dir){
     fxpNudge(dir);
   }
 }
+function omPadsRotateConfirm(){
+  // Rotation is already live — just deselect and return to select mode
+  _fxpRotSel=[]; _fxpSelIds=[];
+  _rpSelIds=[]; _rpNudgeSel=[];
+  omFxpSetMode('select');
+  draw();
+}
+function fxpRotateConfirm(){
+  _fxpRotSel=[]; _fxpSelIds=[];
+  fxpManipSetMode('select');
+  draw();
+}
 function omPadsRotate(deg, reset=false){
-  if(omPadType==='restingpad') rpRotateSelected(deg, reset);
-  else fxpRotateSelected(deg, reset);
+  if(omPadType==='restingpad'){
+    rpRotateSelected(deg, reset);
+  } else {
+    // Use _fxpSelIds (Object Manipulator selection) if _fxpRotSel is empty
+    if(!_fxpRotSel.length && _fxpSelIds.length) _fxpRotSel = [..._fxpSelIds];
+    fxpRotateSelected(deg, reset);
+  }
 }
 function omPadsPaintSelected(){
   if(omPadType==='restingpad') rpPaintSelected();
@@ -14812,6 +14899,8 @@ function omSyncUI(){
   if(rotatePanel) rotatePanel.style.display=(_showRot&&!_isLashRot)?'block':'none';
   if(lashRotatePanel) lashRotatePanel.style.display=_isLashRot?'block':'none';
   if(omMode==='nudge') omUpdateNudgeSelLabel();
+  const _confirmBtn=document.getElementById('omNudgeConfirmBtn');
+  if(_confirmBtn) _confirmBtn.style.display=(omMode==='nudge'&&omNudgeSelected)?'block':'none';
   if(omMode==='rotate'){ if(omTarget==='lashing') omUpdateLashRotSelLabel(); else omUpdateRotSelLabel(); }
   const st=document.getElementById('omStatus');
   const cb=document.getElementById('omCancelBtn');
@@ -15448,7 +15537,10 @@ function omOffsetKey(h){
   if(h.isPlatform) return `PLT${selPlatIdx}_${h.platLine}_${h.rowIdx}`;
   if(h.midLine!==undefined) return `ML${h.midLine}_${h.bayLine}_${h.rowIdx}`;
   if(h.isLine2) return `L2_${fndKey(h.bayLine,h.rowIdx,selBay)}`;
-  return fndKey(h.bayLine,h.rowIdx,selBay) + (h.side ? '_'+h.side : '');
+  // Always use the base key (no side suffix) so nudge offsets are stored where
+  // the draw loop reads them: getOffsetByKey(_bk) uses the base key.
+  // Per-side independent offsets (fndOffsets[_bk+'_L/R']) are a separate mechanism.
+  return fndKey(h.bayLine,h.rowIdx,selBay);
 }
 
 function omGetOffset(h){
@@ -15548,6 +15640,17 @@ function omNudgeClear(){
   draw();
 }
 
+function omNudgeCommit(){
+  // The offset is already persisted in fndOffsets — this just deselects,
+  // giving clear confirmation that the position is locked.
+  if(!omNudgeSelected) return;
+  omNudgeSelected=null;
+  omNudgeMultiSel=[];
+  omUpdateNudgeSelLabel();
+  omSyncUI();
+  draw();
+}
+
 function omNudgeResetOffset(){
   const all = omNudgeSelected ? [omNudgeSelected, ...omNudgeMultiSel] : [];
   all.forEach(h => { const k=omOffsetKey(h); if(k) delete fndOffsets[k]; });
@@ -15622,6 +15725,9 @@ function omUpdateNudgeSelLabel(){
       elOff.style.color='#1e4a74';
     }
   }
+  // Keep confirm button in sync with selection
+  const _cb=document.getElementById('omNudgeConfirmBtn');
+  if(_cb) _cb.style.display=omNudgeSelected?'block':'none';
 }
 
 function omNudge(dir){
@@ -15646,6 +15752,10 @@ function omNudge(dir){
       if(dir==='up')    ny-=step;
       if(dir==='down')  ny+=step;
       setFreeFndById(h.bay, h.id, {x:nx, y:ny});
+      // Keep selection coords in sync with the new position
+      if(omNudgeSelected && omNudgeSelected.isFree && omNudgeSelected.id===h.id){ omNudgeSelected.x=nx; omNudgeSelected.y=ny; }
+      const _mi=omNudgeMultiSel.findIndex(function(m){return m.isFree&&m.id===h.id;});
+      if(_mi>=0){ omNudgeMultiSel[_mi].x=nx; omNudgeMultiSel[_mi].y=ny; }
       return;
     }
     const off=omGetOffset(h);
@@ -15902,6 +16012,19 @@ document.addEventListener('keydown',e=>{
   if(omVisible && omMode==='delete' && e.key==='Enter' && omMultiSel.length>0){
     e.preventDefault();
     omDeleteSelected();
+  }
+  if(omVisible && omMode==='nudge' && e.key==='Enter' && omNudgeSelected){
+    e.preventDefault();
+    omNudgeCommit();
+  }
+  // Pad rotate confirm on Enter
+  if(omVisible && omTarget==='pads' && e.key==='Enter'){
+    const _omFxpM = typeof _fxpManipMode!=='undefined' ? _fxpManipMode : '';
+    const _omRpM  = typeof _rpManipMode!=='undefined'  ? _rpManipMode  : '';
+    if(_omFxpM==='rotate' || _omRpM==='rotate'){
+      e.preventDefault();
+      omPadsRotateConfirm();
+    }
   }
   if((e.ctrlKey||e.metaKey) && e.key==='z' && !e.shiftKey){ e.preventDefault(); undoStep(); }
   if((e.ctrlKey||e.metaKey) && (e.key==='y' || (e.key==='z' && e.shiftKey))){ e.preventDefault(); redoStep(); }
@@ -19215,9 +19338,7 @@ function omDotScreenPos(h){
   const dx=h.side==='L'?gx-inset-_hvgO:h.side==='R'?gx+inset+_hvgO:gx;
   const _hbk = (!h.isFree && !h.isPlatform && h.midLine===undefined && !h.isLine2)
     ? fndKey(h.bayLine, h.rowIdx) : null;
-  const off = (_hbk && h.side && fndOffsets[_hbk+'_'+h.side])
-    ? fndOffsets[_hbk+'_'+h.side]
-    : omGetOffset(h);
+  const off = omGetOffset(h);
   return {x:dx+off.dx*zoom, y:gy+off.dy*zoom};
 }
 
@@ -20075,7 +20196,7 @@ function drawOverview(){
   }
 
   // Resting Pads — overview, clipped per bay
-  if(layerOn('lyr_resting_pads') && layerOn('lyr_hc_bearing')){
+  if(layerOn('lyr_resting_pads') && true){
     for(let b=0;b<cfg.bays;b++){
       const arr=restingPads[b]||[];
       if(!arr.length) continue;
@@ -20094,7 +20215,7 @@ function drawOverview(){
   }
 
   // Flexipads — overview, clipped per bay
-  if(layerOn('lyr_flexipads') && layerOn('lyr_hc_bearing')){
+  if(layerOn('lyr_flexipads') && true){
     for(let b=0;b<cfg.bays;b++){
       const arr=flexipads[b]||[];
       if(!arr.length) continue;
@@ -20955,13 +21076,18 @@ function nearestPlatDot(mx,my){
       else if(li===2 && p.lines[3] && platSpan34(pi,r)) sy=panY+PLAT_SPAN34_Y*zoom;
       else                                               sy=panY+PLAT_LINE_Y[li]*zoom;
       const fnd=getPlatFnd(pi,li,r);
+      // Apply nudge offset so hit-test matches drawn position
+      const _platOk=`PLT${pi}_${li}_${r}`;
+      const _platO=fndOffsets[_platOk];
+      const _psx=sx+(_platO?(_platO.dx||0)*zoom:0);
+      const _psy=sy+(_platO?(_platO.dy||0)*zoom:0);
       if(fnd.type==='single'||fnd.type==='elongated'||fnd.type==='lift_single'||fnd.type==='lift_eye_c'||fnd.type==='lift_eye_l'||fnd.type==='lift_eye_r'){
         const inset=7*zoom, edge=r===0?'port':r===rows?'stbd':null;
         const _vg=edge===null?FND_VERT_GAP*zoom:0;
-        if(edge!=='port'){const dL=Math.hypot(mx-(sx-inset-_vg),my-sy);if(dL<bestD){bestD=dL;best={isPlatform:true,platLine:li,rowIdx:r,side:'L'};}}
-        if(edge!=='stbd'){const dR=Math.hypot(mx-(sx+inset+_vg),my-sy);if(dR<bestD){bestD=dR;best={isPlatform:true,platLine:li,rowIdx:r,side:'R'};}}
+        if(edge!=='port'){const dL=Math.hypot(mx-(_psx-inset-_vg),my-_psy);if(dL<bestD){bestD=dL;best={isPlatform:true,platLine:li,rowIdx:r,side:'L'};}}
+        if(edge!=='stbd'){const dR=Math.hypot(mx-(_psx+inset+_vg),my-_psy);if(dR<bestD){bestD=dR;best={isPlatform:true,platLine:li,rowIdx:r,side:'R'};}}
       } else {
-        const d=Math.hypot(mx-sx,my-sy);
+        const d=Math.hypot(mx-_psx,my-_psy);
         if(d<bestD){bestD=d;best={isPlatform:true,platLine:li,rowIdx:r,side:null};}
       }
     }
@@ -21086,6 +21212,15 @@ function nearestDot(mx,my,asTarget=false,srcSide=null){
   const rows=totalRowsForBay(selBay), b=selBay;
   let best=null, bestD=Infinity;
   function testPos(sx,sy,bl,r,extra){
+    // Apply the nudge offset so hit-test matches the drawn position
+    if(!asTarget && !extra.isFree){
+      let _offK;
+      if(extra.midLine!==undefined) _offK=`ML${extra.midLine}_${bl}_${r}`;
+      else if(extra.isLine2) _offK=`L2_${fndKey(bl,r,b)}`;
+      else _offK=fndKey(bl,r,b);
+      const _o=fndOffsets[_offK];
+      if(_o){ sx+=(_o.dx||0)*zoom; sy+=(_o.dy||0)*zoom; }
+    }
     const fnd=extra.midLine!==undefined?getFndM(extra.midLine,b,r):extra.isLine2?getFnd2(bl,r,b):getFnd(bl,r,b);
     // Fully deleted slots: hittable as drop targets but not as drag sources
     if(fnd.type==='deleted'){
@@ -21202,6 +21337,12 @@ function nearestDot(mx,my,asTarget=false,srcSide=null){
         } else {
           hx = sx + (sub==='R' ? 7 : -7)*zoom;
           hy = sy;
+        }
+        // Apply nudge offset to midline hit position
+        if(!asTarget){
+          const _mlOk=`ML${li}_${b}_${r}`;
+          const _mlO=fndOffsets[_mlOk];
+          if(_mlO){ hx+=(_mlO.dx||0)*zoom; hy+=(_mlO.dy||0)*zoom; }
         }
         const d = Math.hypot(mx-hx, my-hy);
         if(d < bestD){
@@ -22283,7 +22424,7 @@ document.addEventListener('mouseup',e=>{
           }
         });
       }
-      if(fpalPaintPads && layerOn('lyr_flexipads') && layerOn('lyr_hc_bearing')){
+      if(fpalPaintPads && layerOn('lyr_flexipads') && true){
         const fxpArr=flexipads[selBay]||[];
         const fxpHits=fxpArr.filter(fp=>{
           const pos=fxpLogicalPos(selBay,fp,rows);
@@ -22292,7 +22433,7 @@ document.addEventListener('mouseup',e=>{
         });
         if(fxpHits.length){ pushUndo(); fxpHits.forEach(fp=>{ fp.color=fndColorBrush||'green'; }); }
       }
-      if(fpalPaintPads && layerOn('lyr_resting_pads') && layerOn('lyr_hc_bearing')){
+      if(fpalPaintPads && layerOn('lyr_resting_pads') && true){
         const rpArr=restingPads[selBay]||[];
         const rpHits=rpArr.filter(rp=>{
           const pos=rpLogicalPos(selBay,rp,rows);
@@ -22337,8 +22478,23 @@ document.addEventListener('mouseup',e=>{
     } else {
       if(omDragSrc && omDragSrc.isFree && omFreeDragPos){
         setFreeFndById(omDragSrc.bay, omDragSrc.id, {x:omFreeDragPos.x, y:omFreeDragPos.y});
+        // Update nudge selection to the new free-fnd position
+        if(omNudgeSelected && omOffsetKey(omNudgeSelected)===omOffsetKey(omDragSrc)){
+          omNudgeSelected = {...omDragSrc, x:omFreeDragPos.x, y:omFreeDragPos.y};
+        }
       } else if(omDragTargetDot && omDragSrc){
         omMoveFnd(omDragSrc, omDragTargetDot);
+        // Update nudge/rotate selections to the destination dot
+        const _src=omDragSrc, _dst=omDragTargetDot;
+        function _remapHit(h){
+          if(!h) return h;
+          if(omOffsetKey(h)===omOffsetKey(_src)) return {..._dst};
+          return h;
+        }
+        omNudgeSelected  = _remapHit(omNudgeSelected);
+        omNudgeMultiSel  = omNudgeMultiSel.map(_remapHit);
+        omRotSel         = _remapHit(omRotSel);
+        omRotMulti       = omRotMulti.map(_remapHit);
       }
       omDragSrc=null; omDragTargetDot=null; omFreeDragPos=null;
     }
@@ -22718,10 +22874,10 @@ document.addEventListener('mouseup',e=>{
     }
   }
   if(editColorMode && fpalPaintTarget !== 'none' && !e.ctrlKey){
-    if(viewMode==='bay' && layerOn('lyr_flexipads') && layerOn('lyr_hc_bearing') && fpalPaintPads){
+    if(viewMode==='bay' && layerOn('lyr_flexipads') && true && fpalPaintPads){
       if(fxpPaintColor(mx,my)) return;
     }
-    if(viewMode==='bay' && layerOn('lyr_resting_pads') && layerOn('lyr_hc_bearing') && fpalPaintPads){
+    if(viewMode==='bay' && layerOn('lyr_resting_pads') && true && fpalPaintPads){
       if(rpPaintColor(mx,my)) return;
     }
     if(viewMode==='bay' && layerOn('lyr_hc_ventilators') && (fpalPaintTarget==='vents'||fpalPaintTarget==='all')){
@@ -22873,8 +23029,12 @@ vp.addEventListener('dblclick',e=>{
     const rows=maxTotalRows();
     const gx=VPX, gy=BOWH+VPY;
     const {baysY,platsY}=computeItemYPositions(gy);
-    zoom=1;
-    let itemCY; // world-space vertical centre of the item
+    // Fit the full vessel overview into the viewport, centred on the current bay
+    const {totalH:_ovTH}=computeItemYPositions(0);
+    const _ovVesW=rows*SW+VPX*2, _ovVesH=_ovTH+VPY*2+BOWH;
+    const _ovFitZ=Math.min(canvas.width/_ovVesW, canvas.height/_ovVesH)*0.92;
+    zoom=Math.max(0.1, Math.min(_ovFitZ, 2));
+    let itemCY; // world-space vertical centre of the current item
     if(selIsPlat){
       itemCY=platsY[selPlatIdx]+PLAT_H/2;
     } else {
@@ -34075,7 +34235,7 @@ async function exportRubberSealsPDF() {
     <div class="fm-body">
       <div id="acctView"></div>
     </div>
-    <div class="fm-footer" style="border-top:1px solid #1e3a54;padding:10px 16px;display:flex;align-items:center;gap:10px;background:#060e1a;">
+    <div class="fm-footer" id="acctBakeFooter" style="border-top:1px solid #1e3a54;padding:10px 16px;display:none;align-items:center;gap:10px;background:#060e1a;">
       <button onclick="_exportBakedAccounts()"
         style="font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
           letter-spacing:0.12em;padding:7px 14px;border-radius:3px;cursor:pointer;
@@ -35596,6 +35756,8 @@ function closeAccountPanel(){
 function renderAccountPanel(){
   const view = document.getElementById('acctView');
   view.innerHTML = '';
+  const _bakeFooter = document.getElementById('acctBakeFooter');
+  if(_bakeFooter) _bakeFooter.style.display = _isSuperUser ? 'flex' : 'none';
 
   const banner = document.createElement('div');
   banner.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 0 14px;border-bottom:1px solid #1e3a54;margin-bottom:14px;';
@@ -35661,7 +35823,7 @@ function renderAccountPanel(){
     view.appendChild(settingsLabel);
 
     const toggleRow = document.createElement('div');
-    toggleRow.style.cssText = 'display:flex;align-items:center;gap:14px;padding:10px 14px;border:1px solid #2a5278;background:rgba(15,40,65,0.5);margin-bottom:6px;';
+    toggleRow.style.cssText = 'display:flex;align-items:center;gap:14px;padding:10px 14px;border:1px solid var(--line);background:transparent;margin-bottom:6px;';
     const isOn = _loginEnabled;
     toggleRow.innerHTML = `
       <div style="flex:1;">
@@ -35675,20 +35837,20 @@ function renderAccountPanel(){
         flex-shrink:0;
         width:44px;height:24px;border-radius:12px;cursor:pointer;
         position:relative;
-        background:${isOn ? '#1a5a30' : '#2a1a1a'};
-        border:1.5px solid ${isOn ? '#40c870' : '#601010'};
+        background:${isOn ? '#22c55e' : '#94a3b8'};
+        border:1.5px solid ${isOn ? '#16a34a' : '#64748b'};
         transition:all 0.2s;
       ">
         <div style="
-          position:fixed;top:3px;
+          position:absolute;top:3px;
           left:${isOn ? '22px' : '3px'};
           width:16px;height:16px;border-radius:50%;
-          background:${isOn ? '#40c870' : '#c04040'};
-          transition:left 0.2s, background 0.2s;
-          box-shadow:0 1px 4px rgba(0,0,0,0.4);
+          background:#ffffff;
+          transition:left 0.2s;
+          box-shadow:0 1px 4px rgba(0,0,0,0.3);
         "></div>
       </div>
-      <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${isOn ? '#40c870' : '#c04040'};min-width:28px;">${isOn ? 'ON' : 'OFF'}</span>`;
+      <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${isOn ? '#22c55e' : '#64748b'};min-width:28px;">${isOn ? 'ON' : 'OFF'}</span>`;
     view.appendChild(toggleRow);
 
     const hint = document.createElement('div');
@@ -35698,44 +35860,6 @@ function renderAccountPanel(){
       : '⚠ Login is disabled — anyone can open this file without a password.';
     hint.style.color = isOn ? '#5a8aaa' : '#d4881a';
     view.appendChild(hint);
-
-    // Company Group password setting (super user only)
-    if(_isSuperUser){
-      const cgLabel = document.createElement('div');
-      cgLabel.style.cssText = 'font-size:8px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:8px;';
-      cgLabel.textContent = 'COMPANY GROUP ACCOUNT';
-      view.appendChild(cgLabel);
-
-      const cgRow = document.createElement('div');
-      cgRow.style.cssText = 'padding:10px 14px;border:1px solid var(--line);background:transparent;margin-bottom:6px;';
-      const cgEnabled = !!_companyGroupPasswordHash;
-      cgRow.innerHTML = `
-        <div style="font-size:8px;color:var(--text2);letter-spacing:0.06em;margin-bottom:8px;line-height:1.5;">
-          When enabled, a <b style="color:var(--bright);">Company Group</b> login appears on the login screen.<br>
-          Company Group users cannot access Accounts, Licence, or create licences.
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
-          <div style="flex:1;min-width:140px;">
-            <div style="font-size:7px;letter-spacing:0.12em;color:var(--text2);margin-bottom:4px;">NEW PASSWORD ${cgEnabled?'(CHANGE)':'(SET TO ENABLE)'}</div>
-            <input id="cgNewPass" type="password" placeholder="${cgEnabled?'Enter new password…':'Set password to enable…'}"
-              style="width:100%;box-sizing:border-box;background:var(--paper);color:var(--text);border:1px solid var(--line);
-                border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 8px;outline:none;"
-              maxlength="64" autocomplete="new-password">
-          </div>
-          <button onclick="_cgSetPassword()" style="
-            font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;
-            background:rgba(45,127,193,0.18);border:1.5px solid var(--blue);color:var(--bright);
-            padding:6px 12px;cursor:pointer;white-space:nowrap;">
-            ${cgEnabled ? '✓ UPDATE' : '⊞ ENABLE'}
-          </button>
-          ${cgEnabled ? `<button onclick="_cgClearPassword()" style="
-            font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;
-            background:rgba(60,10,10,0.4);border:1.5px solid #601010;color:#c04040;
-            padding:6px 12px;cursor:pointer;white-space:nowrap;">✕ DISABLE</button>` : ''}
-        </div>
-        <div id="cgMsg" style="font-size:8px;color:#70c040;margin-top:6px;min-height:12px;"></div>`;
-      view.appendChild(cgRow);
-    }
 
     const sep3 = document.createElement('div'); sep3.className='acct-sep'; sep3.style.margin='4px 0 14px'; view.appendChild(sep3);
   }
@@ -39001,6 +39125,7 @@ html.gray-panels .om-mode-btn.om-mode-active {
   background: #d0e8ff !important;
 }
 html.gray-panels .om-mode-btn.om-delete-active  { background: rgba(220,20,20,0.18) !important; color: #aa0000 !important; border-color: #cc2020 !important; font-weight:700 !important; box-shadow: none !important; }
+html.gray-panels .om-mode-btn--danger { background: rgba(160,20,20,0.22) !important; color: #bb3030 !important; border-color: #993030 !important; }
 html.gray-panels .om-mode-btn.om-delline-active { background: rgba(220,20,20,0.18) !important; color: #aa0000 !important; border-color: #cc2020 !important; font-weight:700 !important; box-shadow: none !important; }
 html.gray-panels .om-mode-btn.om-swap-active    { background: rgba(180,140,0,0.18) !important; color: #806000 !important; border-color: #b09000 !important; font-weight:700 !important; box-shadow: none !important; }
 html.gray-panels .om-mode-btn.om-drag-active    { background: rgba(10,160,60,0.18) !important; color: #086030 !important; border-color: #0a9040 !important; font-weight:700 !important; box-shadow: none !important; }
@@ -40626,7 +40751,7 @@ function _restoreFabVisibility(){
     'floatHddPlaceBtn':    'fabToggleHddPlace'
   };
   Object.entries(map).forEach(([fabId, btnId])=>{
-    const isVisible = vis[fabId] !== false;
+    const isVisible = vis[fabId] === true;
     const fab = document.getElementById(fabId);
     const btn = document.getElementById(btnId);
     if(!isVisible){
@@ -42723,66 +42848,36 @@ window.exportLegendPDF = function(){
   function fndImg(type, color){
     var W=90, H=50;
     var oc = document.createElement('canvas');
-    oc.width=W; oc.height=H;
-    var c = oc.getContext('2d');
-    c.fillStyle='#ffffff'; c.fillRect(0,0,W,H);
-
+    oc.width=W*2; oc.height=H*2; // retina
+    var savedCtx = (typeof ctx !== 'undefined') ? ctx : null;
     var pal = (typeof FND_COLORS!=='undefined') ? (FND_COLORS[color||'black']||FND_COLORS.black) : {stroke:'rgba(30,30,30,1)',fill:'rgba(60,60,60,0.45)'};
-    var stroke = pal.stroke;
-    var fill   = pal.fill;
-    var inner  = '#ffffff';
-    var lw = 1.8;
-
-    var sc = 1;
-    c.save();
-    c.translate(W/2, H/2);
-
-    function applyScale(logW, logH){
-      sc = Math.min((W-8)/logW, (H-8)/logH);
-      c.restore(); c.save(); c.translate(W/2, H/2); c.scale(sc, sc);
+    if(savedCtx && typeof drawFndDot === 'function'){
+      // Redirect ctx to offscreen canvas and draw using the real drawFndDot
+      ctx = oc.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, oc.width, oc.height);
+      // Scale so DOT_R (4px) renders visibly — use zoom ≈ 3.5
+      var scl = 3.5;
+      ctx.save();
+      ctx.translate(oc.width/2, oc.height/2);
+      ctx.scale(scl, scl);
+      // Draw at (0,0) after translate
+      var c_ = color || 'black';
+      drawFndDot(0, 0, type, false, '', null, c_, c_, c_, null, 0, null);
+      ctx.restore();
+      ctx = savedCtx;
+    } else {
+      // Fallback: simple schematic if drawFndDot unavailable
+      var c = oc.getContext('2d');
+      c.fillStyle='#ffffff'; c.fillRect(0,0,oc.width,oc.height);
+      c.fillStyle=pal.fill||'#888'; c.strokeStyle=pal.stroke||'#333'; c.lineWidth=2;
+      c.beginPath(); c.roundRect(oc.width/2-14,oc.height/2-9,28,18,4);
+      c.fill(); c.stroke();
     }
-
-    function rr(cx,cy,ow,oh,or_){
-      var x=cx-ow/2, y=cy-oh/2, r=Math.max(0.5/sc, or_);
-      c.beginPath();
-      c.moveTo(x+r,y); c.lineTo(x+ow-r,y); c.arcTo(x+ow,y,x+ow,y+r,r);
-      c.lineTo(x+ow,y+oh-r); c.arcTo(x+ow,y+oh,x+ow-r,y+oh,r);
-      c.lineTo(x+r,y+oh); c.arcTo(x,y+oh,x,y+oh-r,r);
-      c.lineTo(x,y+r); c.arcTo(x,y,x+r,y,r); c.closePath();
-    }
-    function ob(cx,cy,ow,oh,or_){ rr(cx,cy,ow,oh,or_); c.fillStyle='#ffffff'; c.fill(); c.fillStyle=fill; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw/sc; c.stroke(); }
-    function is_(cx,cy,iw,ih,ir){ rr(cx,cy,iw,ih,ir); c.fillStyle=inner; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw*0.65/sc; c.stroke(); }
-    function cr(cx,cy,r){ var xs=r*0.82; c.strokeStyle=stroke; c.lineWidth=lw*0.9/sc; c.beginPath(); c.moveTo(cx-xs,cy); c.lineTo(cx+xs,cy); c.moveTo(cx,cy-xs); c.lineTo(cx,cy+xs); c.stroke(); }
-
-    var I=7;
-    switch(type){
-      case 'single': applyScale(23,10);      ob(-I,0,9,10,2.5);is_(-I,0,5,6,1.5); ob(I,0,9,10,2.5);is_(I,0,5,6,1.5); break;
-      case 'elongated': applyScale(23,14);   ob(-I,0,9,14,3);is_(-I,0,4.5,9,1.5); ob(I,0,9,14,3);is_(I,0,4.5,9,1.5); break;
-      case 'double': applyScale(20,11);      rr(0,0,20,11,3); c.fillStyle='#ffffff'; c.fill(); c.fillStyle=fill; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw/sc; c.stroke();
-                          is_(-5.5,0,7,7,1.5); is_(5.5,0,7,7,1.5); break;
-      case 'double_elg':  { var sg=14,oH=sg+18; applyScale(9,oH); ob(0,0,9,oH,2.5);is_(0,-sg/2,5.5,9,2);is_(0,sg/2,5.5,9,2); } break;
-      case 'dbl_elg_unit': applyScale(15,14); { var pad=2,gap=2,iH=10,iW=4.5,iR=1.5,oH=14,oR=3,oW=iW*2+gap+pad*2; rr(0,0,oW,oH,oR); c.fillStyle='#ffffff'; c.fill(); c.fillStyle=fill; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw/sc; c.stroke(); is_(-(iW+gap)/2,0,iW,iH,iR); is_((iW+gap)/2,0,iW,iH,iR); } break;
-      case 'comb_left': applyScale(14,14);   rr(0,0,14,14,2.5); c.fillStyle='#ffffff'; c.fill(); c.fillStyle=fill; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw/sc; c.stroke();
-                          is_(-3.75,0,5,10,1.5); is_(3.25,0,3.5,7,1.2); break;
-      case 'comb_right': applyScale(14,14);  rr(0,0,14,14,2.5); c.fillStyle='#ffffff'; c.fill(); c.fillStyle=fill; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw/sc; c.stroke();
-                          is_(-3.25,0,3.5,7,1.2); is_(3.75,0,5,10,1.5); break;
-      case 'lift_single': applyScale(23,10); ob(-I,0,9,10,2.5);is_(-I,0,5,6,1.5);cr(-I,0,2.5); ob(I,0,9,10,2.5);is_(I,0,5,6,1.5);cr(I,0,2.5); break;
-      case 'lift_double_l': applyScale(20,11); rr(0,0,20,11,3); c.fillStyle='#ffffff'; c.fill(); c.fillStyle=fill; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw/sc; c.stroke();
-                            is_(-5.5,0,7,7,1.5);cr(-5.5,0,2); is_(5.5,0,7,7,1.5); break;
-      case 'lift_double_r': applyScale(20,11); rr(0,0,20,11,3); c.fillStyle='#ffffff'; c.fill(); c.fillStyle=fill; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw/sc; c.stroke();
-                            is_(-5.5,0,7,7,1.5); is_(5.5,0,7,7,1.5);cr(5.5,0,2); break;
-      case 'lift_eye_c': case 'lift_eye_l': case 'lift_eye_r':{ applyScale(23,16);
-        var eOff=type==='lift_eye_l'?-2.5:type==='lift_eye_r'?2.5:0;
-        [-I,I].forEach(function(bx){
-          ob(bx,0,9,10,2.5);is_(bx,0,5,6,1.5);cr(bx,0,2.5);
-          rr(bx+eOff,5+3,4,6,1.2); c.fillStyle=inner; c.fill(); c.strokeStyle=stroke; c.lineWidth=lw*0.85/sc; c.stroke();
-        });
-        break;
-      }
-      default: ob(0,0,9,10,2.5);is_(0,0,5,6,1.5);
-    }
-    c.restore();
-    return oc.toDataURL('image/png');
+    // Scale down to W×H for display
+    var out = document.createElement('canvas');
+    out.width=W; out.height=H;
+    out.getContext('2d').drawImage(oc,0,0,W,H);
+    return out.toDataURL('image/png');
   }
 
   function leImg(type, symbol, color){
@@ -42821,32 +42916,54 @@ window.exportLegendPDF = function(){
   }
 
   function stopImg(type, color){
+    var S=88; // @2x
     var oc = document.createElement('canvas');
-    var S=44;
     oc.width=S; oc.height=S;
-    var c = oc.getContext('2d');
-    c.fillStyle='#f8f9fa'; c.fillRect(0,0,S,S);
-    var pal = (typeof FND_COLORS!=='undefined') ? (FND_COLORS[color||'black']||FND_COLORS.black) : {stroke:'#222',fill:'rgba(60,60,60,0.4)'};
-    var cx=S/2, cy=S/2;
-    c.beginPath(); c.moveTo(cx,cy-S*0.28); c.lineTo(cx+S*0.28,cy+S*0.18); c.lineTo(cx-S*0.28,cy+S*0.18); c.closePath();
-    c.fillStyle=pal.fill; c.fill(); c.strokeStyle=pal.stroke; c.lineWidth=1.8; c.stroke();
-    return oc.toDataURL('image/png');
+    var savedCtx = (typeof ctx !== 'undefined') ? ctx : null;
+    if(savedCtx && typeof drawHcStopperSymbol === 'function'){
+      ctx = oc.getContext('2d');
+      ctx.fillStyle='#f8f9fa'; ctx.fillRect(0,0,S,S);
+      var scl=3.5;
+      ctx.save(); ctx.translate(S/2,S/2); ctx.scale(scl,scl);
+      drawHcStopperSymbol(0,0,type,false,false,color||'black');
+      ctx.restore();
+      ctx = savedCtx;
+    } else {
+      var c=oc.getContext('2d');
+      c.fillStyle='#f8f9fa'; c.fillRect(0,0,S,S);
+      var pal=(typeof FND_COLORS!=='undefined')?(FND_COLORS[color||'black']||FND_COLORS.black):{stroke:'#222',fill:'rgba(60,60,60,0.4)'};
+      var cx=S/2,cy=S/2;
+      c.beginPath();c.moveTo(cx,cy-S*0.28);c.lineTo(cx+S*0.28,cy+S*0.18);c.lineTo(cx-S*0.28,cy+S*0.18);c.closePath();
+      c.fillStyle=pal.fill;c.fill();c.strokeStyle=pal.stroke;c.lineWidth=1.8;c.stroke();
+    }
+    var out=document.createElement('canvas'); out.width=44; out.height=44;
+    out.getContext('2d').drawImage(oc,0,0,44,44);
+    return out.toDataURL('image/png');
   }
 
   function fxpImg(color){
+    var S=140; // @2x, wider for FXP_W
     var oc = document.createElement('canvas');
-    var S=44;
-    oc.width=S; oc.height=S;
-    var c = oc.getContext('2d');
-    c.fillStyle='#f8f9fa'; c.fillRect(0,0,S,S);
-    var pal = (typeof FND_COLORS!=='undefined') ? (FND_COLORS[color||'black']||FND_COLORS.black) : {stroke:'#222',fill:'rgba(60,60,60,0.4)'};
-    var cx=S/2, cy=S/2, w=S*0.62, h=S*0.38;
-    c.beginPath(); c.roundRect(cx-w/2,cy-h/2,w,h,3);
-    c.fillStyle=pal.fill; c.fill(); c.strokeStyle=pal.stroke; c.lineWidth=1.8; c.stroke();
-    c.strokeStyle=pal.stroke; c.lineWidth=0.8;
-    c.beginPath(); c.moveTo(cx-w/2+4,cy); c.lineTo(cx+w/2-4,cy); c.stroke();
-    c.beginPath(); c.moveTo(cx,cy-h/2+3); c.lineTo(cx,cy+h/2-3); c.stroke();
-    return oc.toDataURL('image/png');
+    oc.width=S; oc.height=70;
+    var savedCtx = (typeof ctx !== 'undefined') ? ctx : null;
+    if(savedCtx && typeof drawFlexipadSymbol === 'function'){
+      ctx = oc.getContext('2d');
+      ctx.fillStyle='#f8f9fa'; ctx.fillRect(0,0,S,70);
+      var scl=1.8;
+      ctx.save(); ctx.translate(S/2,35); ctx.scale(scl,scl);
+      drawFlexipadSymbol(0,0,'fwd',false,false,color||'green',null,0);
+      ctx.restore();
+      ctx = savedCtx;
+    } else {
+      var c=oc.getContext('2d');
+      c.fillStyle='#f8f9fa'; c.fillRect(0,0,S,70);
+      var cx=S/2,cy=35,w=S*0.62,h=S*0.28;
+      c.beginPath(); c.roundRect(cx-w/2,cy-h/2,w,h,3);
+      c.fillStyle='rgba(60,200,120,0.3)'; c.fill(); c.strokeStyle='#30a060'; c.lineWidth=2; c.stroke();
+    }
+    var out=document.createElement('canvas'); out.width=70; out.height=35;
+    out.getContext('2d').drawImage(oc,0,0,70,35);
+    return out.toDataURL('image/png');
   }
 
   function rpImg(padCount, color){
@@ -43055,7 +43172,11 @@ window.exportFndTypesPDF = function(){
   thead += '</tr>';
 
   var tbody = '';
-  (typeof oeTypes !== 'undefined' ? oeTypes : []).forEach(function(t, idx){
+  // Only show rows that have a Foundation Name defined in the library
+  var _filteredTypes = (typeof oeTypes !== 'undefined' ? oeTypes : []).filter(function(t){
+    return t.type && t.type.trim() !== '';
+  });
+  _filteredTypes.forEach(function(t, idx){
     var even = idx % 2 === 0;
     tbody += '<tr'+(even?' class="even"':'')+'>';
     tbody += '<td style="text-align:center;">'+(t.active
@@ -43087,7 +43208,7 @@ window.exportFndTypesPDF = function(){
     '<div class="s-sec-title"><span class="s-sec-icon">⊞</span> Foundation Types — Full Catalogue</div>' +
     '<table class="fnd-tbl"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table>' +
     '<div style="margin-top:10px;font-size:10px;color:#4a7090;">' +
-      oeTypes.filter(function(t){return t.active;}).length + ' of ' + oeTypes.length +
+      _filteredTypes.filter(function(t){return t.active;}).length + ' of ' + _filteredTypes.length +
     ' types marked ON VESSEL</div>' +
     '</div>';
 
@@ -43100,7 +43221,7 @@ window.exportFndTypesPDF = function(){
   win.document.write('<div class="hdr"><div>');
   win.document.write('<div class="hdr-logo"><em>▣ INSPECTRA</em> // HATCH SCAN</div>');
   win.document.write('<div class="hdr-sub">Foundation Types Library — Type Catalogue</div></div>');
-  win.document.write('<div class="hdr-meta">'+now+'<br>'+oeTypes.length+' type'+(oeTypes.length!==1?'s':'')+' defined</div></div>');
+  win.document.write('<div class="hdr-meta">'+now+'<br>'+_filteredTypes.length+' type'+(_filteredTypes.length!==1?'s':'')+' defined</div></div>');
   win.document.write(inner);
   win.document.write('<script>window.onload=function(){window.print();};<\/script></body></html>');
   win.document.close();
@@ -44914,6 +45035,83 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   display: none; /* changed to flex by JS when HC selected */
 }
 
+/* ── Seals module: mobile responsive ────────────────────────────────── */
+@media (max-width: 700px) {
+
+  /* Top bar: shrink and scroll horizontally */
+  #rsTopBar {
+    padding: 5px 8px !important;
+    gap: 5px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+  }
+  #rsTopBar .rs-menu-wrap { flex-shrink: 0; }
+  #rsTopBar .btn { font-size: 8px !important; padding: 4px 8px !important; }
+
+  /* Main area: switch from row to column */
+  #rsOverlay > div:nth-child(2) {
+    flex-direction: column !important;
+  }
+
+  /* Left panel (overview canvas): full width, capped height */
+  #rsLeft {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-height: 38vh !important;
+    min-height: 180px !important;
+    border-right: none !important;
+    border-bottom: 2px solid var(--line) !important;
+  }
+  #rsCanvasWrap { flex: 1; min-height: 0; }
+
+  /* Right panel: full width, column layout */
+  #rsRight {
+    flex: 1 !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Schematic strip: full width, capped height, not fixed 460px */
+  #rsSchematicStrip {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 40vh !important;
+    flex-direction: row !important;
+    border-right: none !important;
+    border-bottom: 2px solid var(--line) !important;
+  }
+  #rsSchWrap { flex: 1; min-height: 160px; }
+
+  /* Detail body: scrollable, full remaining height */
+  #rsDetailBody {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 8px 10px !important;
+  }
+
+  /* Seal rows: stack instead of grid */
+  .rs-seal-row {
+    grid-template-columns: 1fr !important;
+    gap: 5px !important;
+    padding: 8px 10px !important;
+  }
+
+  /* Dropdowns: full width on mobile */
+  #rsTopBar .dropdown {
+    min-width: 90vw !important;
+    max-height: 70vh !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+}
+@media (max-width: 420px) {
+  #rsLeft { max-height: 32vh !important; }
+  #rsSchematicStrip { max-height: 35vh !important; }
+}
 
 html.day-mode #rsOverlay,
 html.gray-panels #rsOverlay {
@@ -45483,11 +45681,21 @@ function _rsToggleOverview(){
   _rsOvVisible = !_rsOvVisible;
   const panel = document.getElementById('rsLeft');
   const btn   = document.getElementById('rsOvToggleBtn');
+  const _isMob = window.innerWidth <= 700;
   if(panel){
-    panel.style.width    = _rsOvVisible ? '407px' : '0';
-    panel.style.flexBasis= _rsOvVisible ? '407px' : '0';
-    panel.style.overflow = _rsOvVisible ? 'hidden' : 'hidden';
-    panel.style.borderRight = _rsOvVisible ? '2px solid var(--line)' : 'none';
+    if(_isMob){
+      // On mobile: full-width stacked, use max-height to collapse
+      panel.style.width     = '100%';
+      panel.style.flexBasis = 'auto';
+      panel.style.maxHeight = _rsOvVisible ? '38vh' : '0';
+      panel.style.borderRight = 'none';
+      panel.style.borderBottom = _rsOvVisible ? '2px solid var(--line)' : 'none';
+    } else {
+      panel.style.width    = _rsOvVisible ? '407px' : '0';
+      panel.style.flexBasis= _rsOvVisible ? '407px' : '0';
+      panel.style.borderRight = _rsOvVisible ? '2px solid var(--line)' : 'none';
+    }
+    panel.style.overflow = 'hidden';
   }
   if(btn){
     btn.style.background = _rsOvVisible
@@ -46199,9 +46407,17 @@ function _rsShowDetail(bay, hcNum){
 
   // ── Show schematic column ──
   const strip = document.getElementById('rsSchematicStrip');
+  const _isMobSch = window.innerWidth <= 700;
   if(strip){
     strip.style.display       = 'flex';
-    strip.style.flexDirection = 'column';
+    strip.style.flexDirection = _isMobSch ? 'column' : 'column';
+    if(_isMobSch){
+      strip.style.width    = '100%';
+      strip.style.minWidth = '0';
+      strip.style.maxWidth = '100%';
+      strip.style.height   = 'auto';
+      strip.style.maxHeight= '40vh';
+    }
   }
 
   // Corner count is always 4 — no UI selector needed
@@ -53088,6 +53304,46 @@ function _renderLicencePanel(){
   }
 
   setTimeout(()=>{ const inp=document.getElementById('genCustomer'); if(inp) inp.focus(); }, 80);
+
+  // ── Company Group Account ─────────────────────────────────────────────
+  if(_isSuperUser){
+    const cgSep = document.createElement('div'); cgSep.className='acct-sep'; cgSep.style.margin='24px 0 16px'; view.appendChild(cgSep);
+
+    const cgLabel = document.createElement('div');
+    cgLabel.style.cssText = 'font-size:8px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:8px;';
+    cgLabel.textContent = 'COMPANY GROUP ACCOUNT';
+    view.appendChild(cgLabel);
+
+    const cgRow = document.createElement('div');
+    cgRow.style.cssText = 'padding:10px 14px;border:1px solid var(--line);background:transparent;margin-bottom:6px;';
+    const cgEnabled = !!_companyGroupPasswordHash;
+    cgRow.innerHTML = `
+      <div style="font-size:8px;color:var(--text2);letter-spacing:0.06em;margin-bottom:8px;line-height:1.5;">
+        When enabled, a <b style="color:var(--bright);">Company Group</b> login appears on the login screen.<br>
+        Company Group users cannot access Accounts, Licence, or create licences.
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:140px;">
+          <div style="font-size:7px;letter-spacing:0.12em;color:var(--text2);margin-bottom:4px;">NEW PASSWORD ${cgEnabled?'(CHANGE)':'(SET TO ENABLE)'}</div>
+          <input id="cgNewPass" type="password" placeholder="${cgEnabled?'Enter new password\u2026':'Set password to enable\u2026'}"
+            style="width:100%;box-sizing:border-box;background:#ffffff;color:#1a1a2e;border:1px solid #aac0d8;
+              border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 8px;outline:none;"
+            maxlength="64" autocomplete="new-password">
+        </div>
+        <button onclick="_cgSetPassword()" style="
+          font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;
+          background:rgba(45,127,193,0.18);border:1.5px solid var(--blue);color:var(--bright);
+          padding:6px 12px;cursor:pointer;white-space:nowrap;">
+          ${cgEnabled ? '\u2713 UPDATE' : '\u229e ENABLE'}
+        </button>
+        ${cgEnabled ? `<button onclick="_cgClearPassword()" style="
+          font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;
+          background:rgba(60,10,10,0.4);border:1.5px solid #601010;color:#c04040;
+          padding:6px 12px;cursor:pointer;white-space:nowrap;">\u2715 DISABLE</button>` : ''}
+      </div>
+      <div id="cgMsg" style="font-size:8px;color:#70c040;margin-top:6px;min-height:12px;"></div>`;
+    view.appendChild(cgRow);
+  }
 }
 
 function _licDownloadCustomerFile(){
@@ -53890,6 +54146,86 @@ document.addEventListener('mousedown', function(e){
 .lb-bridge-item.lb-sel { background: rgba(94,184,255,0.16); color: var(--bright); }
 .lb-bridge-item .lb-bi-name { font-weight: 700; flex:1; }
 .lb-bridge-item .lb-bi-meta { color: var(--text2); font-size: 8px; }
+
+
+/* ── LB (Lashing Bridge) module: mobile responsive ──────────────────── */
+@media (max-width: 700px) {
+
+  /* Top bar: compress and scroll */
+  #lbTopBar {
+    padding: 5px 8px !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    min-height: 36px !important;
+  }
+  #lbTopBar > * { flex-shrink: 0 !important; }
+  #lbTopBar .btn { font-size: 8px !important; padding: 3px 7px !important; }
+  #lbTopBar span[style*="font-size:8px"] { display: none !important; } /* hide VIEW: label */
+
+  /* Main area: column stack */
+  #lbOverlay > div:nth-child(2) {
+    flex-direction: column !important;
+  }
+
+  /* Left panel (overview): full width, capped height */
+  #lbLeft {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-height: 35vh !important;
+    min-height: 140px !important;
+    border-right: none !important;
+    border-bottom: 2px solid var(--line) !important;
+    transition: max-height 0.2s !important;
+  }
+  #lbLeft[style*="width: 0"] {
+    max-height: 0 !important;
+    min-height: 0 !important;
+    border-bottom: none !important;
+  }
+  #lbOvCanvasWrap { flex: 1; min-height: 0; }
+
+  /* Right panel: full width, fills remaining space */
+  #lbRight {
+    flex: 1 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+  }
+  #lbCanvasWrap { flex: 1; }
+
+  /* Info strip: smaller on mobile */
+  #lbInfoStrip {
+    height: auto !important;
+    padding: 4px 10px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  #lbInfoStrip span { font-size: 7px !important; }
+
+  /* Dropdowns: full width */
+  #lbTopBar .dropdown {
+    min-width: 90vw !important;
+    max-height: 70vh !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  /* Stats modal: full screen */
+  #lbStatsBox, #lbCondStatsBox {
+    width: 100vw !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+  }
+
+  /* Editor overlay inside LB: full width */
+  #lbEditorOverlay {
+    width: 100vw !important;
+    left: 0 !important;
+  }
+}
+@media (max-width: 420px) {
+  #lbLeft { max-height: 28vh !important; }
+}
 
 html.day-mode #lbOverlay, html.gray-panels #lbOverlay { background: #dde8f0; color: #1a3a50; }
 html.day-mode #lbTopBar, html.gray-panels #lbTopBar {
@@ -56345,10 +56681,20 @@ function _lbToggleOverview(){
   _lbOvPanelVisible = !_lbOvPanelVisible;
   const panel = document.getElementById('lbLeft');
   const btn   = document.getElementById('lbOvToggleBtn');
+  const _lbIsMob = window.innerWidth <= 700;
   if(panel){
-    panel.style.width    = _lbOvPanelVisible ? '360px' : '0';
-    panel.style.flexBasis= _lbOvPanelVisible ? '360px' : '0';
-    panel.style.borderRight = _lbOvPanelVisible ? '2px solid var(--line)' : 'none';
+    if(_lbIsMob){
+      panel.style.width     = '100%';
+      panel.style.flexBasis = 'auto';
+      panel.style.maxHeight = _lbOvPanelVisible ? '35vh' : '0';
+      panel.style.minHeight = _lbOvPanelVisible ? '140px' : '0';
+      panel.style.borderRight  = 'none';
+      panel.style.borderBottom = _lbOvPanelVisible ? '2px solid var(--line)' : 'none';
+    } else {
+      panel.style.width    = _lbOvPanelVisible ? '360px' : '0';
+      panel.style.flexBasis= _lbOvPanelVisible ? '360px' : '0';
+      panel.style.borderRight = _lbOvPanelVisible ? '2px solid var(--line)' : 'none';
+    }
   }
   if(btn){
     btn.style.background  = _lbOvPanelVisible ? 'rgba(94,184,255,0.15)' : 'rgba(94,184,255,0.05)';
@@ -59630,7 +59976,6 @@ function _lbCopyEyesToAllBridges(){
       <div class="mob-sub-label">HC STOPPERS</div>
       <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHcStopPlacer&&toggleHcStopPlacer()">⊗  PLACE HC STOPPER</button>
       <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof toggleHcStopManip==='function'&&toggleHcStopManip()">⊗  HC STOPPER MANIPULATOR</button>
-      <div class="mob-sub-label">HC BEARING SYSTEM — FLEXIPADS</div>
       <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleFlexipadPlacer&&toggleFlexipadPlacer()">▣  PLACE FLEXIPAD</button>
       <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof toggleFlexipadAssignMode==='function'&&toggleFlexipadAssignMode()">▣  ASSIGN TYPE TO FLEXIPAD</button>
       <button class="mob-action" onclick="closeMobileMenu();openFxpLib&&openFxpLib()">▣  FLEXIPAD LIBRARY — TYPE CATALOGUE</button>
@@ -60207,62 +60552,39 @@ document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {pas
               }
             }
             setView('bay');
-          } else { setView('ov'); }
+          } else {
+            // Centre the current bay/platform in the overview before switching
+            if(typeof computeItemYPositions==='function' && typeof maxTotalRows==='function'){
+              var _cRows = maxTotalRows();
+              var _cGx = typeof VPX!=='undefined' ? VPX : 20;
+              var _cGy = (typeof BOWH!=='undefined'?BOWH:40)+(typeof VPY!=='undefined'?VPY:20);
+              var _cPos = computeItemYPositions(_cGy);
+              var _cSW = typeof SW!=='undefined' ? SW : 52;
+              var _cSH = typeof SH!=='undefined' ? SH : 600;
+              var _cPH = typeof PLAT_H!=='undefined' ? PLAT_H : 40;
+              var _cItemCX = _cGx + (_cRows * _cSW) / 2;
+              var _cItemCY;
+              if(typeof selIsPlat!=='undefined' && selIsPlat && typeof selPlatIdx!=='undefined'){
+                _cItemCY = _cPos.platsY[selPlatIdx] + _cPH / 2;
+              } else {
+                _cItemCY = _cPos.baysY[selBay] + _cSH / 2;
+              }
+              var _cvp = vp2.getBoundingClientRect();
+              // Fit full vessel into viewport
+              var _ovTH2 = computeItemYPositions(0).totalH;
+              var _ovVW2 = _cRows*_cSW+(typeof VPX!=='undefined'?VPX:20)*2;
+              var _ovVH2 = _ovTH2+(typeof VPY!=='undefined'?VPY:20)*2+(typeof BOWH!=='undefined'?BOWH:40);
+              var _fitZ  = Math.min(_cvp.width/_ovVW2, _cvp.height/_ovVH2)*0.92;
+              zoom = Math.max(0.1, Math.min(_fitZ, 2));
+              panX = _cvp.width  / 2 - _cItemCX * zoom;
+              panY = _cvp.height / 2 - _cItemCY * zoom;
+            }
+            setView('ov');
+          }
         }
       } else {
         if(!_placementActive) _lastTap=now; else _lastTap=0;
 
-        // Single tap in overview mode — navigate directly to tapped bay
-        if(!_placementActive && typeof viewMode!=='undefined' && viewMode==='ov'){
-          var rect_ov2 = vp2.getBoundingClientRect();
-          var _stMx = t2.clientX - rect_ov2.left;
-          var _stMy = t2.clientY - rect_ov2.top;
-          var _stWx = (_stMx - panX) / zoom;
-          var _stWy = (_stMy - panY) / zoom;
-          if(typeof ovRotation !== 'undefined' && ovRotation !== 0){
-            var _sr2 = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
-            var _stH2 = typeof computeItemYPositions==='function' ? computeItemYPositions(0).totalH : 0;
-            var _sbH = typeof BOWH!=='undefined' ? BOWH : 40;
-            var _svW = _sr2*(typeof SW!=='undefined'?SW:52)+(typeof VPX!=='undefined'?VPX:20)*2;
-            var _svH = _stH2+(typeof VPY!=='undefined'?VPY:20)*2+_sbH;
-            var _scx = _svW/2, _scy = _svH/2-_sbH/2;
-            var _sang = -ovRotation*Math.PI/2;
-            var _sdx = _stWx-_scx, _sdy = _stWy-_scy;
-            _stWx = _scx + _sdx*Math.cos(_sang) - _sdy*Math.sin(_sang);
-            _stWy = _scy + _sdx*Math.sin(_sang) + _sdy*Math.cos(_sang);
-          }
-          var _sGx = typeof VPX!=='undefined' ? VPX : 20;
-          var _sGy = (typeof BOWH!=='undefined'?BOWH:40)+(typeof VPY!=='undefined'?VPY:20);
-          var _sPos = typeof computeItemYPositions==='function' ? computeItemYPositions(_sGy) : {baysY:[],platsY:[]};
-          var _sRows = typeof maxTotalRows==='function' ? maxTotalRows() : 1;
-          var _sSW = typeof SW!=='undefined' ? SW : 52;
-          var _sSH = typeof SH!=='undefined' ? SH : 600;
-          var _sNav = false;
-          for(var _sb=0; _sb<cfg.bays; _sb++){
-            var _sbY = _sPos.baysY[_sb];
-            if(_stWy>=_sbY && _stWy<_sbY+_sSH && _stWx>=_sGx && _stWx<_sGx+_sRows*_sSW){
-              if(typeof selectBay==='function') selectBay(_sb);
-              if(typeof setView==='function') setView('bay');
-              _sNav = true; break;
-            }
-          }
-          // If not a bay, check platforms
-          if(!_sNav && typeof platforms!=='undefined'){
-            platforms.forEach(function(p,pi){
-              if(_sNav) return;
-              var _pRows = typeof totalRowsForPlat==='function' ? totalRowsForPlat(pi) : _sRows;
-              var _pOx = Math.floor((_sRows-_pRows)/2)*_sSW;
-              var _ppH = typeof PLAT_H!=='undefined' ? PLAT_H : 40;
-              if(_stWy>=_sPos.platsY[pi] && _stWy<_sPos.platsY[pi]+_ppH &&
-                 _stWx>=_sGx+_pOx && _stWx<_sGx+_pOx+_pRows*_sSW){
-                if(typeof selectPlatform==='function') selectPlatform(pi);
-                if(typeof setView==='function') setView('bay');
-                _sNav = true;
-              }
-            });
-          }
-          if(_sNav) return;
-        }
         // Fire synthetic events — target the canvas element for edit modes
         // that check e.target === canvas (markTool, craneTool etc.)
         var target = document.getElementById('c') || vp2;
