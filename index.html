@@ -46387,6 +46387,7 @@ function _rsToggleOverview(){
     if(_isMob){
       // Overview button always resets all three panels to equal 1/3 split
       _rsOvVisible = true;
+      _dbg('RESET RS panels called');
       if(btn){
         btn.style.background = 'rgba(94,184,255,0.15)';
         btn.style.color      = 'var(--bright)';
@@ -54218,6 +54219,21 @@ var _rsPanelMode = 'split'; // kept for compat
 function _rsTogglePanels(){}   // no-op — replaced by drag
 function _rsApplyPanelMode(){} // no-op — replaced by drag
 
+
+// ── DEBUG: visible toast for touch events ────────────────────────────────
+function _dbg(msg){
+  var d = document.getElementById('_dbgToast');
+  if(!d){
+    d = document.createElement('div');
+    d.id = '_dbgToast';
+    d.style.cssText = 'position:fixed;bottom:80px;left:10px;right:10px;z-index:99999;'
+      + 'background:rgba(0,0,0,0.85);color:#0f0;font-family:monospace;font-size:11px;'
+      + 'padding:8px;border-radius:6px;pointer-events:none;white-space:pre-wrap;';
+    document.body.appendChild(d);
+  }
+  d.textContent = msg;
+}
+
 // ── Drag-resize dividers for LB and Seals modules ───────────────────────
 // Behaviour:
 //   • Long-press (400ms) activates — handle glows blue
@@ -54302,14 +54318,14 @@ function _divMove(clientY){
 // Setup long-press on a divider element
 function _divSetupLongPress(el, panelId, onDone){
   if(!el) return;
-  // Clone element to remove any stale listeners from previous sessions
   var parent = el.parentNode, next = el.nextSibling;
   var clone  = el.cloneNode(true);
   if(parent){ parent.removeChild(el); parent.insertBefore(clone, next); el = clone; }
   var divId = el.id;
+  _dbg('SETUP: ' + divId + ' for ' + panelId);
 
-  // Touch: capture the touch stream immediately with passive:false
   el.addEventListener('touchstart', function(e){
+    _dbg('TOUCHSTART on ' + divId);
     e.preventDefault();
     e.stopPropagation();
     _divActivate(divId, panelId, onDone);
@@ -54319,10 +54335,15 @@ function _divSetupLongPress(el, panelId, onDone){
   el.addEventListener('touchmove', function(e){
     e.preventDefault();
     e.stopPropagation();
-    // Handled by global listener — just prevent scroll
+    if(e.touches[0]) _divMove(e.touches[0].clientY);
+    _dbg('MOVE ' + divId + ' y=' + (e.touches[0]?e.touches[0].clientY:'?') + ' state=' + (!!_divDragState));
   }, {passive: false, capture: true});
 
-  // Mouse for desktop
+  el.addEventListener('touchend', function(e){
+    _dbg('END ' + divId);
+    _divDeactivate();
+  }, {passive: false});
+
   el.addEventListener('mousedown', function(e){
     e.preventDefault();
     _divActivate(divId, panelId, onDone);
@@ -54361,6 +54382,7 @@ function _lbResetPanels(){
   var left  = document.getElementById('lbLeft');
   var right = document.getElementById('lbRight');
   var div   = document.getElementById('lbDividerHandle');
+  _dbg('lbReset: avail='+_divAvail('lb')+' left='+(left?left.offsetHeight:'null'));
   if(left){
     left.style.cssText = '';           // wipe any JS-set height
     left.style.display = '';
@@ -56565,6 +56587,7 @@ function _lbToggleOverview(){
         btn.style.color      = 'var(--bright)';
         btn.style.borderColor= 'var(--bright)';
       }
+      _dbg('RESET LB panels called');
       if(typeof _lbResetPanels==='function') _lbResetPanels();
       return;
     } else {
