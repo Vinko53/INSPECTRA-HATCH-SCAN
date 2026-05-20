@@ -54279,14 +54279,12 @@ function _divMove(clientY){
   var newH = Math.max(_divDragState.min,
              Math.min(_divDragState.max,
              _divDragState.startH + (clientY - _divDragState.startClientY)));
-  pan.style.cssText = '';
+  // Only set height — do NOT wipe cssText or other properties
   pan.style.height    = newH + 'px';
   pan.style.maxHeight = newH + 'px';
   pan.style.minHeight = '0';
   pan.style.flex      = '0 0 ' + newH + 'px';
-  pan.style.overflow  = '';
 }
-
 // Global listeners — attached once
 (function(){
   document.addEventListener('touchmove', function(e){
@@ -54304,25 +54302,32 @@ function _divMove(clientY){
 // Setup long-press on a divider element
 function _divSetupLongPress(el, panelId, onDone){
   if(!el) return;
-  // Clone to remove any stale listeners
+  // Clone element to remove any stale listeners from previous sessions
   var parent = el.parentNode, next = el.nextSibling;
   var clone  = el.cloneNode(true);
   if(parent){ parent.removeChild(el); parent.insertBefore(clone, next); el = clone; }
-  var divId  = el.id;
+  var divId = el.id;
 
-  // Immediate drag on touchstart — no long-press required
-  el.ontouchstart = function(e){
+  // Touch: capture the touch stream immediately with passive:false
+  el.addEventListener('touchstart', function(e){
     e.preventDefault();
     e.stopPropagation();
     _divActivate(divId, panelId, onDone);
     if(_divDragState) _divDragState.startClientY = e.touches[0].clientY;
-  };
+  }, {passive: false, capture: true});
 
-  el.onmousedown = function(e){
+  el.addEventListener('touchmove', function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    // Handled by global listener — just prevent scroll
+  }, {passive: false, capture: true});
+
+  // Mouse for desktop
+  el.addEventListener('mousedown', function(e){
     e.preventDefault();
     _divActivate(divId, panelId, onDone);
     if(_divDragState) _divDragState.startClientY = e.clientY;
-  };
+  });
 }
 
 // ── LB divider init ────────────────────────────────────────────────────
@@ -54351,52 +54356,61 @@ function _rsInitDividers(){
 
 // ── Reset to equal splits ──────────────────────────────────────────────
 function _lbResetPanels(){
-  var avail = _divAvail('lb');
-  var half  = Math.round(avail / 2);
+  if(window.innerWidth > 700) return;
+  // Clear all inline overrides — let CSS take over (48vh/flex:1)
   var left  = document.getElementById('lbLeft');
   var right = document.getElementById('lbRight');
   var div   = document.getElementById('lbDividerHandle');
-  // Guard: if avail is 0, defer to next frame when layout is ready
-  if(half < 60){
-    setTimeout(_lbResetPanels, 100); return;
+  if(left){
+    left.style.cssText = '';           // wipe any JS-set height
+    left.style.display = '';
+    left.style.overflow = '';
   }
-  if(left){ left.style.cssText=''; left.style.height=half+'px'; left.style.maxHeight=half+'px'; left.style.minHeight='60px'; left.style.flex='0 0 '+half+'px'; left.style.overflow=''; }
-  if(right){ right.style.cssText=''; right.style.flex='1'; }
-  if(div) div.style.display='flex';
+  if(right){
+    right.style.cssText = '';
+    right.style.display = 'flex';
+    right.style.flexDirection = 'column';
+  }
+  if(div) div.style.display = 'flex';
+  // Wait for layout, then resize canvas and draw
   setTimeout(function(){
-    var cv=document.getElementById('lbOvCanvas'), wrap=document.getElementById('lbLeft');
-    if(cv&&wrap){ cv.width=wrap.clientWidth||375; cv.height=wrap.clientHeight||200; }
+    var cv   = document.getElementById('lbOvCanvas');
+    var wrap = document.getElementById('lbOvCanvasWrap');
+    if(!cv || !wrap) return;
+    var w = wrap.offsetWidth  || 375;
+    var h = wrap.offsetHeight || 200;
+    if(w > 0 && h > 0){ cv.width = w; cv.height = h; }
     if(typeof _lbOvAutoFit==='function') _lbOvAutoFit();
     if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
     if(typeof _lbDraw==='function') _lbDraw();
     if(typeof _lbInitDivider==='function') _lbInitDivider();
-  }, 250);
+  }, 300);
 }
-
 function _rsResetPanels(){
-  var avail = _divAvail('rs');
-  var third = Math.round(avail / 3);
+  if(window.innerWidth > 700) return;
   var left  = document.getElementById('rsLeft');
   var strip = document.getElementById('rsSchematicStrip');
   var d1    = document.getElementById('rsDivider1');
   var d2    = document.getElementById('rsDivider2');
-  // Guard: if avail is 0, defer
-  if(third < 60){
-    setTimeout(_rsResetPanels, 100); return;
-  }
-  if(left){ left.style.cssText=''; left.style.height=third+'px'; left.style.maxHeight=third+'px'; left.style.minHeight='60px'; left.style.flex='0 0 '+third+'px'; left.style.overflow=''; }
-  if(strip){ strip.style.cssText=''; strip.style.height=third+'px'; strip.style.flex='0 0 '+third+'px'; }
+  var right = document.getElementById('rsRight');
+  // Clear all inline overrides — let CSS restore 30vh/38vh defaults
+  if(left){  left.style.cssText=''; left.style.display=''; left.style.overflow=''; }
+  if(strip){ strip.style.cssText=''; strip.style.display=''; strip.style.overflow=''; }
+  if(right){ right.style.cssText=''; right.style.display='flex'; right.style.flexDirection='column'; }
   if(d1) d1.style.display='flex';
   if(d2) d2.style.display='flex';
   setTimeout(function(){
-    var cv=document.getElementById('rsCanvas'), wrap=document.getElementById('rsLeft');
-    if(cv&&wrap){ cv.width=wrap.clientWidth||375; cv.height=wrap.clientHeight||200; }
+    var cv   = document.getElementById('rsCanvas');
+    var wrap = document.getElementById('rsCanvasWrap');
+    if(!cv || !wrap) return;
+    var w = wrap.offsetWidth  || 375;
+    var h = wrap.offsetHeight || 200;
+    if(w > 0 && h > 0){ cv.width = w; cv.height = h; }
     if(typeof _rsAutoFitZoom==='function') _rsAutoFitZoom();
     if(typeof _rsDrawOverview==='function') _rsDrawOverview();
     if(typeof _rsInitDividers==='function') _rsInitDividers();
-  }, 250);
+  }, 300);
 }
-
 
 (function(){
   let _z = 1, _tx = 0, _ty = 0;
