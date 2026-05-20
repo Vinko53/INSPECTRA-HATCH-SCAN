@@ -44263,6 +44263,227 @@ document.addEventListener('mousedown', e => {
 })();
 </script>
 
+<div id="lbOverlay" style="display:none;position:fixed;inset:0;z-index:3500;
+  background:var(--bg);flex-direction:column;overflow:hidden;">
+
+  <!-- ══ LB TOP BAR ══ -->
+  <div id="lbTopBar" style="display:flex;align-items:center;gap:8px;padding:7px 14px;
+    border-bottom:2px solid var(--line);background:var(--paper);flex-shrink:0;min-height:38px;">
+
+    <button id="lbOvToggleBtn" onclick="_lbToggleOverview()"
+      style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+        letter-spacing:0.1em;padding:3px 9px;border-radius:3px;cursor:pointer;
+        background:rgba(94,184,255,0.15);color:var(--bright);
+        border:1.5px solid var(--bright);white-space:nowrap;">
+      ◫ VESSEL OVERVIEW
+    </button>
+
+    <!-- VIEW MODE selector — left-anchored, separated from title/menus -->
+    <div style="width:1px;height:20px;background:var(--line);margin:0 2px;flex-shrink:0;"></div>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text2);
+        letter-spacing:0.1em;margin-right:2px;">VIEW:</span>
+      <button id="lbBtnViewAft"  onclick="_lbSetView('aft')"
+        class="btn" style="font-size:9px;letter-spacing:0.1em;border-bottom:3px solid #e05050 !important;">
+        ◁ AFT SIDE
+      </button>
+      <button id="lbBtnViewFwd"  onclick="_lbSetView('fwd')"
+        class="btn" style="font-size:9px;letter-spacing:0.1em;border-bottom:3px solid #3ab8f0 !important;">
+        FWD SIDE ▷
+      </button>
+    </div>
+    <div style="width:1px;height:20px;background:var(--line);margin:0 2px;flex-shrink:0;"></div>
+
+    <span id="lbDetailTitle"
+      style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
+        color:var(--bright);letter-spacing:0.12em;display:none;white-space:nowrap;"></span>
+    <span id="lbDetailSub"
+      style="font-family:'IBM Plex Mono',monospace;font-size:9px;
+        color:var(--text2);letter-spacing:0.1em;display:none;"></span>
+
+    <div style="flex:1"></div>
+
+    <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
+
+    <!-- SETTINGS MENU -->
+    <div class="lb-menu-wrap" style="position:relative;">
+      <button class="btn" id="lbMbSettings" onclick="_lbToggleMenu('settings',event)"
+        style="font-size:11px;letter-spacing:0.1em;color:#ddeeff !important;
+               border-color:#1e4a6a !important;border-bottom:3px solid #e05050 !important;">
+        ⚙ SETTINGS ▾
+      </button>
+      <div class="dropdown" id="lbDropSettings" style="display:none;position:absolute;top:100%;right:0;min-width:300px;z-index:3600;
+        max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+        <div class="dd-section">LASHING BRIDGE SETUP</div>
+        <button class="dd-action" onclick="_lbOpenBridgeEditor();_lbCloseMenus()">⚙  CONFIGURE LASHING BRIDGES</button>
+        <div class="dd-sep"></div>
+        <div class="dd-section">LEVELS</div>
+        <button class="dd-action" onclick="_lbSetDefaultLevels(1);_lbCloseMenus()">①  SET DEFAULT — 1 LEVEL</button>
+        <button class="dd-action" onclick="_lbSetDefaultLevels(2);_lbCloseMenus()">②  SET DEFAULT — 2 LEVELS</button>
+        <button class="dd-action" onclick="_lbSetDefaultLevels(3);_lbCloseMenus()">③  SET DEFAULT — 3 LEVELS</button>
+        <div class="dd-sep"></div>
+        <div class="dd-section">COPY LASHING EYES</div>
+        <button class="dd-action" onclick="_lbCopyEyesToAllBridges();_lbCloseMenus()">⧉  COPY CURRENT BRIDGE EYES TO ALL BRIDGES</button>
+      </div>
+    </div>
+
+    <!-- LB FITTINGS MENU -->
+    <div class="lb-menu-wrap" style="position:relative;">
+      <button class="btn" id="lbMbFittings" onclick="_lbToggleMenu('fittings',event)"
+        style="font-size:11px;letter-spacing:0.1em;color:#ddeeff !important;
+               border-color:#1e4a6a !important;border-bottom:3px solid #e0a000 !important;">
+        ⚓ LB FITTINGS ▾
+      </button>
+      <div class="dropdown" id="lbDropFittings" style="display:none;position:absolute;top:100%;right:0;min-width:320px;z-index:3600;
+        max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+        <div class="dd-section">LASHING EYES</div>
+        <button class="dd-action" onclick="_lbTogglePlacer();_lbCloseMenus()">◎  PLACE LASHING EYES</button>
+        <button class="dd-action" onclick="_lbOpenDeleteMode();_lbCloseMenus()">✕  DELETE LASHING EYES</button>
+        <button class="dd-action" onclick="_lbToggleGuides();_lbCloseMenus()" id="lbFitBtnGuides">⊞  TOGGLE PLACEMENT GUIDELINES</button>
+        <button class="dd-action" onclick="_lbToggleLevelLines();_lbCloseMenus()" id="lbOptLevelLines">◯  SHOW LEVEL LINES</button>
+        <div class="dd-sep"></div>
+        <div class="dd-section">EYE TYPE LIBRARY</div>
+        <button class="dd-action" onclick="openLashEyeLib();_lbCloseMenus()">◎  LASHING EYE LIBRARY</button>
+        <div class="dd-sep"></div>
+        <div class="dd-section">MANAGE EYES</div>
+        <button class="dd-action" onclick="_lbClearAllEyes();_lbCloseMenus()">✕  CLEAR ALL EYES — CURRENT BRIDGE</button>
+      </div>
+    </div>
+    <!-- STATISTICS MENU -->
+    <div class="lb-menu-wrap" style="position:relative;">
+      <button class="btn" id="lbMbStats" onclick="_lbToggleMenu('stats',event)"
+        style="font-size:11px;letter-spacing:0.1em;color:#ddeeff !important;
+               border-color:#1e4a6a !important;border-bottom:3px solid #00a050 !important;">
+        ▦ STATISTICS ▾
+      </button>
+      <div class="dropdown" id="lbDropStats" style="display:none;position:absolute;top:100%;right:0;min-width:260px;z-index:3600;
+        max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+        <div class="dd-section">VESSEL SUMMARY</div>
+        <button class="dd-action" onclick="_lbOpenStats();_lbCloseMenus()">▦  LASHING BRIDGE EYE STATUS</button>
+        <div class="dd-sep"></div>
+        <div class="dd-section">BY BRIDGE</div>
+        <button class="dd-action dd-disabled">◯  PER-BRIDGE BREAKDOWN (v.NEXT)</button>
+        <button class="dd-action dd-disabled">◯  DEFECT HEAT MAP (v.NEXT)</button>
+      </div>
+    </div>
+
+    <!-- EXPORT MENU -->
+    <div class="lb-menu-wrap" style="position:relative;">
+      <button class="btn" id="lbMbExport" onclick="_lbToggleMenu('export',event)"
+        style="font-size:11px;letter-spacing:0.1em;color:#ddeeff !important;
+               border-color:#1e4a6a !important;border-bottom:3px solid #9050e0 !important;">
+        ⬆ EXPORT ▾
+      </button>
+      <div class="dropdown" id="lbDropExport" style="display:none;position:absolute;top:100%;right:0;min-width:280px;z-index:3600;
+        max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+        <div class="dd-section">PDF</div>
+        <button class="dd-action" onclick="_lbExportAllPDF();_lbCloseMenus()">⬆  EXPORT PDF — ALL BRIDGES (LANDSCAPE)</button>
+        <button class="dd-action" onclick="_lbExportCurrentPDF();_lbCloseMenus()">⬆  EXPORT PDF — CURRENT BRIDGE (LANDSCAPE)</button>
+        <div class="dd-sep"></div>
+        <div class="dd-section">DATA</div>
+        <button class="dd-action dd-disabled">◯  EXPORT CSV — EYE STATUS (v.NEXT)</button>
+        <button class="dd-action dd-disabled">◯  EXPORT JSON — FULL LB DATASET (v.NEXT)</button>
+      </div>
+    </div>
+
+    <!-- LB PALETTE BUTTON -->
+    <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
+    <button class="btn" id="lbBtnPalette" onclick="_lbTogglePalette()"
+      style="font-size:9px;letter-spacing:0.1em;overflow:visible;">
+      ● PALETTE
+    </button>
+
+
+    <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
+
+    <button onclick="setView('ov')"
+      style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+        letter-spacing:0.12em;background:#a02020;color:#ffffff;
+        border:1.5px solid #cc3030;border-radius:3px;padding:5px 14px;cursor:pointer;
+        box-shadow:0 1px 4px rgba(0,0,0,0.4);"
+      onmouseover="this.style.background='#cc2020'" onmouseout="this.style.background='#a02020'">
+      ✕ CLOSE
+    </button>
+  </div>
+  <!-- ══ END LB TOP BAR ══ -->
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <div style="flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0;">
+
+    <!-- LEFT: Bridge selector list -->
+    <div id="lbLeft" style="flex:0 0 360px;width:360px;border-right:2px solid var(--line);
+      background:var(--paper);display:flex;flex-direction:column;overflow:hidden;transition:width 0.2s,flex-basis 0.2s;">
+
+      <!-- Vessel overview canvas — mirrors RS overview -->
+      <div id="lbOvCanvasWrap" style="flex:1;overflow:auto;position:relative;cursor:default;
+        background:#c8d8e8;">
+        <canvas id="lbOvCanvas"></canvas>
+      </div>
+
+      <!-- Bottom hint -->
+      <div style="padding:4px 8px;border-top:1px solid var(--line);flex-shrink:0;
+        font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--text2);
+        letter-spacing:0.07em;text-align:center;">
+        CLICK BRIDGE TO SELECT
+      </div>
+    </div>
+
+    <div id="lbDividerHandle"
+      oncontextmenu="return false;"
+      style="display:none;flex-shrink:0;width:100%;height:20px;
+        background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
+        align-items:center;justify-content:center;cursor:ns-resize;
+        -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+        -webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent;">
+      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;pointer-events:none;"></div>
+    </div>
+
+    <!-- Drag-to-resize divider (mobile only — long-press then drag) -->
+    <div id="lbDividerHandle"
+      style="display:none;flex-shrink:0;width:100%;height:20px;
+        background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
+        align-items:center;justify-content:center;cursor:ns-resize;
+        -webkit-user-select:none;user-select:none;touch-action:none;">
+      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;"></div>
+    </div>
+
+    <!-- RIGHT: drawing canvas area -->
+    <div id="lbRight" style="flex:1;display:flex;flex-direction:column;overflow:hidden;
+      min-width:0;background:var(--bg);">
+
+      <!-- Canvas wrap with zoom/pan -->
+      <div id="lbCanvasWrap" style="flex:1;position:relative;overflow:hidden;cursor:default;">
+        <canvas id="lbCanvas" style="position:absolute;top:0;left:0;display:block;"></canvas>
+        <!-- Zoom percentage — lower left -->
+        <div id="lbZoomPct" style="position:absolute;bottom:12px;left:14px;z-index:10;
+          font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+          color:var(--text2);letter-spacing:0.10em;pointer-events:none;
+          background:rgba(8,12,18,0.72);padding:3px 7px;border-radius:3px;
+          border:1px solid var(--line);">100%</div>
+        <!-- Level legend -->
+        <div id="lbLevelLegend" style="position:absolute;top:10px;right:14px;
+          font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text2);
+          letter-spacing:0.08em;text-align:right;pointer-events:none;"></div>
+      </div>
+
+      <!-- Status/info strip -->
+      <div id="lbInfoStrip" style="flex-shrink:0;height:28px;border-top:1px solid var(--line);
+        background:var(--paper);display:flex;align-items:center;padding:0 14px;gap:16px;">
+        <span id="lbStripBridge" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
+          color:var(--bright);letter-spacing:0.1em;font-weight:700;"></span>
+        <span id="lbStripView" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
+          color:var(--text2);letter-spacing:0.1em;"></span>
+        <span id="lbStripCount" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
+          color:var(--text2);letter-spacing:0.08em;"></span>
+        <span style="flex:1;"></span>
+        <span id="lbStripEyeInfo" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
+          color:var(--text2);letter-spacing:0.08em;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- ═══════════════════════════════════════════════════════════════════════
      RUBBER SEALS VIEW — overlay, CSS, and full JS module
      Data model:  rsData[key] where key = "bay,hcNum"
@@ -44915,11 +45136,13 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
     <!-- Divider 1: between overview and HC schematic (mobile only) -->
     <div class="rs-divider-handle" id="rsDivider1"
+      oncontextmenu="return false;"
       style="display:none;flex-shrink:0;width:100%;height:20px;
         background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
         align-items:center;justify-content:center;cursor:ns-resize;
-        -webkit-user-select:none;user-select:none;touch-action:none;">
-      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;"></div>
+        -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+        -webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent;">
+      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;pointer-events:none;"></div>
     </div>
 
     <!-- RIGHT: detail panel — schematic column (left) + seal rows (right) -->
@@ -44954,11 +45177,13 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
       <!-- Divider 2: between HC schematic and seal rows (mobile only) -->
       <div class="rs-divider-handle" id="rsDivider2"
+        oncontextmenu="return false;"
         style="display:none;flex-shrink:0;width:100%;height:20px;
           background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
           align-items:center;justify-content:center;cursor:ns-resize;
-          -webkit-user-select:none;user-select:none;touch-action:none;">
-        <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;"></div>
+          -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+          -webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent;">
+        <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;pointer-events:none;"></div>
       </div>
 
       <!-- SEAL ROWS — scrollable, takes all remaining width -->
@@ -45133,6 +45358,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
   /* Divider handles */
   .rs-divider-handle { display: flex !important; }
+  #lbDividerHandle   { display: flex !important; }
 
   /* Seal rows: readable on narrow screen */
   .rs-seal-row {
@@ -45732,20 +45958,19 @@ function _rsToggleOverview(){
       var strip = document.getElementById('rsSchematicStrip');
       var MIN_PX = 80;
       if(_rsOvVisible){
-        // Show overview at default height
+        panel.style.cssText = '';
         panel.style.height    = '30vh';
         panel.style.maxHeight = '30vh';
-        panel.style.overflow  = '';
+        var rsRight = document.getElementById('rsRight');
+        if(rsRight) rsRight.style.flex = '';
         if(strip){ strip.style.height='38vh'; strip.style.flex='0 0 38vh'; }
         var d1=document.getElementById('rsDivider1'),d2=document.getElementById('rsDivider2');
         if(d1) d1.style.display='flex'; if(d2) d2.style.display='flex';
       } else {
         // Hide overview — HC + seals fill full height
-        panel.style.height    = '0';
-        panel.style.maxHeight = '0';
-        panel.style.minHeight = '0';
-        panel.style.flexBasis = '0';
-        panel.style.overflow  = 'hidden';
+        panel.style.cssText = 'flex:0 0 0 !important;height:0 !important;max-height:0 !important;min-height:0 !important;overflow:hidden !important;';
+        var rsRight = document.getElementById('rsRight');
+        if(rsRight) rsRight.style.flex = '1 1 auto';
         if(strip){ strip.style.height='55vh'; strip.style.flex='0 0 55vh'; }
         var d1=document.getElementById('rsDivider1'),d2=document.getElementById('rsDivider2');
         if(d1) d1.style.display='none'; if(d2) d2.style.display='flex';
@@ -53564,1529 +53789,177 @@ var _rsPanelMode = 'split'; // kept for compat
 function _rsTogglePanels(){}   // no-op — replaced by drag
 function _rsApplyPanelMode(){} // no-op — replaced by drag
 
-function _rsInitDividers(){
-  if(window.innerWidth > 700) return;
+// ── Unified drag-resize for LB and Seals dividers ───────────────────────
+// Long-press (500ms) activates the divider, then drag moves it.
+// Uses a single global state — simple and reliable.
 
-  function _makeDividerDrag(divId, getH, setH, onDone){
-    var d = document.getElementById(divId);
-    if(!d) return;
-    d.style.touchAction = 'none';
-    d.onpointerdown = function(e){
-      e.preventDefault();
-      d.setPointerCapture(e.pointerId);
-      var startY = e.clientY;
-      var startH = getH();
-      d.onpointermove = function(ev){
-        ev.preventDefault();
-        setH(startH + (ev.clientY - startY));
-      };
-      d.onpointerup = d.onpointercancel = function(){
-        d.onpointermove = null;
-        d.onpointerup   = null;
-        d.onpointercancel = null;
-        if(onDone) onDone();
-      };
-    };
-  }
+var _divDragState = null; // {divId, panelId, prop, startY, startH, min, max, onDone}
 
-  var MIN = 80;
+function _divActivate(divId, panelId, prop, min, onDone){
+  var d   = document.getElementById(divId);
+  var pan = document.getElementById(panelId);
+  if(!d || !pan) return;
 
-  function getAvail(){
-    var ov = document.getElementById('rsOverlay');
-    var tb = document.getElementById('rsTopBar');
-    return (ov ? ov.getBoundingClientRect().height : window.innerHeight)
-         - (tb ? tb.getBoundingClientRect().height : 40)
-         - 40; // two dividers
-  }
+  // Visual: turn handle bright to show it's active
+  d.style.background = 'rgba(45,127,193,0.45)';
+  d.style.borderTopColor = '#5eb8ff';
+  d.style.borderBottomColor = '#5eb8ff';
 
-  // Divider 1 — resize rsLeft (overview)
-  _makeDividerDrag('rsDivider1',
-    function(){ var el=document.getElementById('rsLeft'); return el ? el.getBoundingClientRect().height : 150; },
-    function(newH){
-      var el = document.getElementById('rsLeft');
-      if(!el) return;
-      var h = Math.max(MIN, Math.min(getAvail() - MIN*2 - 40, newH));
-      el.style.height = h+'px'; el.style.maxHeight = h+'px';
-    },
-    function(){ if(typeof _rsDrawOverview==='function') _rsDrawOverview(); }
-  );
+  // Calculate max: overlay height minus topbar minus all dividers minus min
+  var ovId  = panelId.startsWith('rs') ? 'rsOverlay' : 'lbOverlay';
+  var tbId  = panelId.startsWith('rs') ? 'rsTopBar'  : 'lbTopBar';
+  var ov    = document.getElementById(ovId);
+  var tb    = document.getElementById(tbId);
+  var avail = (ov ? ov.clientHeight : window.innerHeight) - (tb ? tb.clientHeight : 44) - 80;
 
-  // Divider 2 — resize rsSchematicStrip (HC view)
-  _makeDividerDrag('rsDivider2',
-    function(){ var el=document.getElementById('rsSchematicStrip'); return el ? el.getBoundingClientRect().height : 200; },
-    function(newH){
-      var el   = document.getElementById('rsSchematicStrip');
-      var left = document.getElementById('rsLeft');
-      if(!el) return;
-      var used = (left ? left.getBoundingClientRect().height : 0) + 40;
-      var h = Math.max(MIN, Math.min(getAvail() - used - MIN, newH));
-      el.style.height = h+'px'; el.style.flex = '0 0 '+h+'px';
-    },
-    function(){
-      if(typeof _rsDrawOverview==='function') _rsDrawOverview();
-      if(typeof window._rsSchZoomReset==='function') window._rsSchZoomReset();
-    }
-  );
+  _divDragState = {
+    divId:   divId,
+    panelId: panelId,
+    prop:    prop,
+    startH:  pan.getBoundingClientRect().height,
+    min:     min || 60,
+    max:     avail - (min || 60),
+    onDone:  onDone
+  };
 }
 
+function _divDeactivate(){
+  if(!_divDragState) return;
+  var d = document.getElementById(_divDragState.divId);
+  if(d){
+    d.style.background = 'rgba(45,127,193,0.10)';
+    d.style.borderTopColor = '#2d7fc1';
+    d.style.borderBottomColor = '#2d7fc1';
+  }
+  if(_divDragState.onDone) _divDragState.onDone();
+  _divDragState = null;
+}
+
+function _divMove(clientY){
+  if(!_divDragState) return;
+  var pan = document.getElementById(_divDragState.panelId);
+  if(!pan) return;
+  // startH is from activation; use accumulated delta from the first touch
+  var delta = clientY - _divDragState.startClientY;
+  var newH = Math.max(_divDragState.min, Math.min(_divDragState.max, _divDragState.startH + delta));
+  pan.style.height    = newH + 'px';
+  pan.style.maxHeight = newH + 'px';
+  if(_divDragState.prop === 'flex') pan.style.flex = '0 0 ' + newH + 'px';
+}
+
+// Attach global move/end listeners once
 (function(){
-  let _z = 1, _tx = 0, _ty = 0;
-  let _dragging = false, _lastX = 0, _lastY = 0;
-
-  function _applyTransform(){
-    const layer = document.getElementById('rsSchZoomLayer');
-    if(layer) layer.style.transform = `translate(${_tx}px,${_ty}px) scale(${_z})`;
-    const wrap = document.getElementById('rsSchWrap');
-    if(wrap) wrap.style.cursor = _dragging ? 'grabbing' : (_z > 1 ? 'grab' : 'default');
+  function onMove(y){
+    if(!_divDragState) return;
+    if(_divDragState.startClientY === undefined) return;
+    _divMove(y);
   }
-
-  function _rsSchZoomAt(factor, cx, cy){
-    const wrap = document.getElementById('rsSchWrap');
-    if(!wrap) return;
-    const rect = wrap.getBoundingClientRect();
-    const ox = cx - rect.left, oy = cy - rect.top;
-    const _minZ = (window.matchMedia && window.matchMedia('(pointer:coarse)').matches) ? 0.3 : 1;
-    const newZ = Math.max(_minZ, Math.min(8, _z * factor));
-    _tx = ox - (ox - _tx) * (newZ / _z);
-    _ty = oy - (oy - _ty) * (newZ / _z);
-    _z = newZ;
-    _clampPan(wrap);
-    _applyTransform();
-  }
-
-  function _clampPan(wrap){
-    // On mobile (touch device) allow free pan in all directions
-    if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches) return;
-    const W = wrap.clientWidth, H = wrap.clientHeight;
-    _tx = Math.max(Math.min(_tx, 0), W - W * _z);
-    _ty = Math.max(Math.min(_ty, 0), H - H * _z);
-  }
-
-  window._rsSchZoomBtn = function(factor){
-    const wrap = document.getElementById('rsSchWrap');
-    if(!wrap) return;
-    const rect = wrap.getBoundingClientRect();
-    _rsSchZoomAt(factor, rect.left + rect.width/2, rect.top + rect.height/2);
-  };
-
-  window._rsSchZoomReset = function(){
-    _z = 1; _tx = 0; _ty = 0;
-    _applyTransform();
-  };
-
-  function _rsSchInitZoom(){
-    const wrap = document.getElementById('rsSchWrap');
-    if(!wrap) return;
-
-    wrap.addEventListener('wheel', function(e){
-      e.preventDefault(); e.stopPropagation();
-      _rsSchZoomAt(e.deltaY < 0 ? 1.12 : 1/1.12, e.clientX, e.clientY);
-    }, {passive:false});
-
-    wrap.addEventListener('mousedown', function(e){
-      if(e.button !== 0 || e.target.tagName === 'BUTTON' || _z <= 1) return;
-      if(typeof _spActive !== 'undefined' && _spActive) return;
-      if(typeof _cpActive !== 'undefined' && _cpActive) return;
-      _dragging = true; _lastX = e.clientX; _lastY = e.clientY;
-      wrap.style.cursor = 'grabbing'; e.preventDefault();
-    });
-    document.addEventListener('mousemove', function(e){
-      if(!_dragging) return;
-      _tx += e.clientX - _lastX; _ty += e.clientY - _lastY;
-      _lastX = e.clientX; _lastY = e.clientY;
-      const w = document.getElementById('rsSchWrap'); if(w) _clampPan(w);
-      _applyTransform();
-    });
-    document.addEventListener('mouseup', function(){
-      if(!_dragging) return;
-      _dragging = false;
-      const w = document.getElementById('rsSchWrap');
-      if(w) w.style.cursor = _z > 1 ? 'grab' : 'default';
-    });
-
-    let _t0 = null;
-    wrap.addEventListener('touchstart', function(e){
-      e.preventDefault();
-      if(e.touches.length === 1){
-        _t0 = { type:'pan', sx:e.touches[0].clientX, sy:e.touches[0].clientY, ox:_tx, oy:_ty };
-      } else if(e.touches.length === 2){
-        _t0 = { type:'pinch',
-                d:  Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY),
-                cx: (e.touches[0].clientX+e.touches[1].clientX)/2,
-                cy: (e.touches[0].clientY+e.touches[1].clientY)/2 };
-      }
-    },{passive:false});
-    wrap.addEventListener('touchmove', function(e){
-      e.preventDefault();
-      if(!_t0) return;
-      if(_t0.type==='pan' && e.touches.length===1){
-        const dx=e.touches[0].clientX-_t0.sx, dy=e.touches[0].clientY-_t0.sy;
-        _tx=_t0.ox+dx; _ty=_t0.oy+dy;
-        const w2=document.getElementById('rsSchWrap'); if(w2) _clampPan(w2);
-        _applyTransform();
-      } else if(_t0.type==='pinch' && e.touches.length===2){
-        const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
-        _rsSchZoomAt(d/_t0.d, _t0.cx, _t0.cy);
-        _t0.d=d;
-      }
-    },{passive:false});
-    wrap.addEventListener('touchend', function(){
-      // Update pan origin so next touch continues from current position
-      if(_t0 && _t0.type==='pan') _t0=null;
-      else _t0=null;
-    });
-  }
-
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _rsSchInitZoom);
-  else _rsSchInitZoom();
-
-  const _origRsShowDetail = window._rsShowDetail;
-  window._rsSchZoomReset = function(){
-    _z=1; _tx=0; _ty=0; _applyTransform();
-  };
-  setTimeout(function(){
-    const orig = window._rsShowDetail;
-    if(typeof orig === 'function'){
-      window._rsShowDetail = function(){
-        _z=1; _tx=0; _ty=0; _applyTransform();
-        orig.apply(this, arguments);
-      };
-    }
-  }, 500);
+  document.addEventListener('touchmove', function(e){
+    if(!_divDragState) return;
+    e.preventDefault();
+    onMove(e.touches[0].clientY);
+  }, {passive: false});
+  document.addEventListener('touchend', function(){ _divDeactivate(); });
+  document.addEventListener('mousemove', function(e){ if(_divDragState) onMove(e.clientY); });
+  document.addEventListener('mouseup',   function(){ if(_divDragState) _divDeactivate(); });
 })();
 
-</script>
-
-<!-- ════════════════════════════════════════════════════════════════════════════
-     LASHING BRIDGES (LB) MODULE — Vinko Separovic / INSPECTRA
-     Fully self-contained. No dependency on other modules.
-     ════════════════════════════════════════════════════════════════════════════ -->
-
-<!-- ── LB OVERLAY ── -->
-<div id="lbOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:3500;
-  background:var(--bg);flex-direction:column;overflow:hidden;">
-
-  <!-- ══ LB TOP BAR ══ -->
-  <div id="lbTopBar" style="display:flex;align-items:center;gap:8px;
-    padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top, 0px));
-    border-bottom:2px solid var(--line);background:var(--paper);flex-shrink:0;
-    min-height:calc(38px + env(safe-area-inset-top, 0px));">
-
-    <button id="lbOvToggleBtn" onclick="_lbToggleOverview()"
-      style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-        letter-spacing:0.1em;padding:3px 9px;border-radius:3px;cursor:pointer;
-        background:rgba(94,184,255,0.15);color:var(--bright);
-        border:1.5px solid var(--bright);white-space:nowrap;">
-      ◫ VESSEL OVERVIEW
-    </button>
-
-    <!-- VIEW MODE selector — left-anchored, separated from title/menus -->
-    <div style="width:1px;height:20px;background:var(--line);margin:0 2px;flex-shrink:0;"></div>
-    <div style="display:flex;gap:4px;align-items:center;">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text2);
-        letter-spacing:0.1em;margin-right:2px;">VIEW:</span>
-      <button id="lbBtnViewAft"  onclick="_lbSetView('aft')"
-        class="btn" style="font-size:9px;letter-spacing:0.1em;border-bottom:3px solid #e05050 !important;">
-        ◁ AFT SIDE
-      </button>
-      <button id="lbBtnViewFwd"  onclick="_lbSetView('fwd')"
-        class="btn" style="font-size:9px;letter-spacing:0.1em;border-bottom:3px solid #3ab8f0 !important;">
-        FWD SIDE ▷
-      </button>
-    </div>
-    <div style="width:1px;height:20px;background:var(--line);margin:0 2px;flex-shrink:0;"></div>
-
-    <span id="lbDetailTitle"
-      style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
-        color:var(--bright);letter-spacing:0.12em;display:none;white-space:nowrap;"></span>
-    <span id="lbDetailSub"
-      style="font-family:'IBM Plex Mono',monospace;font-size:9px;
-        color:var(--text2);letter-spacing:0.1em;display:none;"></span>
-
-    <div style="flex:1"></div>
-
-    <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
-
-    <!-- SETTINGS MENU -->
-    <div class="lb-menu-wrap" style="position:relative;">
-      <button class="btn" id="lbMbSettings" onclick="_lbToggleMenu('settings',event)"
-        style="font-size:11px;letter-spacing:0.1em;color:#ddeeff !important;
-               border-color:#1e4a6a !important;border-bottom:3px solid #e05050 !important;">
-        ⚙ SETTINGS ▾
-      </button>
-      <div class="dropdown" id="lbDropSettings" style="display:none;position:absolute;bottom:100%;top:auto;right:0;min-width:300px;z-index:3600;
-        max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
-        <div class="dd-section">LASHING BRIDGE SETUP</div>
-        <button class="dd-action" onclick="_lbOpenBridgeEditor();_lbCloseMenus()">⚙  CONFIGURE LASHING BRIDGES</button>
-        <div class="dd-sep"></div>
-        <div class="dd-section">LEVELS</div>
-        <button class="dd-action" onclick="_lbSetDefaultLevels(1);_lbCloseMenus()">①  SET DEFAULT — 1 LEVEL</button>
-        <button class="dd-action" onclick="_lbSetDefaultLevels(2);_lbCloseMenus()">②  SET DEFAULT — 2 LEVELS</button>
-        <button class="dd-action" onclick="_lbSetDefaultLevels(3);_lbCloseMenus()">③  SET DEFAULT — 3 LEVELS</button>
-        <div class="dd-sep"></div>
-        <div class="dd-section">COPY LASHING EYES</div>
-        <button class="dd-action" onclick="_lbCopyEyesToAllBridges();_lbCloseMenus()">⧉  COPY CURRENT BRIDGE EYES TO ALL BRIDGES</button>
-      </div>
-    </div>
-
-    <!-- LB FITTINGS MENU -->
-    <div class="lb-menu-wrap" style="position:relative;">
-      <button class="btn" id="lbMbFittings" onclick="_lbToggleMenu('fittings',event)"
-        style="font-size:11px;letter-spacing:0.1em;color:#ddeeff !important;
-               border-color:#1e4a6a !important;border-bottom:3px solid #e0a000 !important;">
-        ⚓ LB FITTINGS ▾
-      </button>
-      <div class="dropdown" id="lbDropFittings" style="display:none;position:absolute;bottom:100%;top:auto;left:0;min-width:320px;z-index:3600;
-        max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
-        <div class="dd-section">LASHING EYES</div>
-        <button class="dd-action" onclick="_lbTogglePlacer();_lbCloseMenus()">◎  PLACE LASHING EYES</button>
-        <button class="dd-action" onclick="_lbOpenDeleteMode();_lbCloseMenus()">✕  DELETE LASHING EYES</button>
-        <button class="dd-action" onclick="_lbToggleGuides();_lbCloseMenus()" id="lbFitBtnGuides">⊞  TOGGLE PLACEMENT GUIDELINES</button>
-        <button class="dd-action" onclick="_lbToggleLevelLines();_lbCloseMenus()" id="lbOptLevelLines">◯  SHOW LEVEL LINES</button>
-        <div class="dd-sep"></div>
-        <div class="dd-section">EYE TYPE LIBRARY</div>
-        <button class="dd-action" onclick="openLashEyeLib();_lbCloseMenus()">◎  LASHING EYE LIBRARY</button>
-        <div class="dd-sep"></div>
-        <div class="dd-section">MANAGE EYES</div>
-        <button class="dd-action" onclick="_lbClearAllEyes();_lbCloseMenus()">✕  CLEAR ALL EYES — CURRENT BRIDGE</button>
-      </div>
-    </div>
-    <!-- STATISTICS MENU -->
-    <div class="lb-menu-wrap" style="position:relative;">
-      <button class="btn" id="lbMbStats" onclick="_lbToggleMenu('stats',event)"
-        style="font-size:11px;letter-spacing:0.1em;color:#ddeeff !important;
-               border-color:#1e4a6a !important;border-bottom:3px solid #00a050 !important;">
-        ▦ STATISTICS ▾
-      </button>
-      <div class="dropdown" id="lbDropStats" style="display:none;position:absolute;bottom:100%;top:auto;right:0;min-width:260px;z-index:3600;
-        max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
-        <div class="dd-section">VESSEL SUMMARY</div>
-        <button class="dd-action" onclick="_lbOpenStats();_lbCloseMenus()">▦  LASHING BRIDGE EYE STATUS</button>
-        <div class="dd-sep"></div>
-        <div class="dd-section">BY BRIDGE</div>
-        <button class="dd-action dd-disabled">◯  PER-BRIDGE BREAKDOWN (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  DEFECT HEAT MAP (v.NEXT)</button>
-      </div>
-    </div>
-
-    <!-- EXPORT MENU -->
-    <div class="lb-menu-wrap" style="position:relative;">
-      <button class="btn" id="lbMbExport" onclick="_lbToggleMenu('export',event)"
-        style="font-size:11px;letter-spacing:0.1em;color:#ddeeff !important;
-               border-color:#1e4a6a !important;border-bottom:3px solid #9050e0 !important;">
-        ⬆ EXPORT ▾
-      </button>
-      <div class="dropdown" id="lbDropExport" style="display:none;position:absolute;bottom:100%;top:auto;right:0;min-width:280px;z-index:3600;
-        max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
-        <div class="dd-section">PDF</div>
-        <button class="dd-action" onclick="_lbExportAllPDF();_lbCloseMenus()">⬆  EXPORT PDF — ALL BRIDGES (LANDSCAPE)</button>
-        <button class="dd-action" onclick="_lbExportCurrentPDF();_lbCloseMenus()">⬆  EXPORT PDF — CURRENT BRIDGE (LANDSCAPE)</button>
-        <div class="dd-sep"></div>
-        <div class="dd-section">DATA</div>
-        <button class="dd-action dd-disabled">◯  EXPORT CSV — EYE STATUS (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  EXPORT JSON — FULL LB DATASET (v.NEXT)</button>
-      </div>
-    </div>
-
-    <!-- LB PALETTE BUTTON -->
-    <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
-    <button class="btn" id="lbBtnPalette" onclick="_lbTogglePalette()"
-      style="font-size:9px;letter-spacing:0.1em;overflow:visible;">
-      ● PALETTE
-    </button>
-
-
-    <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
-
-    <button onclick="setView('ov')"
-      style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-        letter-spacing:0.12em;background:#a02020;color:#ffffff;
-        border:1.5px solid #cc3030;border-radius:3px;padding:5px 14px;cursor:pointer;
-        box-shadow:0 1px 4px rgba(0,0,0,0.4);"
-      onmouseover="this.style.background='#cc2020'" onmouseout="this.style.background='#a02020'">
-      ✕ CLOSE
-    </button>
-  </div>
-  <!-- ══ END LB TOP BAR ══ -->
-
-  <!-- ══ MAIN CONTENT ══ -->
-  <div style="flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0;">
-
-    <!-- LEFT: Bridge selector list -->
-    <div id="lbLeft" style="flex:0 0 360px;width:360px;border-right:2px solid var(--line);
-      background:var(--paper);display:flex;flex-direction:column;overflow:hidden;transition:width 0.2s,flex-basis 0.2s;">
-
-      <!-- Vessel overview canvas — mirrors RS overview -->
-      <div id="lbOvCanvasWrap" style="flex:1;overflow:auto;position:relative;cursor:default;
-        background:#c8d8e8;">
-        <canvas id="lbOvCanvas"></canvas>
-      </div>
-
-      <!-- Bottom hint -->
-      <div style="padding:4px 8px;border-top:1px solid var(--line);flex-shrink:0;
-        font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--text2);
-        letter-spacing:0.07em;text-align:center;">
-        CLICK BRIDGE TO SELECT
-      </div>
-    </div>
-
-    <!-- Expand/collapse divider handle (mobile only) -->
-    <div id="lbDividerHandle"
-      style="display:none;flex-shrink:0;width:100%;height:20px;
-        background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
-        align-items:center;justify-content:center;cursor:ns-resize;
-        -webkit-user-select:none;user-select:none;touch-action:none;">
-      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;"></div>
-    </div>
-
-    <!-- RIGHT: drawing canvas area -->
-    <div id="lbRight" style="flex:1;display:flex;flex-direction:column;overflow:hidden;
-      min-width:0;background:var(--bg);">
-
-      <!-- Canvas wrap with zoom/pan -->
-      <div id="lbCanvasWrap" style="flex:1;position:relative;overflow:hidden;cursor:default;">
-        <canvas id="lbCanvas" style="position:absolute;top:0;left:0;display:block;"></canvas>
-        <!-- Zoom percentage — lower left -->
-        <div id="lbZoomPct" style="position:absolute;bottom:12px;left:14px;z-index:10;
-          font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-          color:var(--text2);letter-spacing:0.10em;pointer-events:none;
-          background:rgba(8,12,18,0.72);padding:3px 7px;border-radius:3px;
-          border:1px solid var(--line);">100%</div>
-        <!-- Level legend -->
-        <div id="lbLevelLegend" style="position:absolute;top:10px;right:14px;
-          font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text2);
-          letter-spacing:0.08em;text-align:right;pointer-events:none;"></div>
-      </div>
-
-      <!-- Status/info strip -->
-      <div id="lbInfoStrip" style="flex-shrink:0;height:28px;border-top:1px solid var(--line);
-        background:var(--paper);display:flex;align-items:center;padding:0 14px;gap:16px;">
-        <span id="lbStripBridge" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
-          color:var(--bright);letter-spacing:0.1em;font-weight:700;"></span>
-        <span id="lbStripView" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
-          color:var(--text2);letter-spacing:0.1em;"></span>
-        <span id="lbStripCount" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
-          color:var(--text2);letter-spacing:0.08em;"></span>
-        <span style="flex:1;"></span>
-        <span id="lbStripEyeInfo" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
-          color:var(--text2);letter-spacing:0.08em;"></span>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- ══ END LB OVERLAY ══ -->
-
-
-<!-- ══ LB COLOR PALETTE ══ -->
-<div id="lbPalette" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:3700;
-  background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--blue);
-  box-shadow:0 8px 32px rgba(0,0,0,0.35);
-  font-family:'IBM Plex Mono',monospace;user-select:none;
-  top:80px;right:20px;width:180px;">
-  <div id="lbPaletteHandle" style="display:flex;align-items:center;height:28px;
-    padding:0 8px 0 10px;background:var(--bg);border-bottom:1px solid var(--line);cursor:grab;gap:6px;">
-    <span style="font-size:10px;color:var(--blue);flex-shrink:0;">●</span>
-    <span style="font-size:8px;font-weight:700;letter-spacing:0.2em;color:var(--blue);flex:1;text-transform:uppercase;">LB PALETTE</span>
-    <button onclick="_lbHidePalette()" class="panel-close-btn">✕</button>
-  </div>
-  <div style="padding:8px;">
-    <div style="font-size:7px;letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;">COLOR</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:8px;">
-      <button class="fpal-btn fpal-grn" id="lbPalGrn" onclick="_lbSetEyeColor('green')">● GRN</button>
-      <button class="fpal-btn fpal-yel" id="lbPalYel" onclick="_lbSetEyeColor('yellow')">● YEL</button>
-      <button class="fpal-btn fpal-red" id="lbPalRed" onclick="_lbSetEyeColor('red')">● RED</button>
-      <button class="fpal-btn fpal-blu" id="lbPalBlu" onclick="_lbSetEyeColor('blue')">● BLU</button>
-      <button class="fpal-btn fpal-wht" id="lbPalWht" onclick="_lbSetEyeColor('white')">● WHT</button>
-      <button class="fpal-btn fpal-blk" id="lbPalBlk" onclick="_lbSetEyeColor('black')">⊘ CLR</button>
-    </div>
-    <div style="height:1px;background:var(--line);margin:6px 0 5px;"></div>
-    <div style="font-size:6.5px;color:var(--dim);letter-spacing:0.10em;line-height:1.7;">
-      CLICK → PAINT ONE EYE<br>
-      DRAG → PAINT ALL IN AREA
-    </div>
-    <div style="height:1px;background:var(--line);margin:6px 0 5px;"></div>
-    <button onclick="_lbPaintCurrentBridge()" style="width:100%;font-family:'IBM Plex Mono',monospace;
-      font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
-      background:var(--bg);color:var(--blue);border:1px solid var(--line);
-      padding:5px 4px;cursor:pointer;margin-bottom:4px;">
-      ▣ PAINT THIS BRIDGE
-    </button>
-    <button onclick="_lbPaintAllBridges()" style="width:100%;font-family:'IBM Plex Mono',monospace;
-      font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
-      background:var(--bg);color:var(--blue);border:1px solid var(--line);
-      padding:5px 4px;cursor:pointer;">
-      ▣▣ PAINT ALL BRIDGES
-    </button>
-  </div>
-</div>
-
-<!-- ══ LB LASHING EYE PLACER PANEL ══ -->
-<div id="lbEyePlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:3700;width:210px;
-  background:var(--paper);border:1px solid var(--line);border-top:3px solid #e0a000;
-  box-shadow:0 16px 48px rgba(0,0,0,0.55);font-family:'IBM Plex Mono',monospace;
-  top:80px;left:380px;">
-  <div id="lbEyePlacerHandle" style="display:flex;align-items:center;height:28px;padding:0 8px 0 10px;
-    background:var(--bg);border-bottom:1px solid #1e4a74;cursor:grab;gap:6px;">
-    <span style="font-size:11px;color:#e0a000;flex-shrink:0;">⚓</span>
-    <span style="font-size:8px;font-weight:700;letter-spacing:0.2em;color:#e0a000;flex:1;text-transform:uppercase;">LB EYE PLACER</span>
-    <button onclick="_lbHidePlacer()" class="panel-close-btn">✕</button>
-  </div>
-  <div style="padding:8px 8px 10px;">
-
-    <!-- TYPE & SYMBOL — identical to HC placer -->
-    <div style="font-size:7px;letter-spacing:0.18em;color:var(--dim);text-transform:uppercase;margin-bottom:3px;">TYPE &amp; SYMBOL</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:2px;padding:0 1px;">
-      <div style="font-size:6px;letter-spacing:0.12em;color:var(--muted);text-align:center;text-transform:uppercase;">SINGLE</div>
-      <div style="font-size:6px;letter-spacing:0.12em;color:var(--muted);text-align:center;text-transform:uppercase;">DOUBLE</div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:2px;">
-      <button id="lbLashCombo_single_dome" class="btn view-on"
-        onclick="_lbEyeType='single';_lbEyeSymbol='dome';_lbPlacerSyncUI()"
-        style="font-size:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <svg width="34" height="20" viewBox="-17 -18 34 20">
-          <path d="M -12 0 A 12 12 0 0 1 12 0 Z" fill="currentColor" stroke="currentColor" stroke-width="1.5"/>
-          <circle cx="0" cy="-6" r="3.8" fill="var(--paper,#0b1018)" stroke="currentColor" stroke-width="1.2"/>
-        </svg>
-        <span style="font-size:6.5px;">BELL</span>
-      </button>
-      <button id="lbLashCombo_double_dome" class="btn"
-        onclick="_lbEyeType='double';_lbEyeSymbol='dome';_lbPlacerSyncUI()"
-        style="font-size:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <svg width="34" height="20" viewBox="-17 -18 34 20">
-          <path d="M -16 0 A 7 7 0 0 1 -2 0 Z" fill="currentColor" stroke="currentColor" stroke-width="1.4"/>
-          <circle cx="-9" cy="-4.5" r="2.4" fill="var(--paper,#0b1018)" stroke="currentColor" stroke-width="1.1"/>
-          <path d="M 2 0 A 7 7 0 0 1 16 0 Z" fill="currentColor" stroke="currentColor" stroke-width="1.4"/>
-          <circle cx="9" cy="-4.5" r="2.4" fill="var(--paper,#0b1018)" stroke="currentColor" stroke-width="1.1"/>
-        </svg>
-        <span style="font-size:6.5px;">BELL</span>
-      </button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:2px;padding:0 1px;">
-      <div style="font-size:6px;letter-spacing:0.12em;color:var(--muted);text-align:center;text-transform:uppercase;">NARROW</div>
-      <div style="font-size:6px;letter-spacing:0.12em;color:var(--muted);text-align:center;text-transform:uppercase;">WIDE</div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
-      <button id="lbLashCombo_single_plate" class="btn"
-        onclick="_lbEyeType='single';_lbEyeSymbol='plate';_lbPlacerSyncUI()"
-        style="font-size:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <svg width="34" height="20" viewBox="-17 -10 34 20">
-          <rect x="-7" y="-4" width="14" height="8" rx="1" fill="currentColor" stroke="currentColor" stroke-width="1" opacity="0.8"/>
-        </svg>
-        <span style="font-size:6.5px;">RECT</span>
-      </button>
-      <button id="lbLashCombo_double_plate" class="btn"
-        onclick="_lbEyeType='double';_lbEyeSymbol='plate';_lbPlacerSyncUI()"
-        style="font-size:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <svg width="34" height="20" viewBox="-17 -10 34 20">
-          <rect x="-14" y="-4" width="28" height="8" rx="1" fill="currentColor" stroke="currentColor" stroke-width="1" opacity="0.8"/>
-        </svg>
-        <span style="font-size:6.5px;">RECT</span>
-      </button>
-    </div>
-
-    <div style="height:1px;background:var(--line);margin:4px 0 6px;"></div>
-
-    <!-- PLACEMENT ZONE — auto-detected from nearest snap -->
-    <div style="font-size:7px;letter-spacing:0.18em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;">PLACEMENT MODE</div>
-    <div style="display:flex;gap:4px;margin-bottom:8px;">
-      <button id="lbPlaceZoneSnap" class="btn view-on"
-        onclick="_lbEyeZone='snap';_lbPlacerSyncUI()"
-        style="flex:1;font-size:7px;padding:5px 3px;"
-        title="Auto-snap to nearest pillar or platform">
-        ⊞ AUTO SNAP
-      </button>
-      <button id="lbPlaceZoneFree" class="btn"
-        onclick="_lbEyeZone='free';_lbPlacerSyncUI()"
-        style="flex:1;font-size:7px;padding:5px 3px;"
-        title="Free placement anywhere">
-        ✛ FREE
-      </button>
-    </div>
-
-    <div id="lbPlacerHint" style="font-size:7px;color:var(--dim);letter-spacing:0.08em;line-height:1.6;margin-bottom:8px;">
-      LEFT-CLICK &#9658; PLACE<br>
-      RIGHT-CLICK &#9658; DELETE<br>
-      <span id="lbPlacerHintZone">AUTO-SNAPS TO NEAREST POSITION</span>
-    </div>
-    </div>
-
-    <div style="height:1px;background:var(--line);margin:8px 0 7px;"></div>
-
-    <!-- AUTO PLACEMENT -->
-    <div style="font-size:7px;font-weight:700;letter-spacing:0.18em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;">AUTO PLACEMENT</div>
-    <div style="font-size:6.5px;letter-spacing:0.12em;color:#3a6080;text-transform:uppercase;margin-bottom:3px;">SOURCE COLUMN (port side)</div>
-    <div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;">
-      <button onclick="_lbAutoSrcPrev()" style="font-family:'IBM Plex Mono',monospace;background:#0a1828;color:#e0a000;border:1px solid #1e4a74;padding:3px 7px;cursor:pointer;font-size:10px;font-weight:700;">&#9664;</button>
-      <div id="lbAutoSrcLbl" style="flex:1;text-align:center;font-size:8px;font-weight:700;color:#e0a000;letter-spacing:0.12em;">COL 1</div>
-      <button onclick="_lbAutoSrcNext()" style="font-family:'IBM Plex Mono',monospace;background:#0a1828;color:#e0a000;border:1px solid #1e4a74;padding:3px 7px;cursor:pointer;font-size:10px;font-weight:700;">&#9654;</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;">
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-        <input type="checkbox" id="lbAutoAllCols" checked style="accent-color:#e0a000;width:11px;height:11px;cursor:pointer;">
-        <span style="font-size:7px;color:#e0a000;letter-spacing:0.10em;text-transform:uppercase;">APPLY TO ALL COLUMNS</span>
-      </label>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-        <input type="checkbox" id="lbAutoMirror" checked style="accent-color:#e0a000;width:11px;height:11px;cursor:pointer;">
-        <span style="font-size:7px;color:#e0a000;letter-spacing:0.10em;text-transform:uppercase;">MIRROR TO STARBOARD</span>
-      </label>
-    </div>
-    <button onclick="_lbAutoPlace()"
-      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-      letter-spacing:0.14em;text-transform:uppercase;
-      background:#1a7a38;color:#ffffff;
-      border:1px solid #0f5a28;border-top:2px solid #30c060;
-      padding:8px 4px;cursor:pointer;transition:all 0.12s;"
-      onmouseover="this.style.background='#20963f';this.style.color='#ffffff'"
-      onmouseout="this.style.background='#1a7a38';this.style.color='#ffffff'">
-      &#9654;&#9654; AUTO PLACE PATTERN
-    </button>
-    <div id="lbAutoStatus" style="margin-top:5px;min-height:14px;font-size:7px;color:#00c860;letter-spacing:0.10em;text-transform:uppercase;text-align:center;"></div>
-
-    <div style="height:1px;background:var(--line);margin:8px 0 7px;"></div>
-
-    <!-- SIDE RESTRICTIONS (shown when a side is blocked by rules) -->
-    <div id="lbSideOvRow" style="display:none;margin-bottom:6px;">
-      <div style="font-size:6.5px;color:var(--dim);letter-spacing:0.10em;margin-bottom:4px;">SIDE RESTRICTIONS</div>
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <button id="lbSideOvAft" onclick="_lbToggleSideOverride('aft')"
-          style="font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;
-            letter-spacing:0.08em;padding:4px 8px;border-radius:3px;cursor:pointer;
-            border:1px solid #aa3030;background:rgba(180,30,30,0.15);color:#900000;
-            text-align:left;">✕ AFT SIDE BLOCKED</button>
-        <button id="lbSideOvFwd" onclick="_lbToggleSideOverride('fwd')"
-          style="font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;
-            letter-spacing:0.08em;padding:4px 8px;border-radius:3px;cursor:pointer;
-            border:1px solid #aa3030;background:rgba(180,30,30,0.15);color:#900000;
-            text-align:left;">✕ FWD SIDE BLOCKED</button>
-      </div>
-    </div>
-
-    <div style="height:1px;background:var(--line);margin:8px 0 7px;"></div>
-
-    <!-- DELETE MODE -->
-    <div style="font-size:6.5px;color:var(--dim);letter-spacing:0.10em;margin-bottom:4px;">DELETE SCOPE</div>
-    <div style="display:flex;gap:4px;margin-bottom:5px;">
-      <label style="flex:1;display:flex;align-items:center;gap:3px;font-size:6.5px;
-        color:var(--text);letter-spacing:0.08em;cursor:pointer;">
-        <input type="radio" name="lbDelScope" id="lbDelScopeCurrent" value="current" checked
-          style="accent-color:#e06060;width:10px;height:10px;">
-        THIS SIDE
-      </label>
-      <label style="flex:1;display:flex;align-items:center;gap:3px;font-size:6.5px;
-        color:var(--text);letter-spacing:0.08em;cursor:pointer;">
-        <input type="radio" name="lbDelScope" id="lbDelScopeBoth" value="both"
-          style="accent-color:#e06060;width:10px;height:10px;">
-        BOTH SIDES
-      </label>
-    </div>
-    <button id="lbDeleteModeBtn" onclick="_lbToggleDeleteMode()"
-      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
-      letter-spacing:0.14em;text-transform:uppercase;
-      background:rgba(180,30,30,0.15);color:#e06060;
-      border:1px solid #8a2020;padding:6px 4px;cursor:pointer;margin-bottom:4px;">
-      ✕ DELETE LASHING EYES
-    </button>
-    <div id="lbDeleteHint" style="display:none;font-size:6.5px;color:#e06060;letter-spacing:0.08em;line-height:1.7;margin-bottom:4px;">
-      CLICK → DELETE ONE EYE<br>DRAG → DELETE ALL IN AREA
-    </div>
-
-    <div style="height:1px;background:var(--line);margin:6px 0 7px;"></div>
-
-    <!-- GUIDELINES toggle -->
-    <button onclick="_lbToggleGuides()"
-      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
-      letter-spacing:0.14em;text-transform:uppercase;
-      background:rgba(224,160,0,0.15);color:#e0a000;
-      border:1px solid #a07000;padding:6px 4px;cursor:pointer;"
-      id="lbGuidesBtn">
-      ⊞ HIDE GUIDELINES
-    </button>
-
-    <div style="height:1px;background:var(--line);margin:7px 0;"></div>
-    <button onclick="openLashEyeLib()"
-      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
-      letter-spacing:0.14em;text-transform:uppercase;
-      background:rgba(45,127,193,0.18);color:#5eb8ff;
-      border:1px solid #2d7fc1;padding:6px 4px;cursor:pointer;">
-      ◎ LASHING EYE LIBRARY
-    </button>
-  </div>
-</div>
-
-<!-- ══ LB BRIDGE EDITOR MODAL ══ -->
-<div id="lbEditorOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:7000;
-  background:rgba(4,10,20,0.82);align-items:center;justify-content:center;">
-  <div id="lbEditorBox" style="background:var(--paper);border:1px solid var(--line);
-    border-top:3px solid var(--bright);border-radius:4px;width:960px;max-width:96vw;
-    max-height:88vh;display:flex;flex-direction:column;overflow:hidden;
-    box-shadow:0 20px 60px rgba(0,0,0,0.7);">
-    <div style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);flex-shrink:0;">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
-        color:var(--bright);letter-spacing:0.14em;">⚙ CONFIGURE LASHING BRIDGES</span>
-      <div style="flex:1;"></div>
-      <button onclick="_lbCloseEditor()"
-        style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;
-          background:rgba(180,40,40,0.2);color:#ff8080;border:1px solid #883030;
-          border-radius:3px;padding:4px 10px;cursor:pointer;">✕ CLOSE</button>
-    </div>
-    <!-- ── VESSEL DEFAULT SETTINGS ── -->
-    <div id="lbPresetPanel" style="padding:12px 16px;border-bottom:2px solid var(--bright);
-      flex-shrink:0;background:rgba(94,184,255,0.05);">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-        color:var(--bright);letter-spacing:0.14em;margin-bottom:10px;">
-        ① VESSEL DEFAULT SETTINGS — applied when auto-generating
-      </div>
-      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
-
-        <!-- Levels -->
-        <div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--text2);
-            letter-spacing:0.1em;margin-bottom:4px;">LEVELS PER BRIDGE</div>
-          <div style="display:flex;gap:4px;" id="lbPresetLevels"></div>
-        </div>
-
-        <!-- Eyes per row -->
-        <div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--text2);
-            letter-spacing:0.1em;margin-bottom:4px;">EYES PER ROW</div>
-          <input id="lbPresetEyes" type="number" min="1" max="10" value="2"
-            style="width:52px;font-family:'IBM Plex Mono',monospace;font-size:9px;
-              background:rgba(94,184,255,0.06);border:1px solid var(--line);
-              border-radius:2px;color:var(--text);padding:4px 6px;"
-            oninput="_lbPreset.eyesPerRow=Math.max(1,parseInt(this.value)||1)">
-        </div>
-
-        <!-- Level row restriction -->
-        <div id="lbPresetLvRowsWrap" style="display:none;">
-          <div id="lbPresetLvRowsInner" style="display:flex;flex-direction:column;gap:8px;max-width:480px;"></div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ── BRIDGE LIST ACTIONS ── -->
-    <div style="padding:10px 16px;border-bottom:1px solid var(--line);flex-shrink:0;">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-        color:var(--bright);letter-spacing:0.14em;margin-bottom:8px;">
-        ② GENERATE / MANAGE BRIDGES
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button onclick="_lbEditorAddBridge()"
-          style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-            letter-spacing:0.1em;background:rgba(0,160,80,0.15);color:#00d068;
-            border:1px solid #00a050;border-radius:3px;padding:5px 12px;cursor:pointer;">
-          ＋ ADD BRIDGE
-        </button>
-        <button onclick="_lbEditorAutoGen()"
-          style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-            letter-spacing:0.1em;background:rgba(94,184,255,0.20);color:var(--bright);
-            border:1px solid var(--bright);border-radius:3px;padding:5px 12px;cursor:pointer;">
-          ⟳ AUTO-GENERATE FROM BAYS
-        </button>
-        <button onclick="_lbEditorClearAll()"
-          style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
-            letter-spacing:0.1em;background:rgba(180,40,40,0.12);color:#ff8080;
-            border:1px solid #883030;border-radius:3px;padding:5px 12px;cursor:pointer;">
-          ✕ CLEAR ALL
-        </button>
-      </div>
-    </div>
-    <div id="lbEditorBody" style="flex:1;overflow-y:auto;padding:10px 16px;
-      scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;"></div>
-  </div>
-</div>
-
-<!-- ══ LB STATS MODAL ══ -->
-<div id="lbStatsOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:7000;
-  background:rgba(0,0,0,0.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
-  align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
-  <div id="lbStatsBox" style="background:#111820;border:1.5px solid #2d6090;border-radius:8px;
-    width:min(96vw,1100px);max-height:92vh;display:flex;flex-direction:column;
-    box-shadow:0 12px 60px rgba(0,0,0,0.9);overflow:hidden;">
-
-    <!-- HEADER with logo — matches subStatsModal exactly -->
-    <div id="lbStatsHeader" style="display:flex;align-items:center;gap:18px;padding:16px 26px 14px;
-      border-bottom:2px solid #1e5a90;flex-shrink:0;
-      background:linear-gradient(90deg,#0a1a2e 0%,#0d2240 100%);">
-      <div id="lbStatsLogoMark" style="font-size:24px;color:#e07020;">▦</div>
-      <div>
-        <div id="lbStatsLogoText" style="font-size:17px;font-weight:700;color:#ffffff;letter-spacing:0.12em;">
-          <em style="color:#f08030;font-style:normal;">INSPECTRA</em> // HATCH SCAN
-        </div>
-        <div id="lbStatsSub" style="font-size:10px;color:#7ab0d0;letter-spacing:0.2em;text-transform:uppercase;margin-top:3px;">
-          Lashing Bridge Statistics
-        </div>
-      </div>
-      <div id="lbStatsDate" style="margin-left:auto;font-size:11px;color:#9ac8e0;text-align:right;line-height:1.7;letter-spacing:0.08em;"></div>
-      <button id="lbStatsClose" onclick="document.getElementById('lbStatsOverlay').style.display='none'"
-        style="background:#a02020;border:1.5px solid #cc3030;color:#ffffff;
-          font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
-          padding:6px 16px;cursor:pointer;border-radius:4px;letter-spacing:0.12em;margin-left:16px;
-          box-shadow:0 1px 4px rgba(0,0,0,0.4);">✕ CLOSE</button>
-    </div>
-
-    <!-- TOOLBAR with export buttons — matches subStatsModal -->
-    <div id="lbStatsToolbar" style="display:flex;gap:10px;padding:10px 26px;
-      border-bottom:1px solid #1e3a54;flex-shrink:0;align-items:center;background:#0d1824;">
-      <button class="stats-export-btn" onclick="_lbStatsExportPDF()"
-        style="background:#1a4a80;border:1.5px solid #4a90d0;color:#ffffff;">⬡ EXPORT PDF</button>
-      <button class="stats-export-btn" onclick="_lbStatsExportWord()"
-        style="background:#1a5030;border:1.5px solid #40a860;color:#ffffff;">⬡ EXPORT WORD</button>
-    </div>
-
-    <!-- BODY -->
-    <div id="lbStatsBody" style="overflow-y:auto;overflow-x:hidden;padding:24px 26px 32px;flex:1;min-height:0;
-      background:#0e1620;scrollbar-width:thin;scrollbar-color:#2d6090 transparent;
-      overscroll-behavior:contain;min-width:700px;"></div>
-  </div>
-</div>
-
-<!-- ══ LB STYLES ══ -->
-<style>
-.lb-bridge-item {
-  display: flex;
-  align-items: center;
-  padding: 7px 12px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--line);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  color: var(--text);
-  user-select: none;
-  transition: background 0.1s;
+function _divStartMove(divId, clientY){
+  if(!_divDragState || _divDragState.divId !== divId) return;
+  _divDragState.startClientY = clientY;
 }
-.lb-bridge-item:hover { background: rgba(94,184,255,0.07); }
-.lb-bridge-item.lb-sel { background: rgba(94,184,255,0.16); color: var(--bright); }
-.lb-bridge-item .lb-bi-name { font-weight: 700; flex:1; }
-.lb-bridge-item .lb-bi-meta { color: var(--text2); font-size: 8px; }
 
+function _rsInitDividers(){
+  if(window.innerWidth > 700) return;
+  var d1 = document.getElementById('rsDivider1');
+  var d2 = document.getElementById('rsDivider2');
 
-/* ── LB (Lashing Bridge) module: mobile responsive ──────────────────── */
-@media (max-width: 700px) {
+  function setupLongPress(el, activateFn){
+    if(!el || el._divInited) return;
+    el._divInited = true;
+    var timer = null;
+    var startY = 0;
 
-  /* Top bar: compress and scroll */
-  #lbTopBar {
-    padding: 5px 8px !important;
-    padding-top: calc(5px + env(safe-area-inset-top, 0px)) !important;
-    gap: 4px !important;
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
-    min-height: calc(36px + env(safe-area-inset-top, 0px)) !important;
-  }
-  #lbTopBar > * { flex-shrink: 0 !important; }
-  #lbTopBar .btn { font-size: 8px !important; padding: 3px 7px !important; }
-  #lbTopBar span[style*="font-size:8px"] { display: none !important; } /* hide VIEW: label */
+    el.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; });
+    el.addEventListener('touchstart', function(e){
+      e.preventDefault();
+      startY = e.touches[0].clientY;
+      timer = setTimeout(function(){
+        activateFn();
+        _divDragState.startClientY = startY;
+        el.style.background = 'rgba(94,184,255,0.35)';
+      }, 400);
+    }, {passive: false});
 
-  /* Main area: column stack */
-  #lbOverlay > div:nth-child(2) {
-    flex-direction: column !important;
+    el.addEventListener('touchmove', function(e){
+      if(timer){ clearTimeout(timer); timer = null; }
+    }, {passive: false});
+
+    el.addEventListener('touchend', function(){
+      if(timer){ clearTimeout(timer); timer = null; }
+    });
+
+    // Desktop: immediate on mousedown
+    el.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      activateFn();
+      _divDragState.startClientY = e.clientY;
+    });
   }
 
-  /* Left panel (overview): full width, capped height */
-  #lbLeft {
-    flex: 0 0 auto !important;
-    width: 100% !important;
-    max-height: 48vh !important;
-    min-height: 180px !important;
-    border-right: none !important;
-    border-bottom: 2px solid var(--line) !important;
-    transition: max-height 0.25s, opacity 0.2s !important;
-  }
-  /* Divider handle: only show on mobile */
-  #lbDividerHandle { display: flex !important; }
-  #lbLeft[style*="width: 0"] {
-    max-height: 0 !important;
-    min-height: 0 !important;
-    border-bottom: none !important;
-  }
-  #lbOvCanvasWrap { flex: 1; min-height: 0; }
-
-  /* Right panel: full width, fills remaining space */
-  #lbRight {
-    flex: 1 !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-  }
-  #lbCanvasWrap { flex: 1; }
-
-  /* Info strip: smaller on mobile */
-  #lbInfoStrip {
-    height: auto !important;
-    padding: 4px 10px !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-  }
-  #lbInfoStrip span { font-size: 7px !important; }
-
-  /* Dropdowns: full width */
-  #lbTopBar .dropdown {
-    min-width: 90vw !important;
-    max-height: 70vh !important;
-    left: 0 !important;
-    right: 0 !important;
-  }
-
-  /* Stats modal: full screen */
-  #lbStatsBox, #lbCondStatsBox {
-    width: 100vw !important;
-    max-height: 100vh !important;
-    border-radius: 0 !important;
-  }
-
-  /* Editor overlay inside LB: full width */
-  #lbEditorOverlay {
-    width: 100vw !important;
-    left: 0 !important;
-  }
-}
-@media (max-width: 420px) {
-  #lbLeft { max-height: 38vh !important; }
-}
-
-html.day-mode #lbOverlay, html.gray-panels #lbOverlay { background: #dde8f0; color: #1a3a50; }
-
-/* RS and LB top bars: account for iPhone notch / Dynamic Island */
-@supports (padding-top: env(safe-area-inset-top)) {
-  #rsTopBar, #lbTopBar {
-    padding-top: calc(7px + env(safe-area-inset-top)) !important;
-    min-height: calc(38px + env(safe-area-inset-top)) !important;
-  }
-  /* Compensate: panels below top bar should not be obscured */
-  #rsLeft, #lbLeft {
-    max-height: calc(30vh - env(safe-area-inset-top) / 2) !important;
-  }
-}
-
-/* RS and LB dropdowns open upward — flip border-radius and shadow */
-#rsTopBar .dropdown, #lbTopBar .dropdown {
-  border-radius: 4px 4px 0 0 !important;
-  border-top: 1px solid #1a5080 !important;
-  border-bottom: 3px solid #2a90d0 !important;
-  box-shadow: 0 -10px 30px rgba(0,0,0,0.75), 0 -2px 0 #2a90d0 !important;
-}
-html.day-mode #rsTopBar .dropdown,
-html.gray-panels #rsTopBar .dropdown,
-html.day-mode #lbTopBar .dropdown,
-html.gray-panels #lbTopBar .dropdown {
-  box-shadow: 0 -8px 20px rgba(100,140,180,0.25) !important;
-  border-bottom-color: #2a90d0 !important;
-}
-html.day-mode #lbTopBar, html.gray-panels #lbTopBar {
-  background: #c8d8e8 !important; border-bottom-color: #8ab0c8 !important;
-}
-html.day-mode #lbTopBar .btn, html.gray-panels #lbTopBar .btn {
-  background: #1a68b0 !important; color: #ffffff !important; border-color: #0a4a88 !important;
-}
-html.day-mode #lbTopBar .btn:hover, html.gray-panels #lbTopBar .btn:hover,
-html.day-mode #lbTopBar .btn.view-on, html.gray-panels #lbTopBar .btn.view-on {
-  background: #0a4a88 !important; color: #ffffff !important;
-}
-html.day-mode #lbTopBar .dropdown, html.gray-panels #lbTopBar .dropdown {
-  background: #daeaf6; border-color: #3a80b8; border-top-color: #0a5aaa;
-}
-html.day-mode #lbTopBar .dd-section, html.gray-panels #lbTopBar .dd-section {
-  color: #ffffff; background: #1a5a90;
-}
-html.day-mode #lbTopBar .dd-action, html.gray-panels #lbTopBar .dd-action { color: #082840; font-weight:600; }
-html.day-mode #lbTopBar .dd-action:hover, html.gray-panels #lbTopBar .dd-action:hover {
-  color: #ffffff; background: #1a68b0;
-}
-html.day-mode #lbTopBar .dd-action.dd-disabled, html.gray-panels #lbTopBar .dd-action.dd-disabled {
-  color: #7aacc0; font-style:italic;
-}
-html.day-mode #lbLeft, html.gray-panels #lbLeft { background: #d8e8f4; border-color: #8ab0c8; }
-html.day-mode #lbOvCanvasWrap, html.gray-panels #lbOvCanvasWrap { background: #c0d4e4; }
-html.day-mode #lbRight, html.gray-panels #lbRight { background: #c8d8e8; }
-html.day-mode .lb-bridge-item { color: #1a3a50; border-color: #a8c8dc; }
-html.day-mode .lb-bridge-item:hover { background: rgba(10,90,160,0.08); }
-html.day-mode .lb-bridge-item.lb-sel { background: rgba(10,90,160,0.18); color: #0a4a90; }
-html.day-mode #lbInfoStrip, html.gray-panels #lbInfoStrip { background: #c8d8e8; border-color: #8ab0c8; }
-
-
-html.day-mode #lbStatsOverlay,
-html.gray-panels #lbStatsOverlay {
-  background: rgba(80,110,140,0.55) !important;
-}
-
-html.day-mode #lbStatsBox,
-html.gray-panels #lbStatsBox {
-  background: #dde8f2 !important;
-  border-color: #7ab0d0 !important;
-  box-shadow: 0 12px 60px rgba(10,40,80,0.25) !important;
-}
-
-html.day-mode #lbStatsHeader,
-html.gray-panels #lbStatsHeader {
-  background: linear-gradient(90deg,#b8cfe0 0%,#c8daea 100%) !important;
-  border-bottom-color: #7ab0cc !important;
-}
-html.day-mode #lbStatsLogoMark,
-html.gray-panels #lbStatsLogoMark { color: #c06010 !important; }
-html.day-mode #lbStatsLogoText,
-html.gray-panels #lbStatsLogoText { color: #0a2a48 !important; }
-html.day-mode #lbStatsSub,
-html.gray-panels #lbStatsSub      { color: #2a5a80 !important; }
-html.day-mode #lbStatsDate,
-html.gray-panels #lbStatsDate     { color: #2a5070 !important; }
-html.day-mode #lbStatsClose,
-html.gray-panels #lbStatsClose    { background: rgba(0,0,0,0.06) !important; border-color: #5a90b8 !important; color: #0a2a48 !important; }
-html.day-mode #lbStatsClose:hover,
-html.gray-panels #lbStatsClose:hover { background: rgba(200,20,20,0.12) !important; border-color: #cc2020 !important; color: #cc2020 !important; }
-
-html.day-mode #lbStatsToolbar,
-html.gray-panels #lbStatsToolbar {
-  background: #c8d8e8 !important;
-  border-bottom-color: #90b8cc !important;
-}
-
-html.day-mode #lbStatsBody,
-html.gray-panels #lbStatsBody {
-  background: #dde8f2 !important;
-  scrollbar-color: #7ab0cc transparent !important;
-}
-
-
-
-html.day-mode #lbEyePlacerPal,
-html.gray-panels #lbEyePlacerPal {
-  background: #b8cfe0 !important;
-  border-color: #3a80b8 !important;
-  border-top-color: #c07800 !important;
-  box-shadow: 0 16px 48px rgba(0,40,100,0.28) !important;
-}
-
-html.day-mode #lbEyePlacerHandle,
-html.gray-panels #lbEyePlacerHandle {
-  background: #bcd4e8 !important;
-  border-bottom-color: #5a9ec0 !important;
-}
-html.day-mode #lbEyePlacerHandle > span:first-child,
-html.gray-panels #lbEyePlacerHandle > span:first-child {
-  color: #a06000 !important;   /* ⚓ anchor icon */
-}
-html.day-mode #lbEyePlacerHandle > span:nth-child(2),
-html.gray-panels #lbEyePlacerHandle > span:nth-child(2) {
-  color: #a06000 !important;   /* LB EYE PLACER title */
-}
-
-html.day-mode #lbEyePlacerPal div[style*="color:var(--dim)"],
-html.gray-panels #lbEyePlacerPal div[style*="color:var(--dim)"] {
-  color: #3a6070 !important;
-}
-
-html.day-mode #lbEyePlacerPal div[style*="color:var(--muted)"],
-html.gray-panels #lbEyePlacerPal div[style*="color:var(--muted)"] {
-  color: #5a7888 !important;
-}
-
-/* Type/symbol toggle buttons (.btn) — inherit from global day-mode .btn;
-   just ensure the SVG fill (var(--paper)) stays readable */
-html.day-mode #lbEyePlacerPal .btn svg circle,
-html.day-mode #lbEyePlacerPal .btn svg path,
-html.gray-panels #lbEyePlacerPal .btn svg circle,
-html.gray-panels #lbEyePlacerPal .btn svg path {
-}
-
-html.day-mode #lbEyePlacerPal div[style*="height:1px"],
-html.gray-panels #lbEyePlacerPal div[style*="height:1px"] {
-  background: #7ab0cc !important;
-}
-
-html.day-mode #lbPlacerHint,
-html.gray-panels #lbPlacerHint {
-  color: #3a6070 !important;
-}
-html.day-mode #lbPlacerHintZone,
-html.gray-panels #lbPlacerHintZone {
-  color: #3a6070 !important;
-}
-
-html.day-mode #lbEyePlacerPal div[style*="color:#3a6080"],
-html.gray-panels #lbEyePlacerPal div[style*="color:#3a6080"] {
-  color: #2a5070 !important;
-}
-
-html.day-mode #lbEyePlacerPal button[onclick*="_lbAutoSrcPrev"],
-html.day-mode #lbEyePlacerPal button[onclick*="_lbAutoSrcNext"],
-html.gray-panels #lbEyePlacerPal button[onclick*="_lbAutoSrcPrev"],
-html.gray-panels #lbEyePlacerPal button[onclick*="_lbAutoSrcNext"] {
-  background: #c8dce8 !important;
-  color: #885000 !important;
-  border-color: #5a9ec0 !important;
-}
-html.day-mode #lbEyePlacerPal button[onclick*="_lbAutoSrcPrev"]:hover,
-html.day-mode #lbEyePlacerPal button[onclick*="_lbAutoSrcNext"]:hover,
-html.gray-panels #lbEyePlacerPal button[onclick*="_lbAutoSrcPrev"]:hover,
-html.gray-panels #lbEyePlacerPal button[onclick*="_lbAutoSrcNext"]:hover {
-  background: #8a6000 !important;
-  color: #ffffff !important;
-}
-
-html.day-mode #lbAutoSrcLbl,
-html.gray-panels #lbAutoSrcLbl {
-  color: #885000 !important;
-}
-
-html.day-mode #lbEyePlacerPal label span[style*="color:#e0a000"],
-html.gray-panels #lbEyePlacerPal label span[style*="color:#e0a000"] {
-  color: #885000 !important;
-}
-html.day-mode #lbAutoAllCols,
-html.day-mode #lbAutoMirror,
-html.gray-panels #lbAutoAllCols,
-html.gray-panels #lbAutoMirror {
-  accent-color: #885000 !important;
-}
-
-html.day-mode #lbEyePlacerPal button[onclick*="_lbAutoPlace"],
-html.gray-panels #lbEyePlacerPal button[onclick*="_lbAutoPlace"] {
-  background: rgba(160,110,0,0.14) !important;
-  color: #7a4a00 !important;
-  border-color: #805000 !important;
-  border-top-color: #a06800 !important;
-}
-html.day-mode #lbEyePlacerPal button[onclick*="_lbAutoPlace"]:hover,
-html.gray-panels #lbEyePlacerPal button[onclick*="_lbAutoPlace"]:hover {
-  background: rgba(160,110,0,0.32) !important;
-}
-
-html.day-mode #lbAutoStatus,
-html.gray-panels #lbAutoStatus {
-  color: #006030 !important;
-}
-
-html.day-mode #lbEyePlacerPal label[style*="color:var(--text)"],
-html.gray-panels #lbEyePlacerPal label[style*="color:var(--text)"] {
-  color: #0a2a48 !important;
-}
-html.day-mode #lbDelScopeCurrent,
-html.day-mode #lbDelScopeBoth,
-html.gray-panels #lbDelScopeCurrent,
-html.gray-panels #lbDelScopeBoth {
-  accent-color: #aa2020 !important;
-}
-
-html.day-mode #lbDeleteModeBtn,
-html.gray-panels #lbDeleteModeBtn {
-  background: rgba(160,20,20,0.12) !important;
-  color: #900000 !important;
-  border-color: #aa3030 !important;
-}
-html.day-mode #lbDeleteModeBtn:hover,
-html.gray-panels #lbDeleteModeBtn:hover {
-  background: rgba(160,20,20,0.28) !important;
-}
-
-html.day-mode #lbDeleteModeBtn[style*="rgba(180,30,30,0.50)"],
-html.gray-panels #lbDeleteModeBtn[style*="rgba(180,30,30,0.50)"] {
-  background: rgba(160,0,0,0.50) !important;
-  color: #ffffff !important;
-  border-color: #cc0000 !important;
-}
-
-html.day-mode #lbDeleteHint,
-html.gray-panels #lbDeleteHint {
-  color: #900000 !important;
-}
-
-html.day-mode #lbGuidesBtn,
-html.gray-panels #lbGuidesBtn {
-  background: rgba(160,110,0,0.12) !important;
-  color: #7a4a00 !important;
-  border-color: #805000 !important;
-}
-html.day-mode #lbGuidesBtn:hover,
-html.gray-panels #lbGuidesBtn:hover {
-  background: rgba(160,110,0,0.28) !important;
-  color: #4a2a00 !important;
-}
-
-html.day-mode #lbEyePlacerPal button[onclick*="openLashEyeLib"],
-html.gray-panels #lbEyePlacerPal button[onclick*="openLashEyeLib"] {
-  background: rgba(10,90,170,0.14) !important;
-  color: #0a3a80 !important;
-  border-color: #0a5aaa !important;
-}
-html.day-mode #lbEyePlacerPal button[onclick*="openLashEyeLib"]:hover,
-html.gray-panels #lbEyePlacerPal button[onclick*="openLashEyeLib"]:hover {
-  background: #0a5aaa !important;
-  color: #ffffff !important;
-}
-
-
-html.day-mode #lbEditorOverlay,
-html.gray-panels #lbEditorOverlay {
-  background: rgba(80,110,140,0.55) !important;
-}
-
-html.day-mode #lbEditorBox,
-html.gray-panels #lbEditorBox {
-  background: #b8cfe0 !important;
-  border-color: #3a80b8 !important;
-  border-top-color: #0a5aaa !important;
-  box-shadow: 0 20px 60px rgba(0,40,100,0.28) !important;
-}
-
-html.day-mode #lbEditorBox > div:first-child,
-html.gray-panels #lbEditorBox > div:first-child {
-  border-bottom-color: #7ab0cc !important;
-  background: #bcd4e8 !important;
-}
-html.day-mode #lbEditorBox > div:first-child span,
-html.gray-panels #lbEditorBox > div:first-child span {
-  color: #0a3a70 !important;
-}
-
-html.day-mode #lbEditorBox button[onclick*="_lbCloseEditor"],
-html.gray-panels #lbEditorBox button[onclick*="_lbCloseEditor"] {
-  background: rgba(180,30,30,0.18) !important;
-  color: #aa0000 !important;
-  border-color: #aa3030 !important;
-}
-html.day-mode #lbEditorBox button[onclick*="_lbCloseEditor"]:hover,
-html.gray-panels #lbEditorBox button[onclick*="_lbCloseEditor"]:hover {
-  background: #cc0000 !important;
-  color: #ffffff !important;
-}
-
-html.day-mode #lbPresetPanel,
-html.gray-panels #lbPresetPanel {
-  background: rgba(10,90,170,0.08) !important;
-  border-bottom-color: #0a5aaa !important;
-}
-html.day-mode #lbPresetPanel > div:first-child,
-html.gray-panels #lbPresetPanel > div:first-child {
-  color: #0a3a70 !important;
-}
-html.day-mode #lbPresetPanel div[style*="color:var(--text2)"],
-html.gray-panels #lbPresetPanel div[style*="color:var(--text2)"] {
-  color: #3a6070 !important;
-}
-
-html.day-mode #lbPresetLevels button,
-html.gray-panels #lbPresetLevels button {
-  border-color: #5a9ec0 !important;
-  color: #2a5a80 !important;
-  background: #d0e4f0 !important;
-}
-html.day-mode #lbPresetLevels button[data-active],
-html.gray-panels #lbPresetLevels button[data-active] {
-  background: #0a5aaa !important;
-  color: #ffffff !important;
-  border-color: #0a3a80 !important;
-}
-html.day-mode #lbPresetLevels button[style*="background:var(--bright)"],
-html.gray-panels #lbPresetLevels button[style*="background:var(--bright)"] {
-  background: #0a5aaa !important;
-  color: #ffffff !important;
-  border-color: #0a3a80 !important;
-}
-
-html.day-mode #lbPresetEyes,
-html.gray-panels #lbPresetEyes {
-  background: #d8eaf8 !important;
-  border-color: #5a9ec0 !important;
-  color: #0a2a48 !important;
-}
-
-html.day-mode #lbPresetLvRowsInner div[style*="color:var(--bright)"],
-html.gray-panels #lbPresetLvRowsInner div[style*="color:var(--bright)"] {
-  color: #0a3a70 !important;
-}
-html.day-mode #lbPresetLvRowsInner button[style*="background:rgba(94,184,255"],
-html.gray-panels #lbPresetLvRowsInner button[style*="background:rgba(94,184,255"] {
-  background: rgba(10,90,170,0.20) !important;
-  color: #0a3a80 !important;
-  border-color: #0a5aaa !important;
-}
-html.day-mode #lbPresetLvRowsInner button[style*="background:rgba(0,0,0,0.12)"],
-html.gray-panels #lbPresetLvRowsInner button[style*="background:rgba(0,0,0,0.12)"] {
-  background: #c8dce8 !important;
-  color: #5a7888 !important;
-  border-color: #8ab0c8 !important;
-}
-html.day-mode #lbPresetLvRowsInner button[style*="color:#00c068"],
-html.gray-panels #lbPresetLvRowsInner button[style*="color:#00c068"] {
-  background: rgba(0,120,60,0.12) !important;
-  color: #006030 !important;
-  border-color: #00703a !important;
-}
-
-html.day-mode #lbEditorBox > div:nth-child(3),
-html.gray-panels #lbEditorBox > div:nth-child(3) {
-  border-bottom-color: #7ab0cc !important;
-  background: #c0d8ec !important;
-}
-html.day-mode #lbEditorBox > div:nth-child(3) > div:first-child,
-html.gray-panels #lbEditorBox > div:nth-child(3) > div:first-child {
-  color: #0a3a70 !important;
-}
-html.day-mode #lbEditorBox button[onclick*="_lbEditorAddBridge"],
-html.gray-panels #lbEditorBox button[onclick*="_lbEditorAddBridge"] {
-  background: rgba(0,120,50,0.15) !important;
-  color: #006030 !important;
-  border-color: #007a38 !important;
-}
-html.day-mode #lbEditorBox button[onclick*="_lbEditorAddBridge"]:hover,
-html.gray-panels #lbEditorBox button[onclick*="_lbEditorAddBridge"]:hover {
-  background: #007a38 !important;
-  color: #ffffff !important;
-}
-html.day-mode #lbEditorBox button[onclick*="_lbEditorAutoGen"],
-html.gray-panels #lbEditorBox button[onclick*="_lbEditorAutoGen"] {
-  background: rgba(10,90,170,0.15) !important;
-  color: #0a3a70 !important;
-  border-color: #0a5aaa !important;
-}
-html.day-mode #lbEditorBox button[onclick*="_lbEditorAutoGen"]:hover,
-html.gray-panels #lbEditorBox button[onclick*="_lbEditorAutoGen"]:hover {
-  background: #0a5aaa !important;
-  color: #ffffff !important;
-}
-html.day-mode #lbEditorBox button[onclick*="_lbEditorClearAll"],
-html.gray-panels #lbEditorBox button[onclick*="_lbEditorClearAll"] {
-  background: rgba(160,20,20,0.12) !important;
-  color: #900000 !important;
-  border-color: #aa3030 !important;
-}
-html.day-mode #lbEditorBox button[onclick*="_lbEditorClearAll"]:hover,
-html.gray-panels #lbEditorBox button[onclick*="_lbEditorClearAll"]:hover {
-  background: #cc0000 !important;
-  color: #ffffff !important;
-}
-
-html.day-mode #lbEditorBody,
-html.gray-panels #lbEditorBody {
-  scrollbar-color: #7ab0cc transparent !important;
-}
-
-html.day-mode .lb-ed-hdr,
-html.gray-panels .lb-ed-hdr {
-  color: #3a6070 !important;
-  border-bottom-color: #5a9ec0 !important;
-}
-
-html.day-mode .lb-ed-row,
-html.gray-panels .lb-ed-row {
-  color: #0a2a48 !important;
-  border-bottom-color: #8ab0c8 !important;
-}
-
-html.day-mode .lb-ed-row span[style*="color:var(--text2)"],
-html.gray-panels .lb-ed-row span[style*="color:var(--text2)"] {
-  color: #4a7088 !important;
-}
-
-html.day-mode .lb-ed-row > span:last-of-type,
-html.gray-panels .lb-ed-row > span:last-of-type {
-  color: #4a7088 !important;
-}
-
-html.day-mode .lb-ed-inp,
-html.gray-panels .lb-ed-inp {
-  background: #d8eaf8 !important;
-  border-color: #5a9ec0 !important;
-  color: #0a2a48 !important;
-}
-html.day-mode .lb-ed-inp:focus,
-html.gray-panels .lb-ed-inp:focus {
-  border-color: #0a5aaa !important;
-  outline: none !important;
-}
-
-html.day-mode .lb-ed-del,
-html.gray-panels .lb-ed-del {
-  background: rgba(160,20,20,0.12) !important;
-  color: #900000 !important;
-  border-color: #aa4040 !important;
-}
-html.day-mode .lb-ed-del:hover,
-html.gray-panels .lb-ed-del:hover {
-  background: rgba(160,20,20,0.28) !important;
-  color: #700000 !important;
-}
-
-html.day-mode #lbEditorBody > div[style*="background:rgba(0,0,0,0.08)"],
-html.gray-panels #lbEditorBody > div[style*="background:rgba(0,0,0,0.08)"] {
-  background: rgba(10,60,120,0.07) !important;
-  border-bottom-color: #8ab0c8 !important;
-}
-html.day-mode #lbEditorBody div[style*="color:var(--bright)"],
-html.gray-panels #lbEditorBody div[style*="color:var(--bright)"] {
-  color: #0a3a70 !important;
-}
-html.day-mode #lbEditorBody button[style*="background:rgba(94,184,255"],
-html.gray-panels #lbEditorBody button[style*="background:rgba(94,184,255"] {
-  background: rgba(10,90,170,0.20) !important;
-  color: #0a3a80 !important;
-  border-color: #0a5aaa !important;
-}
-html.day-mode #lbEditorBody button[style*="background:rgba(0,0,0,0.1)"],
-html.gray-panels #lbEditorBody button[style*="background:rgba(0,0,0,0.1)"] {
-  background: #c8dce8 !important;
-  color: #5a7888 !important;
-  border-color: #8ab0c8 !important;
-}
-html.day-mode #lbEditorBody button[style*="color:var(--green)"],
-html.gray-panels #lbEditorBody button[style*="color:var(--green)"] {
-  background: rgba(0,120,60,0.12) !important;
-  color: #006030 !important;
-  border-color: #00703a !important;
-}
-html.day-mode #lbEditorBody > div[style*="color:var(--text2)"],
-html.gray-panels #lbEditorBody > div[style*="color:var(--text2)"] {
-  color: #3a6070 !important;
-}
-
-#lbBtnPalette { position: relative; border-bottom: 3px solid transparent !important; }
-#lbBtnPalette::after {
-  content: '';
-  position: absolute;
-  bottom: -3px; left: -1px; right: -1px;
-  height: 3px;
-  background: linear-gradient(to right, #e04040 0% 25%, #2090e0 25% 50%, #00a050 50% 75%, #9050e0 75% 100%);
-  border-radius: 0 0 2px 2px;
-}
-#lbBtnPalette,
-#lbBtnPalette.view-on,
-#lbBtnPalette:hover {
-  color: #ddeeff !important;
-  background: #132840 !important;
-  border-top-color: #1e4a6a !important;
-  border-left-color: #1e4a6a !important;
-  border-right-color: #1e4a6a !important;
-}
-
-html.day-mode #lbBtnPalette,
-html.day-mode #lbBtnPalette.view-on,
-html.day-mode #lbBtnPalette:hover,
-html.gray-panels #lbBtnPalette,
-html.gray-panels #lbBtnPalette.view-on,
-html.gray-panels #lbBtnPalette:hover {
-  background: linear-gradient(90deg, rgba(212,0,0,0.72) 0%, rgba(200,72,0,0.72) 20%, rgba(192,120,0,0.72) 38%, rgba(0,122,40,0.72) 55%, rgba(0,85,204,0.72) 72%, rgba(112,0,184,0.72) 100%) !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  border-top-color: rgba(0,0,0,0.25) !important;
-  border-left-color: rgba(0,0,0,0.25) !important;
-  border-right-color: rgba(0,0,0,0.25) !important;
-  border-bottom: 3px solid rgba(0,0,0,0.30) !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
-}
-html.day-mode #lbBtnPalette::after,
-html.gray-panels #lbBtnPalette::after { display: none; }
-
-html.day-mode #lbPalette,
-html.gray-panels #lbPalette {
-  background: #b8cfe0 !important;
-  border-color: #3a80b8 !important;
-  border-top-color: #0a5aaa !important;
-  box-shadow: 0 8px 32px rgba(0,40,100,0.2), 0 0 0 1px rgba(10,90,170,0.10) !important;
-}
-
-html.day-mode #lbPaletteHandle,
-html.gray-panels #lbPaletteHandle {
-  background: #bcd4e8 !important;
-  border-bottom-color: #5a9ec0 !important;
-}
-html.day-mode #lbPaletteHandle span,
-html.gray-panels #lbPaletteHandle span {
-  color: #0a4a90 !important;
-}
-
-html.day-mode #lbPalette div[style*="letter-spacing:0.15em"],
-html.gray-panels #lbPalette div[style*="letter-spacing:0.15em"] {
-  color: #3a6888 !important;
-}
-
-html.day-mode #lbPalette div[style*="height:1px"],
-html.gray-panels #lbPalette div[style*="height:1px"] {
-  background: #7ab0cc !important;
-}
-
-html.day-mode #lbPalette div[style*="letter-spacing:0.10em"],
-html.gray-panels #lbPalette div[style*="letter-spacing:0.10em"] {
-  color: #3a6888 !important;
-}
-
-html.day-mode #lbPalette button[onclick*="_lbPaintCurrentBridge"],
-html.day-mode #lbPalette button[onclick*="_lbPaintAllBridges"],
-html.gray-panels #lbPalette button[onclick*="_lbPaintCurrentBridge"],
-html.gray-panels #lbPalette button[onclick*="_lbPaintAllBridges"] {
-  background: #d0e4f4 !important;
-  color: #0a3a70 !important;
-  border-color: #5a9ec0 !important;
-}
-html.day-mode #lbPalette button[onclick*="_lbPaintCurrentBridge"]:hover,
-html.day-mode #lbPalette button[onclick*="_lbPaintAllBridges"]:hover,
-html.gray-panels #lbPalette button[onclick*="_lbPaintCurrentBridge"]:hover,
-html.gray-panels #lbPalette button[onclick*="_lbPaintAllBridges"]:hover {
-  background: #1a68b0 !important;
-  color: #ffffff !important;
-  border-color: #0a4a88 !important;
-}
-
-html.day-mode #lbPalette .panel-close-btn,
-html.gray-panels #lbPalette .panel-close-btn {
-  color: #3a6888 !important;
-}
-html.day-mode #lbPalette .panel-close-btn:hover,
-html.gray-panels #lbPalette .panel-close-btn:hover {
-  color: #cc0000 !important;
-}
-
-.lb-ed-row {
-  display: grid;
-  grid-template-columns: 28px 1fr 80px 80px 36px;
-  gap: 6px;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--line);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  color: var(--text);
-}
-.lb-ed-row:last-child { border-bottom: none; }
-.lb-ed-hdr {
-  display: grid;
-  grid-template-columns: 28px 1fr 80px 80px 36px;
-  gap: 6px;
-  padding: 5px 0 7px;
-  border-bottom: 2px solid var(--line);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 7px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--text2);
-}
-.lb-ed-inp {
-  background: rgba(94,184,255,0.06);
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  color: var(--text);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px;
-  padding: 3px 5px;
-  width: 100%;
-  box-sizing: border-box;
-}
-.lb-ed-inp:focus { outline: none; border-color: var(--bright); }
-.lb-ed-del {
-  background: rgba(180,40,40,0.15);
-  color: #ff8080;
-  border: 1px solid #883030;
-  border-radius: 2px;
-  font-size: 10px;
-  cursor: pointer;
-  width: 28px;
-  height: 24px;
-  display: flex; align-items:center; justify-content:center;
+  setupLongPress(d1, function(){
+    _divActivate('rsDivider1','rsLeft','height', 60, function(){
+      if(typeof _rsDrawOverview==='function') _rsDrawOverview();
+    });
+  });
+
+  setupLongPress(d2, function(){
+    _divActivate('rsDivider2','rsSchematicStrip','flex', 60, function(){
+      if(typeof window._rsSchZoomReset==='function') window._rsSchZoomReset();
+    });
+  });
+}
+
+function _lbInitDivider(){
+  if(window.innerWidth > 700) return;
+  var d = document.getElementById('lbDividerHandle');
+  if(!d || d._divInited) return;
+  d._divInited = true;
+  var timer = null;
+  var startY = 0;
+
+  d.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; });
+  d.addEventListener('touchstart', function(e){
+    e.preventDefault();
+    startY = e.touches[0].clientY;
+    timer = setTimeout(function(){
+      _divActivate('lbDividerHandle','lbLeft','height', 60, function(){
+        if(typeof _lbDraw==='function') _lbDraw();
+        if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
+      });
+      _divDragState.startClientY = startY;
+      d.style.background = 'rgba(94,184,255,0.35)';
+    }, 400);
+  }, {passive: false});
+
+  d.addEventListener('touchmove', function(e){
+    if(timer){ clearTimeout(timer); timer = null; }
+  }, {passive: false});
+
+  d.addEventListener('touchend', function(){
+    if(timer){ clearTimeout(timer); timer = null; }
+  });
+
+  d.addEventListener('mousedown', function(e){
+    e.preventDefault();
+    _divActivate('lbDividerHandle','lbLeft','height', 60, function(){
+      if(typeof _lbDraw==='function') _lbDraw();
+      if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
+    });
+    _divDragState.startClientY = e.clientY;
+  });
 }
-.lb-ed-del:hover { background: rgba(180,40,40,0.3); }
-</style>
 
-<!-- ══ LB JAVASCRIPT ══ -->
-<script>
 
 const lbData = { bridges: [] };
 
@@ -55141,73 +54014,29 @@ document.addEventListener('mousedown', function(e){
 
 function _lbSetView(mode){
   _lbViewMode = mode;
-  ['Aft','Fwd','Both','Top'].forEach(n=>{
-    const btn = document.getElementById('lbBtnView'+n);
+  ['Aft','Fwd','Both','Top'].forEach(function(n){
+    var btn = document.getElementById('lbBtnView'+n);
     if(btn) btn.classList.toggle('view-on', mode === n.toLowerCase());
   });
-  const stripView = document.getElementById('lbStripView');
+  var stripView = document.getElementById('lbStripView');
   if(stripView){
-    const labels = { aft:'AFT SIDE VIEW', fwd:'FWD SIDE VIEW', both:'BOTH SIDES (ELEVATION)', top:'TOP VIEW (PLAN)' };
+    var labels = { aft:'AFT SIDE VIEW', fwd:'FWD SIDE VIEW', both:'BOTH SIDES (ELEVATION)', top:'TOP VIEW (PLAN)' };
     stripView.textContent = labels[mode] || '';
   }
-  if(_lbPlacerOn) _lbUpdatePlacerSideUI();
+  if(typeof _lbPlacerOn !== 'undefined' && _lbPlacerOn && typeof _lbUpdatePlacerSideUI==='function') _lbUpdatePlacerSideUI();
   _lbZoomReset();
   _lbDraw();
 }
 
 function _lbSetSelMode(mode){
   _lbSelBridge = null;
-  _lbRebuildList();
+  if(typeof _lbRebuildList==='function') _lbRebuildList();
   _lbDraw();
 }
 
 function _lbUpdateZoomPct(){
   var el = document.getElementById('lbZoomPct');
   if(el) el.textContent = Math.round(_lbZoom * 100) + '%';
-}
-
-// ── LB: draggable divider resize (no panels ever hidden) ────────────────
-var _lbPanelMode = 'split'; // kept for compat
-
-function _lbTogglePanels(){}   // no-op — replaced by drag
-function _lbApplyPanelMode(){
-  if(window.innerWidth > 700) return;
-  _lbInitDivider();
-}
-
-function _lbInitDivider(){
-  if(window.innerWidth > 700) return;
-  var d = document.getElementById('lbDividerHandle');
-  if(!d) return;
-  d.style.touchAction = 'none';
-  var MIN = 80;
-
-  d.onpointerdown = function(e){
-    e.preventDefault();
-    d.setPointerCapture(e.pointerId);
-    var left = document.getElementById('lbLeft');
-    var tb   = document.getElementById('lbTopBar');
-    var ov   = document.getElementById('lbOverlay');
-    if(!left) return;
-    var startY = e.clientY;
-    var startH = left.getBoundingClientRect().height;
-    var avail  = (ov ? ov.getBoundingClientRect().height : window.innerHeight)
-               - (tb ? tb.getBoundingClientRect().height : 40) - 20;
-
-    d.onpointermove = function(ev){
-      ev.preventDefault();
-      var h = Math.max(MIN, Math.min(avail - MIN, startH + (ev.clientY - startY)));
-      left.style.height    = h+'px';
-      left.style.maxHeight = h+'px';
-    };
-    d.onpointerup = d.onpointercancel = function(){
-      d.onpointermove = null;
-      d.onpointerup   = null;
-      d.onpointercancel = null;
-      if(typeof _lbDraw==='function') _lbDraw();
-      if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
-    };
-  };
 }
 
 function _lbZoomBtn(factor){
@@ -55395,6 +54224,14 @@ function _lbHandleClick(e){
   const my = (e.clientY - rect.top  - _lbPanY) / _lbZoom;
 
   if(_lbDeleteModeOn && _lbSelBridge) return;
+
+  // On mobile, if palette is visible, tap = paint (no Ctrl key available)
+  if(_lbPaletteVisible && _lbSelBridge && !_lbPlacerOn){
+    // Simulate mousedown + immediate mouseup at same point (single tap, no drag)
+    if(typeof _lbPalMouseDown === 'function') _lbPalMouseDown(e);
+    if(typeof _lbPalMouseUp   === 'function') _lbPalMouseUp(e);
+    return;
+  }
 
   if(_lbPlacerOn && _lbSelBridge){
     if(e.button === 2){ _lbDeleteEyeAt(mx, my); return; }
@@ -57054,6 +55891,8 @@ function _lbOpenStats(){
   if(ov) ov.style.display='flex';
 }
 
+
+
 let _lbOvPanelVisible = true;
 function _lbToggleOverview(){
   _lbOvPanelVisible = !_lbOvPanelVisible;
@@ -57067,22 +55906,22 @@ function _lbToggleOverview(){
       var avail = overlay ? overlay.clientHeight - (tb ? tb.offsetHeight : 40) : window.innerHeight;
       var MIN_PX = 100;
       if(_lbOvPanelVisible){
-        // Show overview at default height (48vh)
+        // Restore overview to default height
+        panel.style.cssText = '';
         panel.style.height    = '48vh';
         panel.style.maxHeight = '48vh';
-        panel.style.minHeight = MIN_PX + 'px';
-        panel.style.overflow  = '';
+        panel.style.minHeight = '180px';
+        var right = document.getElementById('lbRight');
+        if(right) right.style.flex = '';
         var divH = document.getElementById('lbDividerHandle');
         if(divH) divH.style.display = 'flex';
       } else {
         // Hide overview — set to 0 so bridge fills full avail height
-        panel.style.height    = '0';
-        panel.style.maxHeight = '0';
-        panel.style.minHeight = '0';
-        panel.style.overflow  = 'hidden';
-        panel.style.flexBasis = '0';
+        panel.style.cssText = 'flex:0 0 0 !important;height:0 !important;max-height:0 !important;min-height:0 !important;overflow:hidden !important;';
         var divH = document.getElementById('lbDividerHandle');
         if(divH) divH.style.display = 'none';
+        var right = document.getElementById('lbRight');
+        if(right) right.style.flex = '1 1 auto';
       }
     } else {
       panel.style.width    = _lbOvPanelVisible ? '360px' : '0';
