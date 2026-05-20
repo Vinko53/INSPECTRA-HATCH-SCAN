@@ -45775,7 +45775,6 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
   /* Divider handles */
   .rs-divider-handle { display: flex !important; }
-  #lbDividerHandle   { display: flex !important; }
 
   /* Seal rows: readable on narrow screen */
   .rs-seal-row {
@@ -45797,6 +45796,76 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   #rsLeft      { height: 27vh !important; max-height: 27vh !important; }
   #rsSchematicStrip { flex: 0 0 35vh !important; height: 35vh !important; }
 }
+/* ── LB module: mobile responsive ─────────────────────────────────── */
+@media (max-width: 700px) {
+
+  /* Top bar */
+  #lbTopBar {
+    padding: 5px 8px !important;
+    padding-top: calc(5px + env(safe-area-inset-top, 0px)) !important;
+    min-height: calc(36px + env(safe-area-inset-top, 0px)) !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+  }
+  #lbTopBar > * { flex-shrink: 0 !important; }
+  #lbTopBar .btn { font-size: 8px !important; padding: 3px 7px !important; }
+
+  /* Main area: column stack (overview top, bridge below) */
+  #lbOverlay > div:nth-child(2) {
+    flex-direction: column !important;
+  }
+
+  /* Overview panel */
+  #lbLeft {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    height: 48vh !important;
+    max-height: 48vh !important;
+    min-height: 180px !important;
+    border-right: none !important;
+    border-bottom: 2px solid var(--line) !important;
+    transition: height 0.2s, max-height 0.2s !important;
+  }
+  #lbOvCanvasWrap { flex: 1; min-height: 0; }
+
+  /* Divider handle */
+  #lbDividerHandle {
+    display: flex !important;
+    width: 100% !important;
+  }
+
+  /* Bridge canvas panel */
+  #lbRight {
+    flex: 1 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+  }
+  #lbCanvasWrap { flex: 1; }
+
+  /* Info strip */
+  #lbInfoStrip {
+    height: auto !important;
+    min-height: 24px !important;
+    padding: 3px 10px !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    font-size: 7px !important;
+  }
+
+  /* Dropdowns: full width, open at top */
+  #lbTopBar .dropdown {
+    min-width: 90vw !important;
+    max-height: 70vh !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+}
+@media (max-width: 420px) {
+  #lbLeft { height: 38vh !important; max-height: 38vh !important; }
+}
+
 
 html.day-mode #rsOverlay,
 html.gray-panels #rsOverlay {
