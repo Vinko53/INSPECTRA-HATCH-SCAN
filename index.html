@@ -44726,8 +44726,10 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   background:var(--bg);flex-direction:column;overflow:hidden;">
 
   <!-- ══ TOP BAR ══ -->
-  <div id="rsTopBar" style="display:flex;align-items:center;gap:8px;padding:7px 14px;
-    border-bottom:2px solid var(--line);background:var(--paper);flex-shrink:0;min-height:38px;">
+  <div id="rsTopBar" style="display:flex;align-items:center;gap:8px;
+    padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top, 0px));
+    border-bottom:2px solid var(--line);background:var(--paper);flex-shrink:0;
+    min-height:calc(38px + env(safe-area-inset-top, 0px));">
 
     <!-- Toggle overview button -->
     <button id="rsOvToggleBtn" onclick="_rsToggleOverview()"
@@ -44754,7 +44756,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #e05050 !important;">
         ⚙ SETTINGS ▾
       </button>
-      <div class="dropdown" id="rsDropSettings" style="display:none;position:absolute;top:100%;left:0;min-width:280px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropSettings" style="display:none;position:absolute;bottom:100%;top:auto;left:0;min-width:280px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">BULK MARK — RUBBER SEAL</div>
         <button class="dd-action" onclick="openBulkMarkDialog('seal','vessel');closeRsMenus()">◯  MARK ALL SEALS — ENTIRE VESSEL</button>
         <button class="dd-action" onclick="openBulkMarkDialog('seal','bay');closeRsMenus()">◯  MARK ALL SEALS — CURRENT BAY</button>
@@ -44795,7 +44797,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #2090e0 !important;">
         ⚒ TOOLS ▾
       </button>
-      <div class="dropdown" id="rsDropTools" style="display:none;position:absolute;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropTools" style="display:none;position:absolute;bottom:100%;top:auto;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">INSPECTION</div>
         <button class="dd-action" onclick="toggleMeasureTool();closeRsMenus()">◎  MEASURE — DISTANCE / AREA</button>
         <button class="dd-action" onclick="toggleSealPaintTool();closeRsMenus()">✎  MARK SEAL — FREE COLOUR PAINT</button>
@@ -44824,7 +44826,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #00a050 !important;">
         ▦ STATISTICS ▾
       </button>
-      <div class="dropdown" id="rsDropStats" style="display:none;position:absolute;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropStats" style="display:none;position:absolute;bottom:100%;top:auto;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">VESSEL SUMMARY</div>
         <button class="dd-action dd-disabled">◯  SEAL STATUS OVERVIEW (v.NEXT)</button>
         <button class="dd-action dd-disabled">◯  DMG/MISS BREAKDOWN BY HC (v.NEXT)</button>
@@ -44849,7 +44851,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
                border-color:#1e4a6a !important;border-bottom:3px solid #9050e0 !important;">
         ⬆ EXPORT ▾
       </button>
-      <div class="dropdown" id="rsDropExport" style="display:none;position:absolute;top:100%;left:0;min-width:260px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
+      <div class="dropdown" id="rsDropExport" style="display:none;position:absolute;bottom:100%;top:auto;left:0;min-width:260px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">PDF</div>
         <button class="dd-action" onclick="exportRsConditionPDF();closeRsMenus()">◯  EXPORT PDF — RUBBER SEAL CONDITION</button>
         <button class="dd-action" onclick="exportChanConditionPDF();closeRsMenus()">⊟  EXPORT PDF — RETAINING CHANNEL CONDITION</button>
@@ -44909,6 +44911,17 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
       </div>
     </div>
 
+    <!-- Divider 1: between overview and HC schematic (mobile only) -->
+    <div class="rs-divider-handle" id="rsDivider1" onclick="_rsTogglePanels(1)"
+      style="display:none;flex-shrink:0;width:100%;height:30px;
+        background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+        align-items:center;justify-content:center;cursor:pointer;
+        touch-action:manipulation;-webkit-user-select:none;user-select:none;gap:10px;
+        font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.12em;color:var(--text2);">
+      <span id="rsDivider1Icon" style="font-size:13px;">⇅</span>
+      <span id="rsDivider1Label">OVERVIEW</span>
+    </div>
+
     <!-- RIGHT: detail panel — schematic column (left) + seal rows (right) -->
     <div id="rsRight" style="flex:1;display:flex;flex-direction:row;
       height:100%;overflow:hidden;min-width:0;position:relative;background:var(--paper);">
@@ -44937,6 +44950,17 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
         </div>
 
+      </div>
+
+      <!-- Divider 2: between HC schematic and seal rows (mobile only) -->
+      <div class="rs-divider-handle" id="rsDivider2" onclick="_rsTogglePanels(2)"
+        style="display:none;flex-shrink:0;width:100%;height:30px;
+          background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+          align-items:center;justify-content:center;cursor:pointer;
+          touch-action:manipulation;-webkit-user-select:none;user-select:none;gap:10px;
+          font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.12em;color:var(--text2);">
+        <span id="rsDivider2Icon" style="font-size:13px;">⇅</span>
+        <span id="rsDivider2Label">HC VIEW</span>
       </div>
 
       <!-- SEAL ROWS — scrollable, takes all remaining width -->
@@ -45041,6 +45065,8 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   /* Top bar: shrink and scroll horizontally */
   #rsTopBar {
     padding: 5px 8px !important;
+    padding-top: calc(5px + env(safe-area-inset-top, 0px)) !important;
+    min-height: calc(36px + env(safe-area-inset-top, 0px)) !important;
     gap: 5px !important;
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
@@ -45059,39 +45085,39 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
     flex-direction: column !important;
   }
 
-  /* ── Panel 1: Vessel overview (25vh) ── */
+  /* ── Panel 1: Vessel overview (30vh) ── */
   #rsLeft {
     flex: 0 0 auto !important;
     width: 100% !important;
-    height: 25vh !important;
-    min-height: 130px !important;
-    max-height: 25vh !important;
+    height: 30vh !important;
+    min-height: 140px !important;
+    max-height: 30vh !important;
     border-right: none !important;
-    border-bottom: 2px solid var(--line) !important;
-    transition: none !important;
+    border-bottom: none !important;
+    transition: height 0.25s, opacity 0.2s !important;
   }
   #rsCanvasWrap { flex: 1; min-height: 0; }
 
-  /* Right panel: column, fills remaining 75vh */
+  /* Right panel: column, fills remaining space */
   #rsRight {
     flex: 1 !important;
     flex-direction: column !important;
     min-height: 0 !important;
     overflow: hidden !important;
-    height: 75vh !important;
   }
 
-  /* ── Panel 2: HC schematic (35vh) ── */
+  /* ── Panel 2: HC schematic (38vh) ── */
   #rsSchematicStrip {
-    flex: 0 0 35vh !important;
+    flex: 0 0 38vh !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
-    height: 35vh !important;
+    height: 38vh !important;
     min-height: 180px !important;
     flex-direction: column !important;
     border-right: none !important;
-    border-bottom: 2px solid var(--line) !important;
+    border-bottom: none !important;
+    transition: height 0.25s, opacity 0.2s !important;
   }
   #rsSchWrap {
     flex: 1 !important;
@@ -45099,14 +45125,18 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
     touch-action: none !important;
   }
 
-  /* ── Panel 3: Seal rows (remaining ~40vh) ── */
+  /* ── Panel 3: Seal rows (remaining) ── */
   #rsDetailBody {
     flex: 1 !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     padding: 8px 10px !important;
     min-height: 0 !important;
+    transition: flex 0.25s !important;
   }
+
+  /* Divider handles */
+  .rs-divider-handle { display: flex !important; }
 
   /* Seal rows: readable on narrow screen */
   .rs-seal-row {
@@ -45125,8 +45155,8 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   }
 }
 @media (max-width: 420px) {
-  #rsLeft      { height: 22vh !important; max-height: 22vh !important; }
-  #rsSchematicStrip { flex: 0 0 32vh !important; height: 32vh !important; }
+  #rsLeft      { height: 27vh !important; max-height: 27vh !important; }
+  #rsSchematicStrip { flex: 0 0 35vh !important; height: 35vh !important; }
 }
 
 html.day-mode #rsOverlay,
@@ -45719,7 +45749,11 @@ function _rsToggleOverview(){
     btn.style.color      = _rsOvVisible ? 'var(--bright)' : 'var(--text2)';
     btn.style.borderColor= _rsOvVisible ? 'var(--bright)' : 'var(--line)';
   }
-  if(_rsOvVisible) setTimeout(() => { _rsAutoFitZoom(); _rsDrawOverview(); }, 220);
+  if(_rsOvVisible) setTimeout(() => {
+    _rsAutoFitZoom(); _rsDrawOverview();
+    if(typeof _rsPanelMode!=='undefined') _rsPanelMode='split';
+    if(typeof _rsApplyPanelMode==='function') _rsApplyPanelMode();
+  }, 220);
 }
 
 function _rsHcSummary(bay, hcNum){
@@ -53504,6 +53538,66 @@ document.addEventListener('mousedown', function(e){
   }
 });
 
+// ── Seals mobile panel expand/collapse ─────────────────────────────────
+// Mode encodes which panels are expanded:
+// Bits: bit0=overview expanded, bit1=schematic expanded, bit2=detail expanded
+// Preset modes: 'split'=all, 'overview'=only overview, 'schematic'=only schematic, 'detail'=only detail
+var _rsPanelMode = 'split';
+
+function _rsTogglePanels(divider){
+  // Divider 1 (between overview and schematic): toggle overview expansion
+  // Divider 2 (between schematic and detail): toggle schematic expansion
+  if(divider === 1){
+    if(_rsPanelMode === 'overview')  _rsPanelMode = 'split';
+    else                             _rsPanelMode = 'overview';
+  } else {
+    if(_rsPanelMode === 'schematic') _rsPanelMode = 'split';
+    else if(_rsPanelMode === 'detail') _rsPanelMode = 'split';
+    else                              _rsPanelMode = 'schematic';
+  }
+  _rsApplyPanelMode();
+}
+
+function _rsApplyPanelMode(){
+  if(window.innerWidth > 700) return;
+  var left   = document.getElementById('rsLeft');
+  var strip  = document.getElementById('rsSchematicStrip');
+  var detail = document.getElementById('rsDetailBody');
+  var d1i = document.getElementById('rsDivider1Icon');
+  var d1l = document.getElementById('rsDivider1Label');
+  var d2i = document.getElementById('rsDivider2Icon');
+  var d2l = document.getElementById('rsDivider2Label');
+  if(!left) return;
+
+  if(_rsPanelMode === 'overview'){
+    // Overview fills screen
+    if(left)   { left.style.height='calc(100vh - 36px)'; left.style.maxHeight='calc(100vh - 36px)'; left.style.opacity='1'; }
+    if(strip)  { strip.style.height='0'; strip.style.flex='0 0 0'; strip.style.minHeight='0'; strip.style.overflow='hidden'; }
+    if(detail) { detail.style.flex='0 0 0'; detail.style.overflow='hidden'; }
+    if(d1i) d1i.textContent='⬇'; if(d1l) d1l.textContent='SHOW ALL PANELS';
+    if(d2i) d2i.textContent='⬇'; if(d2l) d2l.textContent='HC VIEW + SEALS';
+  } else if(_rsPanelMode === 'schematic'){
+    // HC schematic fills screen
+    if(left)   { left.style.height='0'; left.style.maxHeight='0'; left.style.opacity='0'; }
+    if(strip)  { strip.style.height='calc(100vh - 66px)'; strip.style.flex='1 1 auto'; strip.style.minHeight='0'; strip.style.overflow=''; }
+    if(detail) { detail.style.flex='0 0 0'; detail.style.overflow='hidden'; }
+    if(d1i) d1i.textContent='⬆'; if(d1l) d1l.textContent='SHOW OVERVIEW';
+    if(d2i) d2i.textContent='⬇'; if(d2l) d2l.textContent='SHOW SEALS';
+  } else {
+    // split — default
+    if(left)   { left.style.height='30vh'; left.style.maxHeight='30vh'; left.style.opacity='1'; }
+    if(strip)  { strip.style.height='38vh'; strip.style.flex='0 0 38vh'; strip.style.minHeight='180px'; strip.style.overflow=''; }
+    if(detail) { detail.style.flex='1'; detail.style.overflow='auto'; }
+    if(d1i) d1i.textContent='⇅'; if(d1l) d1l.textContent='OVERVIEW';
+    if(d2i) d2i.textContent='⇅'; if(d2l) d2l.textContent='HC VIEW';
+  }
+  // Redraw after transition
+  setTimeout(function(){
+    if(typeof _rsDrawOverview==='function') _rsDrawOverview();
+    if(typeof _rsSchZoomReset==='function') _rsSchZoomReset();
+  }, 280);
+}
+
 (function(){
   let _z = 1, _tx = 0, _ty = 0;
   let _dragging = false, _lastX = 0, _lastY = 0;
@@ -53642,8 +53736,10 @@ document.addEventListener('mousedown', function(e){
   background:var(--bg);flex-direction:column;overflow:hidden;">
 
   <!-- ══ LB TOP BAR ══ -->
-  <div id="lbTopBar" style="display:flex;align-items:center;gap:8px;padding:7px 14px;
-    border-bottom:2px solid var(--line);background:var(--paper);flex-shrink:0;min-height:38px;">
+  <div id="lbTopBar" style="display:flex;align-items:center;gap:8px;
+    padding:7px 14px;padding-top:calc(7px + env(safe-area-inset-top, 0px));
+    border-bottom:2px solid var(--line);background:var(--paper);flex-shrink:0;
+    min-height:calc(38px + env(safe-area-inset-top, 0px));">
 
     <button id="lbOvToggleBtn" onclick="_lbToggleOverview()"
       style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
@@ -53687,7 +53783,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #e05050 !important;">
         ⚙ SETTINGS ▾
       </button>
-      <div class="dropdown" id="lbDropSettings" style="display:none;position:absolute;top:100%;right:0;min-width:300px;z-index:3600;
+      <div class="dropdown" id="lbDropSettings" style="display:none;position:absolute;bottom:100%;top:auto;right:0;min-width:300px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">LASHING BRIDGE SETUP</div>
         <button class="dd-action" onclick="_lbOpenBridgeEditor();_lbCloseMenus()">⚙  CONFIGURE LASHING BRIDGES</button>
@@ -53709,7 +53805,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #e0a000 !important;">
         ⚓ LB FITTINGS ▾
       </button>
-      <div class="dropdown" id="lbDropFittings" style="display:none;position:absolute;top:100%;right:0;min-width:320px;z-index:3600;
+      <div class="dropdown" id="lbDropFittings" style="display:none;position:absolute;bottom:100%;top:auto;left:0;min-width:320px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">LASHING EYES</div>
         <button class="dd-action" onclick="_lbTogglePlacer();_lbCloseMenus()">◎  PLACE LASHING EYES</button>
@@ -53731,7 +53827,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #00a050 !important;">
         ▦ STATISTICS ▾
       </button>
-      <div class="dropdown" id="lbDropStats" style="display:none;position:absolute;top:100%;right:0;min-width:260px;z-index:3600;
+      <div class="dropdown" id="lbDropStats" style="display:none;position:absolute;bottom:100%;top:auto;right:0;min-width:260px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">VESSEL SUMMARY</div>
         <button class="dd-action" onclick="_lbOpenStats();_lbCloseMenus()">▦  LASHING BRIDGE EYE STATUS</button>
@@ -53749,7 +53845,7 @@ document.addEventListener('mousedown', function(e){
                border-color:#1e4a6a !important;border-bottom:3px solid #9050e0 !important;">
         ⬆ EXPORT ▾
       </button>
-      <div class="dropdown" id="lbDropExport" style="display:none;position:absolute;top:100%;right:0;min-width:280px;z-index:3600;
+      <div class="dropdown" id="lbDropExport" style="display:none;position:absolute;bottom:100%;top:auto;right:0;min-width:280px;z-index:3600;
         max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">PDF</div>
         <button class="dd-action" onclick="_lbExportAllPDF();_lbCloseMenus()">⬆  EXPORT PDF — ALL BRIDGES (LANDSCAPE)</button>
@@ -53801,6 +53897,17 @@ document.addEventListener('mousedown', function(e){
         letter-spacing:0.07em;text-align:center;">
         CLICK BRIDGE TO SELECT
       </div>
+    </div>
+
+    <!-- Expand/collapse divider handle (mobile only) -->
+    <div id="lbDividerHandle" onclick="_lbTogglePanels()"
+      style="display:none;flex-shrink:0;width:100%;height:32px;
+        background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+        align-items:center;justify-content:center;cursor:pointer;
+        touch-action:manipulation;-webkit-user-select:none;user-select:none;gap:12px;
+        font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.12em;color:var(--text2);">
+      <span id="lbDividerIcon" style="font-size:14px;">⇅</span>
+      <span id="lbDividerLabel">EXPAND BRIDGE VIEW</span>
     </div>
 
     <!-- RIGHT: drawing canvas area -->
@@ -54232,10 +54339,11 @@ document.addEventListener('mousedown', function(e){
   /* Top bar: compress and scroll */
   #lbTopBar {
     padding: 5px 8px !important;
+    padding-top: calc(5px + env(safe-area-inset-top, 0px)) !important;
     gap: 4px !important;
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
-    min-height: 36px !important;
+    min-height: calc(36px + env(safe-area-inset-top, 0px)) !important;
   }
   #lbTopBar > * { flex-shrink: 0 !important; }
   #lbTopBar .btn { font-size: 8px !important; padding: 3px 7px !important; }
@@ -54250,12 +54358,14 @@ document.addEventListener('mousedown', function(e){
   #lbLeft {
     flex: 0 0 auto !important;
     width: 100% !important;
-    max-height: 45vh !important;
+    max-height: 48vh !important;
     min-height: 180px !important;
     border-right: none !important;
     border-bottom: 2px solid var(--line) !important;
-    transition: max-height 0.2s !important;
+    transition: max-height 0.25s, opacity 0.2s !important;
   }
+  /* Divider handle: only show on mobile */
+  #lbDividerHandle { display: flex !important; }
   #lbLeft[style*="width: 0"] {
     max-height: 0 !important;
     min-height: 0 !important;
@@ -54306,6 +54416,33 @@ document.addEventListener('mousedown', function(e){
 }
 
 html.day-mode #lbOverlay, html.gray-panels #lbOverlay { background: #dde8f0; color: #1a3a50; }
+
+/* RS and LB top bars: account for iPhone notch / Dynamic Island */
+@supports (padding-top: env(safe-area-inset-top)) {
+  #rsTopBar, #lbTopBar {
+    padding-top: calc(7px + env(safe-area-inset-top)) !important;
+    min-height: calc(38px + env(safe-area-inset-top)) !important;
+  }
+  /* Compensate: panels below top bar should not be obscured */
+  #rsLeft, #lbLeft {
+    max-height: calc(30vh - env(safe-area-inset-top) / 2) !important;
+  }
+}
+
+/* RS and LB dropdowns open upward — flip border-radius and shadow */
+#rsTopBar .dropdown, #lbTopBar .dropdown {
+  border-radius: 4px 4px 0 0 !important;
+  border-top: 1px solid #1a5080 !important;
+  border-bottom: 3px solid #2a90d0 !important;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.75), 0 -2px 0 #2a90d0 !important;
+}
+html.day-mode #rsTopBar .dropdown,
+html.gray-panels #rsTopBar .dropdown,
+html.day-mode #lbTopBar .dropdown,
+html.gray-panels #lbTopBar .dropdown {
+  box-shadow: 0 -8px 20px rgba(100,140,180,0.25) !important;
+  border-bottom-color: #2a90d0 !important;
+}
 html.day-mode #lbTopBar, html.gray-panels #lbTopBar {
   background: #c8d8e8 !important; border-bottom-color: #8ab0c8 !important;
 }
@@ -55000,6 +55137,59 @@ function _lbUpdateZoomPct(){
   if(el) el.textContent = Math.round(_lbZoom * 100) + '%';
 }
 
+// Mobile panel expand/collapse state
+// 'split' = default (overview top, bridge bottom)
+// 'bridge' = bridge expanded to full height
+// 'overview' = overview expanded to full height
+var _lbPanelMode = 'split';
+
+function _lbTogglePanels(){
+  if(_lbPanelMode === 'split')   _lbPanelMode = 'bridge';
+  else if(_lbPanelMode === 'bridge')  _lbPanelMode = 'overview';
+  else                           _lbPanelMode = 'split';
+  _lbApplyPanelMode();
+}
+
+function _lbApplyPanelMode(){
+  var isMob = window.innerWidth <= 700;
+  if(!isMob) return;
+  var left    = document.getElementById('lbLeft');
+  var right   = document.getElementById('lbRight');
+  var divider = document.getElementById('lbDividerHandle');
+  var icon    = document.getElementById('lbDividerIcon');
+  var label   = document.getElementById('lbDividerLabel');
+  if(!left || !right) return;
+  if(_lbPanelMode === 'bridge'){
+    left.style.maxHeight  = '0';
+    left.style.minHeight  = '0';
+    left.style.opacity    = '0';
+    left.style.overflow   = 'hidden';
+    right.style.flex      = '1';
+    if(icon)   icon.textContent  = '⬆';
+    if(label)  label.textContent = 'SHOW OVERVIEW';
+  } else if(_lbPanelMode === 'overview'){
+    left.style.maxHeight  = '100%';
+    left.style.minHeight  = '180px';
+    left.style.opacity    = '1';
+    left.style.overflow   = '';
+    right.style.flex      = '0 0 0';
+    right.style.overflow  = 'hidden';
+    if(icon)   icon.textContent  = '⬇';
+    if(label)  label.textContent = 'SHOW BRIDGE VIEW';
+  } else {
+    // split
+    left.style.maxHeight  = '45vh';
+    left.style.minHeight  = '180px';
+    left.style.opacity    = '1';
+    left.style.overflow   = '';
+    right.style.flex      = '1';
+    right.style.overflow  = 'hidden';
+    if(icon)   icon.textContent  = '⇅';
+    if(label)  label.textContent = 'EXPAND BRIDGE VIEW';
+  }
+  setTimeout(function(){ _lbDraw(); _lbOvDrawVessel(); }, 50);
+}
+
 function _lbZoomBtn(factor){
   const wrap = document.getElementById('lbCanvasWrap');
   if(!wrap) return;
@@ -55124,31 +55314,52 @@ function _lbZoomReset(){
 
     let _t0 = null;
     wrap.addEventListener('touchstart', function(e){
-      if(e.touches.length === 2){
-        _t0 = {
+      e.preventDefault();
+      if(e.touches.length === 1){
+        _t0 = { type:'pan',
+          sx: e.touches[0].clientX, sy: e.touches[0].clientY,
+          ox: _lbPanX, oy: _lbPanY, moved: false };
+      } else if(e.touches.length === 2){
+        _t0 = { type:'pinch',
           d:  Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
                          e.touches[0].clientY - e.touches[1].clientY),
           cx: (e.touches[0].clientX + e.touches[1].clientX) / 2,
           cy: (e.touches[0].clientY + e.touches[1].clientY) / 2
         };
-        e.preventDefault();
       }
     }, {passive:false});
     wrap.addEventListener('touchmove', function(e){
-      if(e.touches.length === 2 && _t0){
+      e.preventDefault();
+      if(!_t0) return;
+      if(_t0.type === 'pan' && e.touches.length === 1){
+        const dx = e.touches[0].clientX - _t0.sx;
+        const dy = e.touches[0].clientY - _t0.sy;
+        if(Math.abs(dx) > 3 || Math.abs(dy) > 3) _t0.moved = true;
+        _lbPanX = _t0.ox + dx;
+        _lbPanY = _t0.oy + dy;
+        _lbDraw();
+      } else if(_t0.type === 'pinch' && e.touches.length === 2){
         const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
                              e.touches[0].clientY - e.touches[1].clientY);
-        const rect   = wrap.getBoundingClientRect();
-        const ox     = _t0.cx - rect.left, oy = _t0.cy - rect.top;
-        const newZ   = Math.max(0.2, Math.min(10, _lbZoom * (d / _t0.d)));
+        const rect = wrap.getBoundingClientRect();
+        const ox = _t0.cx - rect.left, oy = _t0.cy - rect.top;
+        const newZ = Math.max(0.2, Math.min(10, _lbZoom * (d / _t0.d)));
         _lbPanX = ox + (_lbPanX - ox) * (d / _t0.d);
         _lbPanY = oy + (_lbPanY - oy) * (d / _t0.d);
         _lbZoom = newZ; _t0.d = d;
         _lbUpdateZoomPct();
-        _lbDraw(); e.preventDefault();
+        _lbDraw();
       }
     }, {passive:false});
-    wrap.addEventListener('touchend', function(){ _t0 = null; });
+    wrap.addEventListener('touchend', function(e){
+      if(_t0 && _t0.type === 'pan' && !_t0.moved && e.changedTouches.length){
+        // Treat as tap — fire click logic
+        var fakeE = { clientX: e.changedTouches[0].clientX,
+                      clientY: e.changedTouches[0].clientY, button: 0 };
+        _lbHandleClick(fakeE);
+      }
+      _t0 = null;
+    });
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _init);
@@ -56058,6 +56269,9 @@ function _lbOpenOverlay(){
   if(typeof _lbOvDrawVessel === 'function') _lbOvDrawVessel();
   if(typeof _lbRebuildList === 'function') _lbRebuildList();
   requestAnimationFrame(function(){ if(typeof _lbDraw === 'function') _lbDraw(); });
+  // Reset to split mode on every open
+  if(typeof _lbPanelMode !== 'undefined') _lbPanelMode = 'split';
+  if(typeof _lbApplyPanelMode === 'function') setTimeout(_lbApplyPanelMode, 50);
 }
 
 (function(){
