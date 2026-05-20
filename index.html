@@ -44915,19 +44915,11 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
     <!-- Divider 1: between overview and HC schematic (mobile only) -->
     <div class="rs-divider-handle" id="rsDivider1"
-      style="display:none;flex-shrink:0;width:100%;height:36px;
-        background:rgba(45,127,193,0.12);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
+      style="display:none;flex-shrink:0;width:100%;height:28px;
+        background:rgba(45,127,193,0.18);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
         align-items:center;justify-content:center;cursor:ns-resize;
-        touch-action:none;-webkit-user-select:none;user-select:none;gap:8px;">
-      <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
-        <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-        <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-      </div>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#5eb8ff;font-weight:600;">DRAG TO RESIZE</span>
-      <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
-        <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-        <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-      </div>
+        -webkit-user-select:none;user-select:none;touch-action:none;">
+      <div style="width:40px;height:4px;border-radius:3px;background:#5eb8ff;opacity:0.9;"></div>
     </div>
 
     <!-- RIGHT: detail panel — schematic column (left) + seal rows (right) -->
@@ -44962,19 +44954,11 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
       <!-- Divider 2: between HC schematic and seal rows (mobile only) -->
       <div class="rs-divider-handle" id="rsDivider2"
-        style="display:none;flex-shrink:0;width:100%;height:36px;
-          background:rgba(45,127,193,0.12);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
+        style="display:none;flex-shrink:0;width:100%;height:28px;
+          background:rgba(45,127,193,0.18);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
           align-items:center;justify-content:center;cursor:ns-resize;
-          touch-action:none;-webkit-user-select:none;user-select:none;gap:8px;">
-        <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
-          <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-          <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-        </div>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#5eb8ff;font-weight:600;">DRAG TO RESIZE</span>
-        <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
-          <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-          <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-        </div>
+          -webkit-user-select:none;user-select:none;touch-action:none;">
+        <div style="width:40px;height:4px;border-radius:3px;background:#5eb8ff;opacity:0.9;"></div>
       </div>
 
       <!-- SEAL ROWS — scrollable, takes all remaining width -->
@@ -45748,18 +45732,21 @@ function _rsToggleOverview(){
       var strip = document.getElementById('rsSchematicStrip');
       var MIN_PX = 80;
       if(_rsOvVisible){
-        // Expand overview to ~65% of available height, shrink schematic
-        var newH = Math.round(avail * 0.65);
-        var remainH = avail - newH - 72; // 72 = two dividers
-        var schH = Math.max(MIN_PX, Math.round(remainH * 0.5));
-        panel.style.height    = newH + 'px';
-        panel.style.maxHeight = newH + 'px';
-        if(strip){ strip.style.height=schH+'px'; strip.style.flex='0 0 '+schH+'px'; }
-      } else {
-        // Return to default split
+        // Show overview at default height
         panel.style.height    = '30vh';
         panel.style.maxHeight = '30vh';
+        panel.style.overflow  = '';
         if(strip){ strip.style.height='38vh'; strip.style.flex='0 0 38vh'; }
+        var d1=document.getElementById('rsDivider1'),d2=document.getElementById('rsDivider2');
+        if(d1) d1.style.display='flex'; if(d2) d2.style.display='flex';
+      } else {
+        // Hide overview — HC + seals fill full height
+        panel.style.height    = '0';
+        panel.style.maxHeight = '0';
+        panel.style.overflow  = 'hidden';
+        if(strip){ strip.style.height='50vh'; strip.style.flex='0 0 50vh'; }
+        var d1=document.getElementById('rsDivider1'),d2=document.getElementById('rsDivider2');
+        if(d1) d1.style.display='none'; if(d2) d2.style.display='flex';
       }
     } else {
       panel.style.width    = _rsOvVisible ? '407px' : '0';
@@ -53590,8 +53577,8 @@ function _rsInitDividers(){
   // ── Divider 1: between rsLeft (overview) and rsRight ─────────────────
   function _initDiv1(){
     var d = document.getElementById('rsDivider1');
-    if(!d || d._rsDragInited) return;
-    d._rsDragInited = true;
+    if(!d) return;
+    var dNew=d.cloneNode(true); d.parentNode.replaceChild(dNew,d); d=dNew;
     var left = document.getElementById('rsLeft');
     if(!left) return;
 
@@ -53626,8 +53613,8 @@ function _rsInitDividers(){
   // ── Divider 2: between rsSchematicStrip and rsDetailBody ─────────────
   function _initDiv2(){
     var d = document.getElementById('rsDivider2');
-    if(!d || d._rsDragInited) return;
-    d._rsDragInited = true;
+    if(!d) return;
+    var dNew=d.cloneNode(true); d.parentNode.replaceChild(dNew,d); d=dNew;
     var strip = document.getElementById('rsSchematicStrip');
     if(!strip) return;
 
@@ -53971,19 +53958,11 @@ function _rsInitDividers(){
 
     <!-- Expand/collapse divider handle (mobile only) -->
     <div id="lbDividerHandle"
-      style="display:none;flex-shrink:0;width:100%;height:36px;
-        background:rgba(45,127,193,0.12);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
+      style="display:none;flex-shrink:0;width:100%;height:28px;
+        background:rgba(45,127,193,0.18);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
         align-items:center;justify-content:center;cursor:ns-resize;
-        touch-action:none;-webkit-user-select:none;user-select:none;gap:8px;">
-      <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
-        <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-        <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-      </div>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#5eb8ff;font-weight:600;">DRAG TO RESIZE</span>
-      <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
-        <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-        <div style="width:32px;height:3px;border-radius:2px;background:#5eb8ff;"></div>
-      </div>
+        -webkit-user-select:none;user-select:none;gap:10px;touch-action:none;">
+      <div style="width:40px;height:4px;border-radius:3px;background:#5eb8ff;opacity:0.9;"></div>
     </div>
 
     <!-- RIGHT: drawing canvas area -->
@@ -55225,8 +55204,11 @@ function _lbApplyPanelMode(){
 function _lbInitDivider(){
   if(window.innerWidth > 700) return;
   var d = document.getElementById('lbDividerHandle');
-  if(!d || d._lbDragInited) return;
-  d._lbDragInited = true;
+  if(!d) return;
+  // Re-init on every call by cloning node to remove old listeners
+  var dNew = d.cloneNode(true);
+  d.parentNode.replaceChild(dNew, d);
+  d = dNew;
   var overlay = document.getElementById('lbOverlay');
   var left    = document.getElementById('lbLeft');
   if(!left || !overlay) return;
@@ -57121,16 +57103,21 @@ function _lbToggleOverview(){
       var avail = overlay ? overlay.clientHeight - (tb ? tb.offsetHeight : 40) : window.innerHeight;
       var MIN_PX = 100;
       if(_lbOvPanelVisible){
-        // Expand overview to ~65% of available height, bridge gets the rest
-        var newH = Math.round(avail * 0.65);
-        panel.style.height    = newH + 'px';
-        panel.style.maxHeight = newH + 'px';
-        panel.style.minHeight = MIN_PX + 'px';
-      } else {
-        // Return to default split
+        // Show overview at default height (48vh)
         panel.style.height    = '48vh';
         panel.style.maxHeight = '48vh';
-        panel.style.minHeight = '180px';
+        panel.style.minHeight = MIN_PX + 'px';
+        panel.style.overflow  = '';
+        var divH = document.getElementById('lbDividerHandle');
+        if(divH) divH.style.display = 'flex';
+      } else {
+        // Hide overview entirely — bridge fills full height
+        panel.style.height    = '0';
+        panel.style.maxHeight = '0';
+        panel.style.minHeight = '0';
+        panel.style.overflow  = 'hidden';
+        var divH = document.getElementById('lbDividerHandle');
+        if(divH) divH.style.display = 'none';
       }
     } else {
       panel.style.width    = _lbOvPanelVisible ? '360px' : '0';
