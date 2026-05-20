@@ -44915,11 +44915,11 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
     <!-- Divider 1: between overview and HC schematic (mobile only) -->
     <div class="rs-divider-handle" id="rsDivider1"
-      style="display:none;flex-shrink:0;width:100%;height:28px;
-        background:rgba(45,127,193,0.18);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
+      style="display:none;flex-shrink:0;width:100%;height:20px;
+        background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
         align-items:center;justify-content:center;cursor:ns-resize;
         -webkit-user-select:none;user-select:none;touch-action:none;">
-      <div style="width:40px;height:4px;border-radius:3px;background:#5eb8ff;opacity:0.9;"></div>
+      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;"></div>
     </div>
 
     <!-- RIGHT: detail panel — schematic column (left) + seal rows (right) -->
@@ -44954,11 +44954,11 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
       <!-- Divider 2: between HC schematic and seal rows (mobile only) -->
       <div class="rs-divider-handle" id="rsDivider2"
-        style="display:none;flex-shrink:0;width:100%;height:28px;
-          background:rgba(45,127,193,0.18);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
+        style="display:none;flex-shrink:0;width:100%;height:20px;
+          background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
           align-items:center;justify-content:center;cursor:ns-resize;
           -webkit-user-select:none;user-select:none;touch-action:none;">
-        <div style="width:40px;height:4px;border-radius:3px;background:#5eb8ff;opacity:0.9;"></div>
+        <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;"></div>
       </div>
 
       <!-- SEAL ROWS — scrollable, takes all remaining width -->
@@ -53578,7 +53578,7 @@ function _rsInitDividers(){
   function _initDiv1(){
     var d = document.getElementById('rsDivider1');
     if(!d) return;
-    var dNew=d.cloneNode(true); d.parentNode.replaceChild(dNew,d); d=dNew;
+    d.ontouchstart = null; d.onmousedown = null;
     var left = document.getElementById('rsLeft');
     if(!left) return;
 
@@ -53606,15 +53606,15 @@ function _rsInitDividers(){
       document.addEventListener('touchmove', onTouchMove, {passive:false});
       document.addEventListener('touchend',  onEnd);
     }
-    d.addEventListener('mousedown',  function(e){ e.preventDefault(); startDrag(e.clientY); });
-    d.addEventListener('touchstart', function(e){ e.preventDefault(); startDrag(e.touches[0].clientY); }, {passive:false});
+    d.onmousedown  = function(e){ e.preventDefault(); startDrag(e.clientY); };
+    d.ontouchstart = function(e){ e.preventDefault(); if(e.touches[0]) startDrag(e.touches[0].clientY); };
   }
 
   // ── Divider 2: between rsSchematicStrip and rsDetailBody ─────────────
   function _initDiv2(){
     var d = document.getElementById('rsDivider2');
     if(!d) return;
-    var dNew=d.cloneNode(true); d.parentNode.replaceChild(dNew,d); d=dNew;
+    d.ontouchstart = null; d.onmousedown = null;
     var strip = document.getElementById('rsSchematicStrip');
     if(!strip) return;
 
@@ -53647,8 +53647,8 @@ function _rsInitDividers(){
       document.addEventListener('touchmove', onTouchMove, {passive:false});
       document.addEventListener('touchend',  onEnd);
     }
-    d.addEventListener('mousedown',  function(e){ e.preventDefault(); startDrag(e.clientY); });
-    d.addEventListener('touchstart', function(e){ e.preventDefault(); startDrag(e.touches[0].clientY); }, {passive:false});
+    d.onmousedown  = function(e){ e.preventDefault(); startDrag(e.clientY); };
+    d.ontouchstart = function(e){ e.preventDefault(); if(e.touches[0]) startDrag(e.touches[0].clientY); };
   }
 
   _initDiv1();
@@ -53958,11 +53958,11 @@ function _rsInitDividers(){
 
     <!-- Expand/collapse divider handle (mobile only) -->
     <div id="lbDividerHandle"
-      style="display:none;flex-shrink:0;width:100%;height:28px;
-        background:rgba(45,127,193,0.18);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
+      style="display:none;flex-shrink:0;width:100%;height:20px;
+        background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
         align-items:center;justify-content:center;cursor:ns-resize;
-        -webkit-user-select:none;user-select:none;gap:10px;touch-action:none;">
-      <div style="width:40px;height:4px;border-radius:3px;background:#5eb8ff;opacity:0.9;"></div>
+        -webkit-user-select:none;user-select:none;touch-action:none;">
+      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;"></div>
     </div>
 
     <!-- RIGHT: drawing canvas area -->
@@ -55205,44 +55205,42 @@ function _lbInitDivider(){
   if(window.innerWidth > 700) return;
   var d = document.getElementById('lbDividerHandle');
   if(!d) return;
-  // Re-init on every call by cloning node to remove old listeners
-  var dNew = d.cloneNode(true);
-  d.parentNode.replaceChild(dNew, d);
-  d = dNew;
-  var overlay = document.getElementById('lbOverlay');
-  var left    = document.getElementById('lbLeft');
-  if(!left || !overlay) return;
+  // Remove any existing drag listener by replacing handler property
+  d.ontouchstart = null; d.onmousedown = null;
+  var MIN_PX = 80;
 
-  var MIN_PX = 100;
-
-  function startDrag(clientY){
-    var startY = clientY;
-    var startH = left.offsetHeight;
-    var tb     = document.getElementById('lbTopBar');
-    var avail  = overlay.clientHeight - (tb ? tb.offsetHeight : 40);
+  function startDrag(startClientY){
+    var left = document.getElementById('lbLeft');
+    var tb   = document.getElementById('lbTopBar');
+    var ov   = document.getElementById('lbOverlay');
+    if(!left) return;
+    var startH = left.getBoundingClientRect().height;
+    var avail  = (ov ? ov.getBoundingClientRect().height : window.innerHeight) - (tb ? tb.getBoundingClientRect().height : 40) - 28;
 
     function onMove(y){
-      var newH = Math.max(MIN_PX, Math.min(avail - MIN_PX, startH + (y - startY)));
+      var newH = Math.max(MIN_PX, Math.min(avail - MIN_PX, startH + (y - startClientY)));
       left.style.height    = newH + 'px';
       left.style.maxHeight = newH + 'px';
     }
     function onEnd(){
-      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mousemove', onMM);
       document.removeEventListener('mouseup',   onEnd);
-      document.removeEventListener('touchmove', onTouchMove, {passive:false});
+      document.removeEventListener('touchmove', onTM);
       document.removeEventListener('touchend',  onEnd);
-      if(typeof _lbDraw==='function') _lbDraw();
-      if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
+      setTimeout(function(){
+        if(typeof _lbDraw==='function') _lbDraw();
+        if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
+      }, 30);
     }
-    function onMouseMove(e){ onMove(e.clientY); }
-    function onTouchMove(e){ e.preventDefault(); onMove(e.touches[0].clientY); }
-    document.addEventListener('mousemove', onMouseMove);
+    function onMM(e){ onMove(e.clientY); }
+    function onTM(e){ e.preventDefault(); if(e.touches[0]) onMove(e.touches[0].clientY); }
+    document.addEventListener('mousemove', onMM);
     document.addEventListener('mouseup',   onEnd);
-    document.addEventListener('touchmove', onTouchMove, {passive:false});
+    document.addEventListener('touchmove', onTM, {passive:false});
     document.addEventListener('touchend',  onEnd);
   }
-  d.addEventListener('mousedown',  function(e){ e.preventDefault(); startDrag(e.clientY); });
-  d.addEventListener('touchstart', function(e){ e.preventDefault(); startDrag(e.touches[0].clientY); }, {passive:false});
+  d.onmousedown  = function(e){ e.preventDefault(); startDrag(e.clientY); };
+  d.ontouchstart = function(e){ e.preventDefault(); if(e.touches[0]) startDrag(e.touches[0].clientY); };
 }
 
 function _lbZoomBtn(factor){
@@ -56325,8 +56323,7 @@ function _lbOpenOverlay(){
   if(typeof _lbRebuildList === 'function') _lbRebuildList();
   requestAnimationFrame(function(){ if(typeof _lbDraw === 'function') _lbDraw(); });
   // Reset to split mode on every open
-  if(typeof _lbPanelMode !== 'undefined') _lbPanelMode = 'split';
-  if(typeof _lbApplyPanelMode === 'function') setTimeout(_lbApplyPanelMode, 50);
+  if(typeof _lbInitDivider === 'function') setTimeout(_lbInitDivider, 200);
 }
 
 (function(){
