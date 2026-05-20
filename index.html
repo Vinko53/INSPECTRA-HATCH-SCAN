@@ -44428,23 +44428,14 @@ document.addEventListener('mousedown', e => {
       </div>
     </div>
 
+    <!-- Drag-to-resize divider (mobile only) -->
     <div id="lbDividerHandle"
       oncontextmenu="return false;"
       style="display:none;flex-shrink:0;width:100%;height:20px;
         background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
         align-items:center;justify-content:center;cursor:ns-resize;
-        -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
-        -webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent;">
-      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;pointer-events:none;"></div>
-    </div>
-
-    <!-- Drag-to-resize divider (mobile only — long-press then drag) -->
-    <div id="lbDividerHandle"
-      style="display:none;flex-shrink:0;width:100%;height:20px;
-        background:rgba(45,127,193,0.10);border-top:1px solid #2d7fc1;border-bottom:1px solid #2d7fc1;
-        align-items:center;justify-content:center;cursor:ns-resize;
         -webkit-user-select:none;user-select:none;touch-action:none;">
-      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;"></div>
+      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;pointer-events:none;"></div>
     </div>
 
     <!-- RIGHT: drawing canvas area -->
@@ -44467,6 +44458,432 @@ document.addEventListener('mousedown', e => {
       </div>
 
       <!-- Status/info strip -->
+      <div id="lbInfoStrip" style="flex-shrink:0;height:28px;border-top:1px solid var(--line);
+        background:var(--paper);display:flex;align-items:center;padding:0 14px;gap:16px;">
+        <span id="lbStripBridge" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
+          color:var(--bright);letter-spacing:0.1em;font-weight:700;"></span>
+        <span id="lbStripView" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
+          color:var(--text2);letter-spacing:0.1em;"></span>
+        <span id="lbStripCount" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
+          color:var(--text2);letter-spacing:0.08em;"></span>
+        <span style="flex:1;"></span>
+        <span id="lbStripEyeInfo" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
+          color:var(--text2);letter-spacing:0.08em;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ══ END LB OVERLAY ══ -->
+
+
+<!-- ══ LB COLOR PALETTE ══ -->
+<div id="lbPalette" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:3700;
+  background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--blue);
+  box-shadow:0 8px 32px rgba(0,0,0,0.35);
+  font-family:'IBM Plex Mono',monospace;user-select:none;
+  top:80px;right:20px;width:180px;">
+  <div id="lbPaletteHandle" style="display:flex;align-items:center;height:28px;
+    padding:0 8px 0 10px;background:var(--bg);border-bottom:1px solid var(--line);cursor:grab;gap:6px;">
+    <span style="font-size:10px;color:var(--blue);flex-shrink:0;">●</span>
+    <span style="font-size:8px;font-weight:700;letter-spacing:0.2em;color:var(--blue);flex:1;text-transform:uppercase;">LB PALETTE</span>
+    <button onclick="_lbHidePalette()" class="panel-close-btn">✕</button>
+  </div>
+  <div style="padding:8px;">
+    <div style="font-size:7px;letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;">COLOR</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:8px;">
+      <button class="fpal-btn fpal-grn" id="lbPalGrn" onclick="_lbSetEyeColor('green')">● GRN</button>
+      <button class="fpal-btn fpal-yel" id="lbPalYel" onclick="_lbSetEyeColor('yellow')">● YEL</button>
+      <button class="fpal-btn fpal-red" id="lbPalRed" onclick="_lbSetEyeColor('red')">● RED</button>
+      <button class="fpal-btn fpal-blu" id="lbPalBlu" onclick="_lbSetEyeColor('blue')">● BLU</button>
+      <button class="fpal-btn fpal-wht" id="lbPalWht" onclick="_lbSetEyeColor('white')">● WHT</button>
+      <button class="fpal-btn fpal-blk" id="lbPalBlk" onclick="_lbSetEyeColor('black')">⊘ CLR</button>
+    </div>
+    <div style="height:1px;background:var(--line);margin:6px 0 5px;"></div>
+    <div style="font-size:6.5px;color:var(--dim);letter-spacing:0.10em;line-height:1.7;">
+      CLICK → PAINT ONE EYE<br>
+      DRAG → PAINT ALL IN AREA
+    </div>
+    <div style="height:1px;background:var(--line);margin:6px 0 5px;"></div>
+    <button onclick="_lbPaintCurrentBridge()" style="width:100%;font-family:'IBM Plex Mono',monospace;
+      font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+      background:var(--bg);color:var(--blue);border:1px solid var(--line);
+      padding:5px 4px;cursor:pointer;margin-bottom:4px;">
+      ▣ PAINT THIS BRIDGE
+    </button>
+    <button onclick="_lbPaintAllBridges()" style="width:100%;font-family:'IBM Plex Mono',monospace;
+      font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+      background:var(--bg);color:var(--blue);border:1px solid var(--line);
+      padding:5px 4px;cursor:pointer;">
+      ▣▣ PAINT ALL BRIDGES
+    </button>
+  </div>
+</div>
+<div id="lbPalette" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:3700;
+  background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--blue);
+  box-shadow:0 8px 32px rgba(0,0,0,0.35);
+  font-family:'IBM Plex Mono',monospace;user-select:none;
+  top:80px;right:20px;width:180px;">
+  <div id="lbPaletteHandle" style="display:flex;align-items:center;height:28px;
+    padding:0 8px 0 10px;background:var(--bg);border-bottom:1px solid var(--line);cursor:grab;gap:6px;">
+    <span style="font-size:10px;color:var(--blue);flex-shrink:0;">●</span>
+    <span style="font-size:8px;font-weight:700;letter-spacing:0.2em;color:var(--blue);flex:1;text-transform:uppercase;">LB PALETTE</span>
+    <button onclick="_lbHidePalette()" class="panel-close-btn">✕</button>
+  </div>
+  <div style="padding:8px;">
+    <div style="font-size:7px;letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;">COLOR</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:8px;">
+      <button class="fpal-btn fpal-grn" id="lbPalGrn" onclick="_lbSetEyeColor('green')">● GRN</button>
+      <button class="fpal-btn fpal-yel" id="lbPalYel" onclick="_lbSetEyeColor('yellow')">● YEL</button>
+      <button class="fpal-btn fpal-red" id="lbPalRed" onclick="_lbSetEyeColor('red')">● RED</button>
+      <button class="fpal-btn fpal-blu" id="lbPalBlu" onclick="_lbSetEyeColor('blue')">● BLU</button>
+      <button class="fpal-btn fpal-wht" id="lbPalWht" onclick="_lbSetEyeColor('white')">● WHT</button>
+      <button class="fpal-btn fpal-blk" id="lbPalBlk" onclick="_lbSetEyeColor('black')">⊘ CLR</button>
+    </div>
+    <div style="height:1px;background:var(--line);margin:6px 0 5px;"></div>
+    <div style="font-size:6.5px;color:var(--dim);letter-spacing:0.10em;line-height:1.7;">
+      CLICK → PAINT ONE EYE<br>
+      DRAG → PAINT ALL IN AREA
+    </div>
+    <div style="height:1px;background:var(--line);margin:6px 0 5px;"></div>
+    <button onclick="_lbPaintCurrentBridge()" style="width:100%;font-family:'IBM Plex Mono',monospace;
+      font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+      background:var(--bg);color:var(--blue);border:1px solid var(--line);
+      padding:5px 4px;cursor:pointer;margin-bottom:4px;">
+      ▣ PAINT THIS BRIDGE
+    </button>
+    <button onclick="_lbPaintAllBridges()" style="width:100%;font-family:'IBM Plex Mono',monospace;
+      font-size:7px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+      background:var(--bg);color:var(--blue);border:1px solid var(--line);
+      padding:5px 4px;cursor:pointer;">
+      ▣▣ PAINT ALL BRIDGES
+    </button>
+  </div>
+</div>
+
+
+
+<!-- ══ LB LASHING EYE PLACER PANEL ══ -->
+<div id="lbEyePlacerPal" style="display:none;position:fixed;overflow-y:auto;max-height:min(90vh,600px);z-index:3700;width:210px;
+  background:var(--paper);border:1px solid var(--line);border-top:3px solid #e0a000;
+  box-shadow:0 16px 48px rgba(0,0,0,0.55);font-family:'IBM Plex Mono',monospace;
+  top:80px;left:380px;">
+  <div id="lbEyePlacerHandle" style="display:flex;align-items:center;height:28px;padding:0 8px 0 10px;
+    background:var(--bg);border-bottom:1px solid #1e4a74;cursor:grab;gap:6px;">
+    <span style="font-size:11px;color:#e0a000;flex-shrink:0;">⚓</span>
+    <span style="font-size:8px;font-weight:700;letter-spacing:0.2em;color:#e0a000;flex:1;text-transform:uppercase;">LB EYE PLACER</span>
+    <button onclick="_lbHidePlacer()" class="panel-close-btn">✕</button>
+  </div>
+  <div style="padding:8px 8px 10px;">
+
+    <!-- TYPE & SYMBOL — identical to HC placer -->
+    <div style="font-size:7px;letter-spacing:0.18em;color:var(--dim);text-transform:uppercase;margin-bottom:3px;">TYPE &amp; SYMBOL</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:2px;padding:0 1px;">
+      <div style="font-size:6px;letter-spacing:0.12em;color:var(--muted);text-align:center;text-transform:uppercase;">SINGLE</div>
+      <div style="font-size:6px;letter-spacing:0.12em;color:var(--muted);text-align:center;text-transform:uppercase;">DOUBLE</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:2px;">
+      <button id="lbLashCombo_single_dome" class="btn view-on"
+        onclick="_lbEyeType='single';_lbEyeSymbol='dome';_lbPlacerSyncUI()"
+        style="font-size:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <svg width="34" height="20" viewBox="-17 -18 34 20">
+          <path d="M -12 0 A 12 12 0 0 1 12 0 Z" fill="currentColor" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="0" cy="-6" r="3.8" fill="var(--paper,#0b1018)" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span style="font-size:6.5px;">BELL</span>
+      </button>
+      <button id="lbLashCombo_double_dome" class="btn"
+        onclick="_lbEyeType='double';_lbEyeSymbol='dome';_lbPlacerSyncUI()"
+        style="font-size:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <svg width="34" height="20" viewBox="-17 -18 34 20">
+          <path d="M -16 0 A 7 7 0 0 1 -2 0 Z" fill="currentColor" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="-9" cy="-4.5" r="2.4" fill="var(--paper,#0b1018)" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M 2 0 A 7 7 0 0 1 16 0 Z" fill="currentColor" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="9" cy="-4.5" r="2.4" fill="var(--paper,#0b1018)" stroke="currentColor" stroke-width="1.1"/>
+        </svg>
+        <span style="font-size:6.5px;">BELL</span>
+      </button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:2px;padding:0 1px;">
+      <div style="font-size:6px;letter-spacing:0.12em;color:var(--muted);text-align:center;text-transform:uppercase;">NARROW</div>
+      <div style="font-size:6px;letter-spacing:0.12em;color:var(--muted);text-align:center;text-transform:uppercase;">WIDE</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+      <button id="lbLashCombo_single_plate" class="btn"
+        onclick="_lbEyeType='single';_lbEyeSymbol='plate';_lbPlacerSyncUI()"
+        style="font-size:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <svg width="34" height="20" viewBox="-17 -10 34 20">
+          <rect x="-7" y="-4" width="14" height="8" rx="1" fill="currentColor" stroke="currentColor" stroke-width="1" opacity="0.8"/>
+        </svg>
+        <span style="font-size:6.5px;">RECT</span>
+      </button>
+      <button id="lbLashCombo_double_plate" class="btn"
+        onclick="_lbEyeType='double';_lbEyeSymbol='plate';_lbPlacerSyncUI()"
+        style="font-size:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <svg width="34" height="20" viewBox="-17 -10 34 20">
+          <rect x="-14" y="-4" width="28" height="8" rx="1" fill="currentColor" stroke="currentColor" stroke-width="1" opacity="0.8"/>
+        </svg>
+        <span style="font-size:6.5px;">RECT</span>
+      </button>
+    </div>
+
+    <div style="height:1px;background:var(--line);margin:4px 0 6px;"></div>
+
+    <!-- PLACEMENT ZONE — auto-detected from nearest snap -->
+    <div style="font-size:7px;letter-spacing:0.18em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;">PLACEMENT MODE</div>
+    <div style="display:flex;gap:4px;margin-bottom:8px;">
+      <button id="lbPlaceZoneSnap" class="btn view-on"
+        onclick="_lbEyeZone='snap';_lbPlacerSyncUI()"
+        style="flex:1;font-size:7px;padding:5px 3px;"
+        title="Auto-snap to nearest pillar or platform">
+        ⊞ AUTO SNAP
+      </button>
+      <button id="lbPlaceZoneFree" class="btn"
+        onclick="_lbEyeZone='free';_lbPlacerSyncUI()"
+        style="flex:1;font-size:7px;padding:5px 3px;"
+        title="Free placement anywhere">
+        ✛ FREE
+      </button>
+    </div>
+
+    <div id="lbPlacerHint" style="font-size:7px;color:var(--dim);letter-spacing:0.08em;line-height:1.6;margin-bottom:8px;">
+      LEFT-CLICK &#9658; PLACE<br>
+      RIGHT-CLICK &#9658; DELETE<br>
+      <span id="lbPlacerHintZone">AUTO-SNAPS TO NEAREST POSITION</span>
+    </div>
+    </div>
+
+    <div style="height:1px;background:var(--line);margin:8px 0 7px;"></div>
+
+    <!-- AUTO PLACEMENT -->
+    <div style="font-size:7px;font-weight:700;letter-spacing:0.18em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;">AUTO PLACEMENT</div>
+    <div style="font-size:6.5px;letter-spacing:0.12em;color:#3a6080;text-transform:uppercase;margin-bottom:3px;">SOURCE COLUMN (port side)</div>
+    <div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;">
+      <button onclick="_lbAutoSrcPrev()" style="font-family:'IBM Plex Mono',monospace;background:#0a1828;color:#e0a000;border:1px solid #1e4a74;padding:3px 7px;cursor:pointer;font-size:10px;font-weight:700;">&#9664;</button>
+      <div id="lbAutoSrcLbl" style="flex:1;text-align:center;font-size:8px;font-weight:700;color:#e0a000;letter-spacing:0.12em;">COL 1</div>
+      <button onclick="_lbAutoSrcNext()" style="font-family:'IBM Plex Mono',monospace;background:#0a1828;color:#e0a000;border:1px solid #1e4a74;padding:3px 7px;cursor:pointer;font-size:10px;font-weight:700;">&#9654;</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="checkbox" id="lbAutoAllCols" checked style="accent-color:#e0a000;width:11px;height:11px;cursor:pointer;">
+        <span style="font-size:7px;color:#e0a000;letter-spacing:0.10em;text-transform:uppercase;">APPLY TO ALL COLUMNS</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="checkbox" id="lbAutoMirror" checked style="accent-color:#e0a000;width:11px;height:11px;cursor:pointer;">
+        <span style="font-size:7px;color:#e0a000;letter-spacing:0.10em;text-transform:uppercase;">MIRROR TO STARBOARD</span>
+      </label>
+    </div>
+    <button onclick="_lbAutoPlace()"
+      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
+      letter-spacing:0.14em;text-transform:uppercase;
+      background:rgba(224,160,0,0.18);color:#e0a000;
+      border:1px solid #a07000;border-top:2px solid #e0a000;
+      padding:7px 4px;cursor:pointer;"
+      onmouseover="this.style.background='rgba(224,160,0,0.38)'"
+      onmouseout="this.style.background='rgba(224,160,0,0.18)'">
+      &#9654;&#9654; AUTO PLACE PATTERN
+    </button>
+    <div id="lbAutoStatus" style="margin-top:5px;min-height:14px;font-size:7px;color:#00c860;letter-spacing:0.10em;text-transform:uppercase;text-align:center;"></div>
+
+    <div style="height:1px;background:var(--line);margin:8px 0 7px;"></div>
+
+    <!-- SIDE RESTRICTIONS (shown when a side is blocked by rules) -->
+    <div id="lbSideOvRow" style="display:none;margin-bottom:6px;">
+      <div style="font-size:6.5px;color:var(--dim);letter-spacing:0.10em;margin-bottom:4px;">SIDE RESTRICTIONS</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button id="lbSideOvAft" onclick="_lbToggleSideOverride('aft')"
+          style="font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;
+            letter-spacing:0.08em;padding:4px 8px;border-radius:3px;cursor:pointer;
+            border:1px solid #aa3030;background:rgba(180,30,30,0.15);color:#900000;
+            text-align:left;">✕ AFT SIDE BLOCKED</button>
+        <button id="lbSideOvFwd" onclick="_lbToggleSideOverride('fwd')"
+          style="font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;
+            letter-spacing:0.08em;padding:4px 8px;border-radius:3px;cursor:pointer;
+            border:1px solid #aa3030;background:rgba(180,30,30,0.15);color:#900000;
+            text-align:left;">✕ FWD SIDE BLOCKED</button>
+      </div>
+    </div>
+
+    <div style="height:1px;background:var(--line);margin:8px 0 7px;"></div>
+
+    <!-- DELETE MODE -->
+    <div style="font-size:6.5px;color:var(--dim);letter-spacing:0.10em;margin-bottom:4px;">DELETE SCOPE</div>
+    <div style="display:flex;gap:4px;margin-bottom:5px;">
+      <label style="flex:1;display:flex;align-items:center;gap:3px;font-size:6.5px;
+        color:var(--text);letter-spacing:0.08em;cursor:pointer;">
+        <input type="radio" name="lbDelScope" id="lbDelScopeCurrent" value="current" checked
+          style="accent-color:#e06060;width:10px;height:10px;">
+        THIS SIDE
+      </label>
+      <label style="flex:1;display:flex;align-items:center;gap:3px;font-size:6.5px;
+        color:var(--text);letter-spacing:0.08em;cursor:pointer;">
+        <input type="radio" name="lbDelScope" id="lbDelScopeBoth" value="both"
+          style="accent-color:#e06060;width:10px;height:10px;">
+        BOTH SIDES
+      </label>
+    </div>
+    <button id="lbDeleteModeBtn" onclick="_lbToggleDeleteMode()"
+      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
+      letter-spacing:0.14em;text-transform:uppercase;
+      background:rgba(180,30,30,0.15);color:#e06060;
+      border:1px solid #8a2020;padding:6px 4px;cursor:pointer;margin-bottom:4px;">
+      ✕ DELETE LASHING EYES
+    </button>
+    <div id="lbDeleteHint" style="display:none;font-size:6.5px;color:#e06060;letter-spacing:0.08em;line-height:1.7;margin-bottom:4px;">
+      CLICK → DELETE ONE EYE<br>DRAG → DELETE ALL IN AREA
+    </div>
+
+    <div style="height:1px;background:var(--line);margin:6px 0 7px;"></div>
+
+    <!-- GUIDELINES toggle -->
+    <button onclick="_lbToggleGuides()"
+      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
+      letter-spacing:0.14em;text-transform:uppercase;
+      background:rgba(224,160,0,0.15);color:#e0a000;
+      border:1px solid #a07000;padding:6px 4px;cursor:pointer;"
+      id="lbGuidesBtn">
+      ⊞ HIDE GUIDELINES
+    </button>
+
+    <div style="height:1px;background:var(--line);margin:7px 0;"></div>
+    <button onclick="openLashEyeLib()"
+      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;
+      letter-spacing:0.14em;text-transform:uppercase;
+      background:rgba(45,127,193,0.18);color:#5eb8ff;
+      border:1px solid #2d7fc1;padding:6px 4px;cursor:pointer;">
+      ◎ LASHING EYE LIBRARY
+    </button>
+  </div>
+</div>
+
+<!-- ══ LB STATS MODAL ══ -->
+<div id="lbStatsOverlay" style="display:none;position:fixed;inset:0;z-index:7000;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;">
+  <div id="lbStatsBox" style="background:#111820;border:1.5px solid #2d6090;border-radius:8px;
+    width:min(96vw,1100px);max-height:92vh;display:flex;flex-direction:column;
+    box-shadow:0 12px 60px rgba(0,0,0,0.9);overflow:hidden;">
+
+    <!-- HEADER with logo — matches subStatsModal exactly -->
+    <div id="lbStatsHeader" style="display:flex;align-items:center;gap:18px;padding:16px 26px 14px;
+      border-bottom:2px solid #1e5a90;flex-shrink:0;
+      background:linear-gradient(90deg,#0a1a2e 0%,#0d2240 100%);">
+      <div id="lbStatsLogoMark" style="font-size:24px;color:#e07020;">▦</div>
+      <div>
+        <div id="lbStatsLogoText" style="font-size:17px;font-weight:700;color:#ffffff;letter-spacing:0.12em;">
+          <em style="color:#f08030;font-style:normal;">INSPECTRA</em> // HATCH SCAN
+        </div>
+        <div id="lbStatsSub" style="font-size:10px;color:#7ab0d0;letter-spacing:0.2em;text-transform:uppercase;margin-top:3px;">
+          Lashing Bridge Statistics
+        </div>
+      </div>
+      <div id="lbStatsDate" style="margin-left:auto;font-size:11px;color:#9ac8e0;text-align:right;line-height:1.7;letter-spacing:0.08em;"></div>
+      <button id="lbStatsClose" onclick="document.getElementById('lbStatsOverlay').style.display='none'"
+        style="background:#a02020;border:1.5px solid #cc3030;color:#ffffff;
+          font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
+          padding:6px 16px;cursor:pointer;border-radius:4px;letter-spacing:0.12em;margin-left:16px;
+          box-shadow:0 1px 4px rgba(0,0,0,0.4);">✕ CLOSE</button>
+    </div>
+
+    <!-- TOOLBAR with export buttons — matches subStatsModal -->
+    <div id="lbStatsToolbar" style="display:flex;gap:10px;padding:10px 26px;
+      border-bottom:1px solid #1e3a54;flex-shrink:0;align-items:center;background:#0d1824;">
+      <button class="stats-export-btn" onclick="_lbStatsExportPDF()"
+        style="background:#1a4a80;border:1.5px solid #4a90d0;color:#ffffff;">⬡ EXPORT PDF</button>
+      <button class="stats-export-btn" onclick="_lbStatsExportWord()"
+        style="background:#1a5030;border:1.5px solid #40a860;color:#ffffff;">⬡ EXPORT WORD</button>
+    </div>
+
+    <!-- BODY -->
+    <div id="lbStatsBody" style="overflow-y:auto;overflow-x:hidden;padding:24px 26px 32px;flex:1;min-height:0;
+      background:#0e1620;scrollbar-width:thin;scrollbar-color:#2d6090 transparent;
+      overscroll-behavior:contain;min-width:700px;"></div>
+  </div>
+</div>
+
+<!-- ══ LB BRIDGE EDITOR MODAL ══ -->
+<div id="lbEditorOverlay" style="display:none;position:fixed;inset:0;z-index:7000;
+  background:rgba(4,10,20,0.82);align-items:center;justify-content:center;">
+  <div id="lbEditorBox" style="background:var(--paper);border:1px solid var(--line);
+    border-top:3px solid var(--bright);border-radius:4px;width:960px;max-width:96vw;
+    max-height:88vh;display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+    <div style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);flex-shrink:0;">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
+        color:var(--bright);letter-spacing:0.14em;">⚙ CONFIGURE LASHING BRIDGES</span>
+      <div style="flex:1;"></div>
+      <button onclick="_lbCloseEditor()"
+        style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;
+          background:rgba(180,40,40,0.2);color:#ff8080;border:1px solid #883030;
+          border-radius:3px;padding:4px 10px;cursor:pointer;">✕ CLOSE</button>
+    </div>
+    <!-- ── VESSEL DEFAULT SETTINGS ── -->
+    <div id="lbPresetPanel" style="padding:12px 16px;border-bottom:2px solid var(--bright);
+      flex-shrink:0;background:rgba(94,184,255,0.05);">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+        color:var(--bright);letter-spacing:0.14em;margin-bottom:10px;">
+        ① VESSEL DEFAULT SETTINGS — applied when auto-generating
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+
+        <!-- Levels -->
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--text2);
+            letter-spacing:0.1em;margin-bottom:4px;">LEVELS PER BRIDGE</div>
+          <div style="display:flex;gap:4px;" id="lbPresetLevels"></div>
+        </div>
+
+        <!-- Eyes per row -->
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--text2);
+            letter-spacing:0.1em;margin-bottom:4px;">EYES PER ROW</div>
+          <input id="lbPresetEyes" type="number" min="1" max="10" value="2"
+            style="width:52px;font-family:'IBM Plex Mono',monospace;font-size:9px;
+              background:rgba(94,184,255,0.06);border:1px solid var(--line);
+              border-radius:2px;color:var(--text);padding:4px 6px;"
+            oninput="_lbPreset.eyesPerRow=Math.max(1,parseInt(this.value)||1)">
+        </div>
+
+        <!-- Level row restriction -->
+        <div id="lbPresetLvRowsWrap" style="display:none;">
+          <div id="lbPresetLvRowsInner" style="display:flex;flex-direction:column;gap:8px;max-width:480px;"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── BRIDGE LIST ACTIONS ── -->
+    <div style="padding:10px 16px;border-bottom:1px solid var(--line);flex-shrink:0;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+        color:var(--bright);letter-spacing:0.14em;margin-bottom:8px;">
+        ② GENERATE / MANAGE BRIDGES
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="_lbEditorAddBridge()"
+          style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+            letter-spacing:0.1em;background:rgba(0,160,80,0.15);color:#00d068;
+            border:1px solid #00a050;border-radius:3px;padding:5px 12px;cursor:pointer;">
+          ＋ ADD BRIDGE
+        </button>
+        <button onclick="_lbEditorAutoGen()"
+          style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+            letter-spacing:0.1em;background:rgba(94,184,255,0.20);color:var(--bright);
+            border:1px solid var(--bright);border-radius:3px;padding:5px 12px;cursor:pointer;">
+          ⟳ AUTO-GENERATE FROM BAYS
+        </button>
+        <button onclick="_lbEditorClearAll()"
+          style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
+            letter-spacing:0.1em;background:rgba(180,40,40,0.12);color:#ff8080;
+            border:1px solid #883030;border-radius:3px;padding:5px 12px;cursor:pointer;">
+          ✕ CLEAR ALL
+        </button>
+      </div>
+    </div>
+    <div id="lbEditorBody" style="flex:1;overflow-y:auto;padding:10px 16px;
+      scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;"></div>
+  </div>
+</div>
+
+
       <div id="lbInfoStrip" style="flex-shrink:0;height:28px;border-top:1px solid var(--line);
         background:var(--paper);display:flex;align-items:center;padding:0 14px;gap:16px;">
         <span id="lbStripBridge" style="font-family:'IBM Plex Mono',monospace;font-size:8px;
@@ -53869,6 +54286,115 @@ function _divStartMove(divId, clientY){
   _divDragState.startClientY = clientY;
 }
 
+
+(function(){
+  let _z = 1, _tx = 0, _ty = 0;
+  let _dragging = false, _lastX = 0, _lastY = 0;
+
+  function _applyTransform(){
+    const layer = document.getElementById('rsSchZoomLayer');
+    if(layer) layer.style.transform = `translate(${_tx}px,${_ty}px) scale(${_z})`;
+    const wrap = document.getElementById('rsSchWrap');
+    if(wrap) wrap.style.cursor = _dragging ? 'grabbing' : (_z > 1 ? 'grab' : 'default');
+  }
+
+  function _rsSchZoomAt(factor, cx, cy){
+    const wrap = document.getElementById('rsSchWrap');
+    if(!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    const ox = cx - rect.left, oy = cy - rect.top;
+    const newZ = Math.max(1, Math.min(8, _z * factor));
+    _tx = ox - (ox - _tx) * (newZ / _z);
+    _ty = oy - (oy - _ty) * (newZ / _z);
+    _z = newZ;
+    _clampPan(wrap);
+    _applyTransform();
+  }
+
+  function _clampPan(wrap){
+    const W = wrap.clientWidth, H = wrap.clientHeight;
+    _tx = Math.max(Math.min(_tx, 0), W - W * _z);
+    _ty = Math.max(Math.min(_ty, 0), H - H * _z);
+  }
+
+  window._rsSchZoomBtn = function(factor){
+    const wrap = document.getElementById('rsSchWrap');
+    if(!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    _rsSchZoomAt(factor, rect.left + rect.width/2, rect.top + rect.height/2);
+  };
+
+  window._rsSchZoomReset = function(){
+    _z = 1; _tx = 0; _ty = 0;
+    _applyTransform();
+  };
+
+  function _rsSchInitZoom(){
+    const wrap = document.getElementById('rsSchWrap');
+    if(!wrap) return;
+
+    wrap.addEventListener('wheel', function(e){
+      e.preventDefault(); e.stopPropagation();
+      _rsSchZoomAt(e.deltaY < 0 ? 1.12 : 1/1.12, e.clientX, e.clientY);
+    }, {passive:false});
+
+    wrap.addEventListener('mousedown', function(e){
+      if(e.button !== 0 || e.target.tagName === 'BUTTON' || _z <= 1) return;
+      if(typeof _spActive !== 'undefined' && _spActive) return;
+      if(typeof _cpActive !== 'undefined' && _cpActive) return;
+      _dragging = true; _lastX = e.clientX; _lastY = e.clientY;
+      wrap.style.cursor = 'grabbing'; e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e){
+      if(!_dragging) return;
+      _tx += e.clientX - _lastX; _ty += e.clientY - _lastY;
+      _lastX = e.clientX; _lastY = e.clientY;
+      const w = document.getElementById('rsSchWrap'); if(w) _clampPan(w);
+      _applyTransform();
+    });
+    document.addEventListener('mouseup', function(){
+      if(!_dragging) return;
+      _dragging = false;
+      const w = document.getElementById('rsSchWrap');
+      if(w) w.style.cursor = _z > 1 ? 'grab' : 'default';
+    });
+
+    let _t0 = null;
+    wrap.addEventListener('touchstart', function(e){
+      if(e.touches.length === 2){
+        _t0 = { d: Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY),
+                cx: (e.touches[0].clientX+e.touches[1].clientX)/2,
+                cy: (e.touches[0].clientY+e.touches[1].clientY)/2 };
+        e.preventDefault();
+      }
+    },{passive:false});
+    wrap.addEventListener('touchmove', function(e){
+      if(e.touches.length === 2 && _t0){
+        const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+        _rsSchZoomAt(d/_t0.d, _t0.cx, _t0.cy);
+        _t0.d = d; e.preventDefault();
+      }
+    },{passive:false});
+    wrap.addEventListener('touchend', function(){ _t0 = null; });
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _rsSchInitZoom);
+  else _rsSchInitZoom();
+
+  const _origRsShowDetail = window._rsShowDetail;
+  window._rsSchZoomReset = function(){
+    _z=1; _tx=0; _ty=0; _applyTransform();
+  };
+  setTimeout(function(){
+    const orig = window._rsShowDetail;
+    if(typeof orig === 'function'){
+      window._rsShowDetail = function(){
+        _z=1; _tx=0; _ty=0; _applyTransform();
+        orig.apply(this, arguments);
+      };
+    }
+  }, 500);
+})();
 function _rsInitDividers(){
   if(window.innerWidth > 700) return;
   var d1 = document.getElementById('rsDivider1');
@@ -54054,16 +54580,18 @@ function _lbZoomBtn(factor){
 
 function _lbZoomReset(){
   var wrap = document.getElementById('lbCanvasWrap');
+  var W = wrap ? (wrap.clientWidth  || wrap.offsetWidth  || window.innerWidth)  : window.innerWidth;
+  var H = wrap ? (wrap.clientHeight || wrap.offsetHeight || window.innerHeight) : window.innerHeight;
+  // Guard: if dimensions are not ready, use defaults
+  if(W < 50 || H < 50){ _lbZoom=1; _lbPanX=0; _lbPanY=0; _lbUpdateZoomPct(); _lbDraw(); return; }
   if(wrap && window.matchMedia && window.matchMedia('(pointer:coarse)').matches){
-    // On touch: fit to screen so full bridge is visible, then let user zoom in
-    var W = wrap.clientWidth || 375;
-    var H = wrap.clientHeight || 500;
+    // Touch: fit full bridge into viewport
     var b = _lbSelBridge ? lbData.bridges.find(function(x){return x.id===_lbSelBridge;}) : null;
     var nBays = b ? _lbGetBridgeRows(b).length : 1;
-    var MIN_BAY_W = 52;
-    var logW = Math.max(W, nBays * MIN_BAY_W + 200);
+    var logW = Math.max(W, nBays * 52 + 200);
     var logH = Math.max(H, 480);
-    _lbZoom = Math.min(W / logW, H / logH) * 0.92;
+    var fitZ = Math.min(W / logW, H / logH) * 0.92;
+    _lbZoom = Math.max(0.1, fitZ);
     _lbPanX = (W - logW * _lbZoom) / 2;
     _lbPanY = (H - logH * _lbZoom) / 2;
   } else {
