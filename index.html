@@ -45743,8 +45743,10 @@ function _rsToggleOverview(){
         // Hide overview — HC + seals fill full height
         panel.style.height    = '0';
         panel.style.maxHeight = '0';
+        panel.style.minHeight = '0';
+        panel.style.flexBasis = '0';
         panel.style.overflow  = 'hidden';
-        if(strip){ strip.style.height='50vh'; strip.style.flex='0 0 50vh'; }
+        if(strip){ strip.style.height='55vh'; strip.style.flex='0 0 55vh'; }
         var d1=document.getElementById('rsDivider1'),d2=document.getElementById('rsDivider2');
         if(d1) d1.style.display='none'; if(d2) d2.style.display='flex';
       }
@@ -53564,95 +53566,67 @@ function _rsApplyPanelMode(){} // no-op — replaced by drag
 
 function _rsInitDividers(){
   if(window.innerWidth > 700) return;
-  var overlay = document.getElementById('rsOverlay');
-  if(!overlay) return;
 
-  // Get available height = overlay minus topbar
-  function _availH(){
+  function _makeDividerDrag(divId, getH, setH, onDone){
+    var d = document.getElementById(divId);
+    if(!d) return;
+    d.style.touchAction = 'none';
+    d.onpointerdown = function(e){
+      e.preventDefault();
+      d.setPointerCapture(e.pointerId);
+      var startY = e.clientY;
+      var startH = getH();
+      d.onpointermove = function(ev){
+        ev.preventDefault();
+        setH(startH + (ev.clientY - startY));
+      };
+      d.onpointerup = d.onpointercancel = function(){
+        d.onpointermove = null;
+        d.onpointerup   = null;
+        d.onpointercancel = null;
+        if(onDone) onDone();
+      };
+    };
+  }
+
+  var MIN = 80;
+
+  function getAvail(){
+    var ov = document.getElementById('rsOverlay');
     var tb = document.getElementById('rsTopBar');
-    return overlay.clientHeight - (tb ? tb.offsetHeight : 40);
+    return (ov ? ov.getBoundingClientRect().height : window.innerHeight)
+         - (tb ? tb.getBoundingClientRect().height : 40)
+         - 40; // two dividers
   }
-  var MIN_PX = 80; // minimum height for any panel
 
-  // ── Divider 1: between rsLeft (overview) and rsRight ─────────────────
-  function _initDiv1(){
-    var d = document.getElementById('rsDivider1');
-    if(!d) return;
-    d.ontouchstart = null; d.onmousedown = null;
-    var left = document.getElementById('rsLeft');
-    if(!left) return;
+  // Divider 1 — resize rsLeft (overview)
+  _makeDividerDrag('rsDivider1',
+    function(){ var el=document.getElementById('rsLeft'); return el ? el.getBoundingClientRect().height : 150; },
+    function(newH){
+      var el = document.getElementById('rsLeft');
+      if(!el) return;
+      var h = Math.max(MIN, Math.min(getAvail() - MIN*2 - 40, newH));
+      el.style.height = h+'px'; el.style.maxHeight = h+'px';
+    },
+    function(){ if(typeof _rsDrawOverview==='function') _rsDrawOverview(); }
+  );
 
-    function startDrag(clientY){
-      var startY   = clientY;
-      var startH   = left.offsetHeight;
-      var avail    = _availH();
-
-      function onMove(y){
-        var newH = Math.max(MIN_PX, Math.min(avail - MIN_PX*2 - 60, startH + (y - startY)));
-        left.style.height    = newH + 'px';
-        left.style.maxHeight = newH + 'px';
-      }
-      function onEnd(){
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup',   onEnd);
-        document.removeEventListener('touchmove', onTouchMove, {passive:false});
-        document.removeEventListener('touchend',  onEnd);
-        if(typeof _rsDrawOverview==='function') _rsDrawOverview();
-      }
-      function onMouseMove(e){ onMove(e.clientY); }
-      function onTouchMove(e){ e.preventDefault(); onMove(e.touches[0].clientY); }
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup',   onEnd);
-      document.addEventListener('touchmove', onTouchMove, {passive:false});
-      document.addEventListener('touchend',  onEnd);
+  // Divider 2 — resize rsSchematicStrip (HC view)
+  _makeDividerDrag('rsDivider2',
+    function(){ var el=document.getElementById('rsSchematicStrip'); return el ? el.getBoundingClientRect().height : 200; },
+    function(newH){
+      var el   = document.getElementById('rsSchematicStrip');
+      var left = document.getElementById('rsLeft');
+      if(!el) return;
+      var used = (left ? left.getBoundingClientRect().height : 0) + 40;
+      var h = Math.max(MIN, Math.min(getAvail() - used - MIN, newH));
+      el.style.height = h+'px'; el.style.flex = '0 0 '+h+'px';
+    },
+    function(){
+      if(typeof _rsDrawOverview==='function') _rsDrawOverview();
+      if(typeof window._rsSchZoomReset==='function') window._rsSchZoomReset();
     }
-    d.onmousedown  = function(e){ e.preventDefault(); startDrag(e.clientY); };
-    d.ontouchstart = function(e){ e.preventDefault(); if(e.touches[0]) startDrag(e.touches[0].clientY); };
-  }
-
-  // ── Divider 2: between rsSchematicStrip and rsDetailBody ─────────────
-  function _initDiv2(){
-    var d = document.getElementById('rsDivider2');
-    if(!d) return;
-    d.ontouchstart = null; d.onmousedown = null;
-    var strip = document.getElementById('rsSchematicStrip');
-    if(!strip) return;
-
-    function startDrag(clientY){
-      var startY = clientY;
-      var startH = strip.offsetHeight;
-      var avail  = _availH();
-      var left   = document.getElementById('rsLeft');
-      var usedByLeft = left ? left.offsetHeight : 0;
-      var usedByDivs = 60; // two dividers
-      var maxH = avail - usedByLeft - usedByDivs - MIN_PX;
-
-      function onMove(y){
-        var newH = Math.max(MIN_PX, Math.min(maxH, startH + (y - startY)));
-        strip.style.height = newH + 'px';
-        strip.style.flex   = '0 0 ' + newH + 'px';
-      }
-      function onEnd(){
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup',   onEnd);
-        document.removeEventListener('touchmove', onTouchMove, {passive:false});
-        document.removeEventListener('touchend',  onEnd);
-        if(typeof _rsDrawOverview==='function') _rsDrawOverview();
-        if(typeof window._rsSchZoomReset==='function') window._rsSchZoomReset();
-      }
-      function onMouseMove(e){ onMove(e.clientY); }
-      function onTouchMove(e){ e.preventDefault(); onMove(e.touches[0].clientY); }
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup',   onEnd);
-      document.addEventListener('touchmove', onTouchMove, {passive:false});
-      document.addEventListener('touchend',  onEnd);
-    }
-    d.onmousedown  = function(e){ e.preventDefault(); startDrag(e.clientY); };
-    d.ontouchstart = function(e){ e.preventDefault(); if(e.touches[0]) startDrag(e.touches[0].clientY); };
-  }
-
-  _initDiv1();
-  _initDiv2();
+  );
 }
 
 (function(){
@@ -55205,42 +55179,35 @@ function _lbInitDivider(){
   if(window.innerWidth > 700) return;
   var d = document.getElementById('lbDividerHandle');
   if(!d) return;
-  // Remove any existing drag listener by replacing handler property
-  d.ontouchstart = null; d.onmousedown = null;
-  var MIN_PX = 80;
+  d.style.touchAction = 'none';
+  var MIN = 80;
 
-  function startDrag(startClientY){
+  d.onpointerdown = function(e){
+    e.preventDefault();
+    d.setPointerCapture(e.pointerId);
     var left = document.getElementById('lbLeft');
     var tb   = document.getElementById('lbTopBar');
     var ov   = document.getElementById('lbOverlay');
     if(!left) return;
+    var startY = e.clientY;
     var startH = left.getBoundingClientRect().height;
-    var avail  = (ov ? ov.getBoundingClientRect().height : window.innerHeight) - (tb ? tb.getBoundingClientRect().height : 40) - 28;
+    var avail  = (ov ? ov.getBoundingClientRect().height : window.innerHeight)
+               - (tb ? tb.getBoundingClientRect().height : 40) - 20;
 
-    function onMove(y){
-      var newH = Math.max(MIN_PX, Math.min(avail - MIN_PX, startH + (y - startClientY)));
-      left.style.height    = newH + 'px';
-      left.style.maxHeight = newH + 'px';
-    }
-    function onEnd(){
-      document.removeEventListener('mousemove', onMM);
-      document.removeEventListener('mouseup',   onEnd);
-      document.removeEventListener('touchmove', onTM);
-      document.removeEventListener('touchend',  onEnd);
-      setTimeout(function(){
-        if(typeof _lbDraw==='function') _lbDraw();
-        if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
-      }, 30);
-    }
-    function onMM(e){ onMove(e.clientY); }
-    function onTM(e){ e.preventDefault(); if(e.touches[0]) onMove(e.touches[0].clientY); }
-    document.addEventListener('mousemove', onMM);
-    document.addEventListener('mouseup',   onEnd);
-    document.addEventListener('touchmove', onTM, {passive:false});
-    document.addEventListener('touchend',  onEnd);
-  }
-  d.onmousedown  = function(e){ e.preventDefault(); startDrag(e.clientY); };
-  d.ontouchstart = function(e){ e.preventDefault(); if(e.touches[0]) startDrag(e.touches[0].clientY); };
+    d.onpointermove = function(ev){
+      ev.preventDefault();
+      var h = Math.max(MIN, Math.min(avail - MIN, startH + (ev.clientY - startY)));
+      left.style.height    = h+'px';
+      left.style.maxHeight = h+'px';
+    };
+    d.onpointerup = d.onpointercancel = function(){
+      d.onpointermove = null;
+      d.onpointerup   = null;
+      d.onpointercancel = null;
+      if(typeof _lbDraw==='function') _lbDraw();
+      if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
+    };
+  };
 }
 
 function _lbZoomBtn(factor){
@@ -57108,11 +57075,12 @@ function _lbToggleOverview(){
         var divH = document.getElementById('lbDividerHandle');
         if(divH) divH.style.display = 'flex';
       } else {
-        // Hide overview entirely — bridge fills full height
+        // Hide overview — set to 0 so bridge fills full avail height
         panel.style.height    = '0';
         panel.style.maxHeight = '0';
         panel.style.minHeight = '0';
         panel.style.overflow  = 'hidden';
+        panel.style.flexBasis = '0';
         var divH = document.getElementById('lbDividerHandle');
         if(divH) divH.style.display = 'none';
       }
