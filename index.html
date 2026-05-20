@@ -45675,9 +45675,9 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   #rsLeft {
     flex: 0 0 auto !important;
     width: 100% !important;
-    height: 30vh !important;
-    min-height: 140px !important;
-    max-height: 30vh !important;
+    height: 30vh ;
+    min-height: 140px ;
+    max-height: 30vh ;
     border-right: none !important;
     border-bottom: none !important;
   }
@@ -45687,25 +45687,25 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   #rsRight {
     flex: 1 !important;
     flex-direction: column !important;
-    min-height: 0 !important;
+    min-height: 0 ;
     overflow: hidden !important;
   }
 
   /* ── Panel 2: HC schematic (38vh) ── */
   #rsSchematicStrip {
-    flex: 0 0 38vh !important;
+    flex: 0 0 38vh ;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
-    height: 38vh !important;
-    min-height: 180px !important;
+    height: 38vh ;
+    min-height: 180px ;
     flex-direction: column !important;
     border-right: none !important;
     border-bottom: none !important;
   }
   #rsSchWrap {
     flex: 1 !important;
-    min-height: 0 !important;
+    min-height: 0 ;
     touch-action: none !important;
   }
 
@@ -45740,8 +45740,8 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   }
 }
 @media (max-width: 420px) {
-  #rsLeft      { height: 27vh !important; max-height: 27vh !important; }
-  #rsSchematicStrip { flex: 0 0 35vh !important; height: 35vh !important; }
+  #rsLeft      { height: 27vh; max-height: 27vh; }
+  #rsSchematicStrip { flex: 0 0 35vh; height: 35vh; }
 }
 /* ── LB module: mobile responsive ─────────────────────────────────── */
 @media (max-width: 700px) {
@@ -45767,12 +45767,12 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   #lbLeft {
     flex: 0 0 auto !important;
     width: 100% !important;
-    height: 48vh !important;
-    max-height: 48vh !important;
-    min-height: 180px !important;
+    height: 48vh;
+    max-height: 48vh;
+    min-height: 120px;
     border-right: none !important;
     border-bottom: 2px solid var(--line) !important;
-    transition: height 0.2s, max-height 0.2s !important;
+    transition: height 0.15s, max-height 0.15s, flex 0.15s;
   }
   #lbOvCanvasWrap { flex: 1; min-height: 0; }
 
@@ -45784,7 +45784,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
   /* Bridge canvas panel */
   #lbRight {
-    flex: 1 !important;
+    flex: 1;
     min-width: 0 !important;
     min-height: 0 !important;
     width: 100% !important;
@@ -45810,7 +45810,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   }
 }
 @media (max-width: 420px) {
-  #lbLeft { height: 38vh !important; max-height: 38vh !important; }
+  #lbLeft { height: 38vh; max-height: 38vh; }
 }
 
 
@@ -54336,7 +54336,10 @@ function _divSetupLongPress(el, panelId, onDone){
     e.preventDefault();
     e.stopPropagation();
     if(e.touches[0]) _divMove(e.touches[0].clientY);
-    _dbg('MOVE ' + divId + ' y=' + (e.touches[0]?e.touches[0].clientY:'?') + ' state=' + (!!_divDragState));
+    var pan=_divDragState?document.getElementById(_divDragState.panelId):null;
+    _dbg('MOVE y='+(e.touches[0]?Math.round(e.touches[0].clientY):'?')
+      +' newH='+(_divDragState?Math.round(_divDragState.startH+(e.touches[0].clientY-_divDragState.startClientY)):'-')
+      +' panH='+(pan?pan.offsetHeight:'-'));
   }, {passive: false, capture: true});
 
   el.addEventListener('touchend', function(e){
