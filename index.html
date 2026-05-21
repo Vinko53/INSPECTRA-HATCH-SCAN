@@ -46409,15 +46409,32 @@ function _rsToggleOverview(){
   const _isMob = window.innerWidth <= 700;
   if(panel){
     if(_isMob){
-      // Overview button always resets all three panels to equal 1/3 split
-      _rsOvVisible = true;
-      _dbg('RESET RS panels called');
-      if(btn){
-        btn.style.background = 'rgba(94,184,255,0.15)';
-        btn.style.color      = 'var(--bright)';
-        btn.style.borderColor= 'var(--bright)';
+      var d1=document.getElementById('rsDivider1'), d2=document.getElementById('rsDivider2');
+      if(_rsOvVisible){
+        // Currently visible → hide overview, expand HC+seals
+        _rsOvVisible = false;
+        panel.style.setProperty('height',    '0','important');
+        panel.style.setProperty('max-height','0','important');
+        panel.style.setProperty('flex',      '0 0 0','important');
+        panel.style.overflow = 'hidden';
+        if(d1) d1.style.display = 'none';
+        if(btn){ btn.style.color='var(--text2)'; btn.style.borderColor='var(--line)'; btn.style.background=''; }
+        setTimeout(function(){
+          var strip=document.getElementById('rsSchematicStrip');
+          if(strip){
+            var tb=document.getElementById('rsTopBar'), ov=document.getElementById('rsOverlay');
+            var avail=(ov?ov.clientHeight:window.innerHeight)-(tb?tb.clientHeight:44)-44;
+            strip.style.setProperty('height',    Math.round(avail*0.55)+'px','important');
+            strip.style.setProperty('max-height',Math.round(avail*0.55)+'px','important');
+            strip.style.setProperty('flex',      '0 0 '+Math.round(avail*0.55)+'px','important');
+          }
+        }, 30);
+      } else {
+        // Currently hidden → reset all three panels
+        _rsOvVisible = true;
+        if(btn){ btn.style.color='var(--bright)'; btn.style.borderColor='var(--bright)'; btn.style.background='rgba(94,184,255,0.15)'; }
+        if(typeof _rsResetPanels==='function') _rsResetPanels();
       }
-      if(typeof _rsResetPanels==='function') _rsResetPanels();
       return;
     } else {
       panel.style.width    = _rsOvVisible ? '407px' : '0';
@@ -46442,7 +46459,6 @@ function _rsToggleOverview(){
         cv.height = wrap.clientHeight || wrap.offsetHeight || 200;
       }
       _rsAutoFitZoom(); _rsDrawOverview();
-      if(typeof _rsInitDividers==='function') _rsInitDividers();
     }, 250);
   } else {
     setTimeout(() => {
@@ -54276,7 +54292,15 @@ function _lbDivTouchStart(e){
   _divDragState = {divId:'lbDividerHandle', panelId:'lbLeft',
     startH: pan ? pan.getBoundingClientRect().height : 200,
     startClientY: e.touches[0].clientY, min:60, max:avail-60,
-    onDone: function(){ if(typeof _lbDraw==='function')_lbDraw(); if(typeof _lbOvDrawVessel==='function')_lbOvDrawVessel(); }};
+    onDone: function(){
+      setTimeout(function(){
+        var cv=document.getElementById('lbOvCanvas'), wrap=document.getElementById('lbOvCanvasWrap');
+        if(cv&&wrap&&wrap.offsetWidth>0){ cv.width=wrap.offsetWidth; cv.height=wrap.offsetHeight; }
+        if(typeof _lbOvAutoFit==='function') _lbOvAutoFit();
+        if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
+        if(typeof _lbDraw==='function') _lbDraw();
+      }, 50);
+    }};
   var d=document.getElementById('lbDividerHandle');
   if(d){d.style.background='rgba(94,184,255,0.5)';}
   _dbg('LB DRAG START h='+Math.round(_divDragState.startH)+' avail='+Math.round(avail));
@@ -54323,7 +54347,15 @@ function _rsDivTouchStart(e, divId){
   _divDragState={divId:divId, panelId:panId,
     startH:pan?pan.getBoundingClientRect().height:200, startClientY:e.touches[0].clientY,
     min:60, max:avail-60,
-    onDone:function(){if(typeof _rsDrawOverview==='function')_rsDrawOverview();}};
+    onDone:function(){
+      // Resize canvas and redraw — no panel reset
+      setTimeout(function(){
+        var cv=document.getElementById('rsCanvas'), wrap=document.getElementById('rsCanvasWrap');
+        if(cv&&wrap&&wrap.offsetWidth>0){ cv.width=wrap.offsetWidth; cv.height=wrap.offsetHeight; }
+        if(typeof _rsAutoFitZoom==='function') _rsAutoFitZoom();
+        if(typeof _rsDrawOverview==='function') _rsDrawOverview();
+      }, 50);
+    }};
   _dbg('RS DRAG START '+panId+' h='+Math.round(_divDragState.startH));
 }
 function _rsDivTouchMove(e, divId){
@@ -54507,7 +54539,7 @@ function _lbResetPanels(){
     if(typeof _lbOvAutoFit==='function') _lbOvAutoFit();
     if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
     if(typeof _lbDraw==='function') _lbDraw();
-    if(typeof _lbInitDivider==='function') _lbInitDivider();
+    // DO NOT call _lbInitDivider — it clones elements and destroys inline handlers
   }, 300);
 }
 function _rsResetPanels(){
@@ -54532,7 +54564,7 @@ function _rsResetPanels(){
     if(w > 0 && h > 0){ cv.width = w; cv.height = h; }
     if(typeof _rsAutoFitZoom==='function') _rsAutoFitZoom();
     if(typeof _rsDrawOverview==='function') _rsDrawOverview();
-    if(typeof _rsInitDividers==='function') _rsInitDividers();
+    // DO NOT call _rsInitDividers — it clones elements and destroys inline handlers
   }, 300);
 }
 
@@ -56593,15 +56625,23 @@ function _lbToggleOverview(){
   const _lbIsMob = window.innerWidth <= 700;
   if(panel){
     if(_lbIsMob){
-      // Overview button always resets to 50/50 equal split
-      _lbOvPanelVisible = true;
-      if(btn){
-        btn.style.background = 'rgba(94,184,255,0.15)';
-        btn.style.color      = 'var(--bright)';
-        btn.style.borderColor= 'var(--bright)';
+      var d = document.getElementById('lbDividerHandle');
+      if(_lbOvPanelVisible){
+        // Currently visible → hide overview, expand bridge to full height
+        _lbOvPanelVisible = false;
+        panel.style.setProperty('height',    '0','important');
+        panel.style.setProperty('max-height','0','important');
+        panel.style.setProperty('flex',      '0 0 0','important');
+        panel.style.overflow = 'hidden';
+        if(d) d.style.display = 'none';
+        if(btn){ btn.style.color='var(--text2)'; btn.style.borderColor='var(--line)'; btn.style.background=''; }
+        setTimeout(function(){ if(typeof _lbDraw==='function') _lbDraw(); }, 50);
+      } else {
+        // Currently hidden → reset all panels to default split
+        _lbOvPanelVisible = true;
+        if(btn){ btn.style.color='var(--bright)'; btn.style.borderColor='var(--bright)'; btn.style.background='rgba(94,184,255,0.15)'; }
+        if(typeof _lbResetPanels==='function') _lbResetPanels();
       }
-      _dbg('RESET LB panels called');
-      if(typeof _lbResetPanels==='function') _lbResetPanels();
       return;
     } else {
       panel.style.width    = _lbOvPanelVisible ? '360px' : '0';
@@ -56624,7 +56664,6 @@ function _lbToggleOverview(){
         cv.height = wrap.clientHeight || wrap.offsetHeight || 200;
       }
       _lbOvAutoFit(); _lbOvDrawVessel();
-      if(typeof _lbInitDivider==='function') _lbInitDivider();
     }, 250);
   }
   setTimeout(()=>{ if(typeof _lbDraw==='function') _lbDraw(); }, 100);
