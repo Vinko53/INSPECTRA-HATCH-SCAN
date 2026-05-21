@@ -44432,12 +44432,14 @@ document.addEventListener('mousedown', e => {
     <!-- Drag-to-resize divider (mobile only) -->
     <div id="lbDividerHandle"
       oncontextmenu="return false;"
-      style="display:none;flex-shrink:0;width:100%;height:28px;
-        background:rgba(45,127,193,0.12);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
+      style="display:none;flex-shrink:0;width:100%;height:44px;
+        background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;
         align-items:center;justify-content:center;cursor:ns-resize;
         -webkit-user-select:none;user-select:none;touch-action:none;
-        position:relative;z-index:10;">
-      <div style="width:40px;height:4px;border-radius:3px;background:#5eb8ff;opacity:0.85;pointer-events:none;"></div>
+        position:relative;z-index:20;gap:8px;">
+      <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
+      <span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;letter-spacing:0.1em;">DRAG</span>
+      <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
     </div>
 
     <!-- RIGHT: drawing canvas area -->
@@ -45498,14 +45500,16 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
     <!-- Divider 1: between overview and HC schematic (mobile only) -->
     <div class="rs-divider-handle" id="rsDivider1"
-      oncontextmenu="return false;"
-      style="display:none;flex-shrink:0;width:100%;height:28px;
-        background:rgba(45,127,193,0.12);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
-        align-items:center;justify-content:center;cursor:ns-resize;
-        -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
-        -webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent;
-        position:relative;z-index:10;">
-      <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;pointer-events:none;"></div>
+        oncontextmenu="return false;"
+        style="display:none;flex-shrink:0;width:100%;height:44px;
+          background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;
+          align-items:center;justify-content:center;cursor:ns-resize;
+          -webkit-user-select:none;user-select:none;touch-action:none;
+          position:relative;z-index:20;gap:8px;">
+        <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
+        <span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;letter-spacing:0.1em;">DRAG</span>
+        <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
+      </div>
     </div>
 
     <!-- RIGHT: detail panel — schematic column (left) + seal rows (right) -->
@@ -45540,14 +45544,16 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
       <!-- Divider 2: between HC schematic and seal rows (mobile only) -->
       <div class="rs-divider-handle" id="rsDivider2"
-        oncontextmenu="return false;"
-        style="display:none;flex-shrink:0;width:100%;height:28px;
-          background:rgba(45,127,193,0.12);border-top:2px solid #2d7fc1;border-bottom:2px solid #2d7fc1;
-          align-items:center;justify-content:center;cursor:ns-resize;
-          -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
-          -webkit-touch-callout:none;touch-action:none;-webkit-tap-highlight-color:transparent;
-          position:relative;z-index:10;">
-        <div style="width:36px;height:3px;border-radius:2px;background:#5eb8ff;opacity:0.7;pointer-events:none;"></div>
+          oncontextmenu="return false;"
+          style="display:none;flex-shrink:0;width:100%;height:44px;
+            background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;
+            align-items:center;justify-content:center;cursor:ns-resize;
+            -webkit-user-select:none;user-select:none;touch-action:none;
+            position:relative;z-index:20;gap:8px;">
+          <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
+          <span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;letter-spacing:0.1em;">DRAG</span>
+          <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
+        </div>
       </div>
 
       <!-- SEAL ROWS — scrollable, takes all remaining width -->
@@ -54267,24 +54273,25 @@ function _divAvail(modulePrefix){
 }
 
 // Activate a divider — called after long-press threshold
-function _divActivate(divId, panelId, onDone){
+function _divActivate(divId, panelId, startY, onDone){
   var d   = document.getElementById(divId);
   var pan = document.getElementById(panelId);
   if(!d || !pan) return;
-  // Glow to confirm activation
   d.style.background       = 'rgba(94,184,255,0.35)';
   d.style.borderTopColor   = '#5eb8ff';
   d.style.borderBottomColor= '#5eb8ff';
   var prefix = panelId.startsWith('rs') ? 'rs' : 'lb';
   var avail  = _divAvail(prefix);
+  var startH = pan.getBoundingClientRect().height;
+  _dbg('ACT: '+panelId+' startH='+Math.round(startH)+' avail='+Math.round(avail)+' startY='+Math.round(startY));
   _divDragState = {
-    divId:  divId,
-    panelId:panelId,
-    startH: pan.getBoundingClientRect().height,
-    startClientY: null,   // set on first move
-    min:    60,
-    max:    avail - 60,
-    onDone: onDone
+    divId:        divId,
+    panelId:      panelId,
+    startH:       startH,
+    startClientY: startY,
+    min:          60,
+    max:          avail - 60,
+    onDone:       onDone
   };
 }
 
@@ -54301,7 +54308,7 @@ function _divDeactivate(){
 }
 
 function _divMove(clientY){
-  if(!_divDragState || _divDragState.startClientY === null) return;
+  if(!_divDragState) return;
   var pan = document.getElementById(_divDragState.panelId);
   if(!pan) return;
   var newH = Math.max(_divDragState.min,
@@ -54316,10 +54323,11 @@ function _divMove(clientY){
 (function(){
   document.addEventListener('touchmove', function(e){
     if(!_divDragState) return;
+    // Global fallback - fires even if element touchmove is missed
     e.preventDefault();
     e.stopPropagation();
     if(e.touches[0]) _divMove(e.touches[0].clientY);
-  }, {passive:false});
+  }, {passive:false, capture:true});
   document.addEventListener('touchend',    function(){ if(_divDragState) _divDeactivate(); });
   document.addEventListener('touchcancel', function(){ if(_divDragState) _divDeactivate(); });
   document.addEventListener('mousemove', function(e){ if(_divDragState) _divMove(e.clientY); });
@@ -54329,44 +54337,38 @@ function _divMove(clientY){
 // Setup long-press on a divider element
 function _divSetupLongPress(el, panelId, onDone){
   if(!el) return;
-  var parent = el.parentNode, next = el.nextSibling;
-  var clone  = el.cloneNode(true);
-  if(parent){ parent.removeChild(el); parent.insertBefore(clone, next); el = clone; }
   var divId = el.id;
-  _dbg('SETUP: ' + divId + ' for ' + panelId);
-
-  el.addEventListener('touchstart', function(e){
-    _dbg('TOUCHSTART on ' + divId);
+  // Direct property assignment - always overwrites previous handler
+  el.ontouchstart = function(e){
     e.preventDefault();
     e.stopPropagation();
-    _divActivate(divId, panelId, onDone);
-    if(_divDragState) _divDragState.startClientY = e.touches[0].clientY;
-  }, {passive: false, capture: true});
-
-  el.addEventListener('touchmove', function(e){
+    _divActivate(divId, panelId, e.touches[0].clientY, onDone);
+    _dbg('TOUCHSTART '+divId+' y='+Math.round(e.touches[0].clientY));
+  };
+  el.ontouchmove = function(e){
     e.preventDefault();
     e.stopPropagation();
-    if(e.touches[0]) _divMove(e.touches[0].clientY);
-    var pan=_divDragState?document.getElementById(_divDragState.panelId):null;
-    _dbg('MOVE y='+(e.touches[0]?Math.round(e.touches[0].clientY):'?')
-      +' startH='+(_divDragState?Math.round(_divDragState.startH):'-')
-      +' max='+(_divDragState?Math.round(_divDragState.max):'-')
-      +' newH='+(_divDragState&&e.touches[0]?Math.round(_divDragState.startH+(e.touches[0].clientY-_divDragState.startClientY)):'-')
+    if(!_divDragState) return;
+    _divMove(e.touches[0].clientY);
+    var pan = document.getElementById(_divDragState.panelId);
+    _dbg('MOVE y='+Math.round(e.touches[0].clientY)
+      +' dH='+Math.round(e.touches[0].clientY-_divDragState.startClientY)
       +' panH='+(pan?pan.offsetHeight:'-'));
-  }, {passive: false, capture: true});
-
-  el.addEventListener('touchend', function(e){
-    _dbg('END ' + divId);
+  };
+  el.ontouchend = function(e){
+    _dbg('END '+divId);
     _divDeactivate();
-  }, {passive: false});
-
-  el.addEventListener('mousedown', function(e){
+  };
+  el.onmousedown = function(e){
     e.preventDefault();
-    _divActivate(divId, panelId, onDone);
-    if(_divDragState) _divDragState.startClientY = e.clientY;
-  });
+    _divActivate(divId, panelId, e.clientY, onDone);
+  };
+  // Force touch-action:none so browser never steals as scroll
+  el.style.touchAction = 'none';
+  el.style.webkitUserSelect = 'none';
+  el.style.userSelect = 'none';
+  _dbg('SETUP '+divId);
 }
-
 // ── LB divider init ────────────────────────────────────────────────────
 function _lbInitDivider(){
   if(window.innerWidth > 700) return;
