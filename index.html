@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -3513,6 +3513,27 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
+    overflow: visible !important;
+  }
+  #rsSchWrap {
+    overflow: visible !important;
+    position: relative !important;
+    touch-action: none !important;
+  }
+  #rsSchZoomLayer {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform: none !important;
+  }
+  #rsSchematic {
+    position: static !important;
+    width: 100% !important;
+    display: block !important;
+  }
+  /* Prevent page zoom when touching schematic */
+  #rsSchematicStrip, #rsSchWrap, #rsSchematic {
+    touch-action: none !important;
   }
   .rs-divider-handle { display: flex !important; }
   #rsDivider1, #rsDivider2 {
@@ -53770,7 +53791,7 @@ function _rsResetPanels(){
     if(schWrap){
       schWrap.style.setProperty('overflow','visible','important');
     }
-    if(zl) zl.style.transform='translate(0px,0px) scale(1)';
+    if(zl){ zl.style.transform=''; zl.style.removeProperty('transform'); }
     if(sch){
       var cw=window.innerWidth-8, ch=Math.round(window.innerHeight*0.28);
       sch.width=cw; sch.height=ch;
