@@ -45769,7 +45769,7 @@ function _rsSetCornerCount(bay, hcNum, count){
   hcRec.cornerCount = count;
   _rsSyncCorners(bay, hcNum);
   _rsDrawOverview();
-  _rsShowDetail(bay, hcNum);
+  (window._rsShowDetail||_rsShowDetail)(bay, hcNum);
 }
 
 function _rsSetCornerField(bay, hcNum, cornerId, field, value){
@@ -45784,7 +45784,7 @@ function _rsRender(){
   _rsInitCanvas();
   _rsDrawOverview();
   if(_rsSelBay !== null && _rsSelHc !== null){
-    _rsShowDetail(_rsSelBay, _rsSelHc);
+    (window._rsShowDetail||_rsShowDetail)(_rsSelBay, _rsSelHc);
   } else {
     _rsHideDetail();
   }
@@ -46054,7 +46054,7 @@ function _rsHitTest(mx, my){
     _rsSelBay = hit.bay;
     _rsSelHc  = hit.hcNum;
     _rsDrawOverview();
-    _rsShowDetail(hit.bay, hit.hcNum);
+    (window._rsShowDetail||_rsShowDetail)(hit.bay, hit.hcNum);
   }
 }
 
@@ -48079,7 +48079,7 @@ function _rsClearHC(){
   const key = _rsSelBay + ',' + _rsSelHc;
   delete rsData[key];
   _rsDrawOverview();
-  _rsShowDetail(_rsSelBay, _rsSelHc);
+  (window._rsShowDetail||_rsShowDetail)(_rsSelBay, _rsSelHc);
 }
 
 function _rsHideDetail(){
