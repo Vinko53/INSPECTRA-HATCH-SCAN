@@ -44409,7 +44409,7 @@ document.addEventListener('mousedown', e => {
   <!-- ══ END LB TOP BAR ══ -->
 
   <!-- ══ MAIN CONTENT ══ -->
-  <div style="flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0;">
+  <div id="lbBody" style="flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0;">
 
     <!-- LEFT: Bridge selector list -->
     <div id="lbLeft" style="flex:0 0 360px;width:360px;border-right:2px solid var(--line);
@@ -45476,7 +45476,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   <!-- ══ END RS TOP BAR ══ -->
 
   <!-- ══ MAIN AREA: overview sidebar (collapsible) + detail panel ══ -->
-  <div style="flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0;">
+  <div id="rsBody" style="flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0;">
 
     <!-- LEFT: compact collapsible overview -->
     <div id="rsLeft" style="display:flex;flex-direction:column;flex:0 0 407px;width:407px;
@@ -45672,6 +45672,11 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
     flex-direction: column !important;
   }
 
+    /* Switch main body to column so panels stack vertically */
+  #rsBody {
+    flex-direction: column !important;
+  }
+
   /* ── Panel 1: Vessel overview (30vh) ── */
   #rsLeft {
     flex: 0 0 auto !important;
@@ -45747,6 +45752,11 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 /* ── LB module: mobile responsive ─────────────────────────────────── */
 @media (max-width: 700px) {
 
+  /* Switch main body to column so panels stack vertically */
+  #lbBody {
+    flex-direction: column !important;
+  }
+
   /* Top bar */
   #lbTopBar {
     padding: 5px 8px !important;
@@ -45766,14 +45776,14 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
   /* Overview panel */
   #lbLeft {
-    flex: 0 0 auto !important;
     width: 100% !important;
+    flex: 0 0 48vh !important;
     height: 48vh;
     max-height: 48vh;
     min-height: 120px;
     border-right: none !important;
     border-bottom: 2px solid var(--line) !important;
-    transition: height 0.15s, max-height 0.15s, flex 0.15s;
+    transition: height 0.15s, flex-basis 0.15s;
   }
   #lbOvCanvasWrap { flex: 1; min-height: 0; }
 
@@ -45781,14 +45791,15 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
   #lbDividerHandle {
     display: flex !important;
     width: 100% !important;
+    flex-shrink: 0 !important;
   }
 
   /* Bridge canvas panel */
   #lbRight {
-    flex: 1;
-    min-width: 0 !important;
-    min-height: 0 !important;
+    flex: 1 1 auto !important;
     width: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
   }
   #lbCanvasWrap { flex: 1; }
 
@@ -54296,11 +54307,10 @@ function _divMove(clientY){
   var newH = Math.max(_divDragState.min,
              Math.min(_divDragState.max,
              _divDragState.startH + (clientY - _divDragState.startClientY)));
-  // Only set height — do NOT wipe cssText or other properties
-  pan.style.height    = newH + 'px';
-  pan.style.maxHeight = newH + 'px';
+  pan.style.setProperty('height',     newH+'px', 'important');
+  pan.style.setProperty('max-height', newH+'px', 'important');
+  pan.style.setProperty('flex',       '0 0 '+newH+'px', 'important');
   pan.style.minHeight = '0';
-  pan.style.flex      = '0 0 ' + newH + 'px';
 }
 // Global listeners — attached once
 (function(){
@@ -54386,17 +54396,12 @@ function _lbResetPanels(){
   var left  = document.getElementById('lbLeft');
   var right = document.getElementById('lbRight');
   var div   = document.getElementById('lbDividerHandle');
-  _dbg('lbReset: avail='+_divAvail('lb')+' left='+(left?left.offsetHeight:'null'));
+  // Clear JS overrides, let CSS defaults restore layout
   if(left){
-    left.style.cssText = '';           // wipe any JS-set height
-    left.style.display = '';
-    left.style.overflow = '';
+    left.style.cssText = '';
+    _dbg('lbReset: left h='+left.offsetHeight+' avail='+_divAvail('lb'));
   }
-  if(right){
-    right.style.cssText = '';
-    right.style.display = 'flex';
-    right.style.flexDirection = 'column';
-  }
+  if(right){ right.style.cssText = ''; }
   if(div) div.style.display = 'flex';
   // Wait for layout, then resize canvas and draw
   setTimeout(function(){
