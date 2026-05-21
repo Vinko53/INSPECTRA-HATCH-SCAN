@@ -55313,20 +55313,26 @@ function _lbZoomReset(){
     }, {passive:false});
     wrap.addEventListener('touchend', function(e){
       if(_t0 && _t0.type === 'pan' && e.changedTouches.length){
-        const t   = e.changedTouches[0];
-        const dx  = Math.abs(t.clientX - _t0.sx);
-        const dy  = Math.abs(t.clientY - _t0.sy);
-        if(dx < 8 && dy < 8){
-          // Tap — route to palette paint or bridge select
-          const fe = {clientX: t.clientX, clientY: t.clientY, button: 0,
-                      ctrlKey: false, preventDefault: function(){}};
-          if(_lbPaletteVisible && _lbSelBridge){
-            // Palette active — paint eye under finger
-            _lbPalMouseDown(fe);
-            _lbPalMouseUp(fe);
-          } else {
-            _lbHandleClick(fe);
-          }
+        const t  = e.changedTouches[0];
+        const dx = Math.abs(t.clientX - _t0.sx);
+        const dy = Math.abs(t.clientY - _t0.sy);
+        if(_lbPaletteVisible && _lbSelBridge){
+          // Always finalize palette drag (tap or drag)
+          var _c = document.getElementById('lbCanvas');
+          var _r = _c ? _c.getBoundingClientRect() : wrap.getBoundingClientRect();
+          var fe = { clientX: t.clientX, clientY: t.clientY,
+                     button: 0, ctrlKey: false,
+                     preventDefault: function(){} };
+          _lbPalDragActive = true; // ensure mouseUp processes it
+          _lbPalMouseUp(fe);       // paints and clears _lbPalDragActive
+          _lbPalDragActive = false;
+          _lbDraw();
+        } else if(dx < 8 && dy < 8){
+          // Tap without palette — select bridge
+          const fe = {clientX: t.clientX, clientY: t.clientY,
+                      button: 0, ctrlKey: false,
+                      preventDefault: function(){}};
+          _lbHandleClick(fe);
         }
       }
       _t0 = null;
