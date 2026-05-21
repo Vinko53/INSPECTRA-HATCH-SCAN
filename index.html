@@ -4293,16 +4293,12 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
         <div class="dropdown" id="dropExport" style="max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
           <div class="dd-section">DRAWING OUTPUT</div>
           <button class="dd-action" onclick="exportAllBaysPDF();closeMenus()">⬡  EXPORT PDF — ALL BAYS (A4)</button>
-          <button class="dd-action dd-disabled">⬡  EXPORT PNG — HIGH RES (v.NEXT)</button>
           <div class="dd-sep"></div>
           <div class="dd-section">DATA OUTPUT</div>
           <button class="dd-action" onclick="exportLegendPDF();closeMenus()">⬡  EXPORT PDF — LEGEND</button>
           <button class="dd-action" onclick="exportFndTypesPDF();closeMenus()">⬡  EXPORT PDF — FOUNDATION TYPES LIBRARY</button>
           <button class="dd-action" onclick="exportLashEyeLibPDF();closeMenus()">⬡  EXPORT PDF — LASHING EYE LIBRARY</button>
           <button class="dd-action" onclick="exportMarkLegendPDF();closeMenus()">⬡  EXPORT PDF — MARK LEGEND SHAPE LIBRARY</button>
-          <button class="dd-action dd-disabled">⬡  EXPORT JSON — FULL STATE (v.NEXT)</button>
-          <button class="dd-action dd-disabled">⬡  EXPORT CSV — BAY TABLE (v.NEXT)</button>
-          <button class="dd-action dd-disabled">⬡  EXPORT XML — EDI FORMAT (v.NEXT)</button>
         </div>
       </div>
 
@@ -8260,15 +8256,19 @@ function computeItemYPositions(gy){
   accommodations.forEach((a,ai)=>{ if(a.afterBay===-1 && a.afterPlatIdx===undefined){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
   for(let b=0;b<cfg.bays;b++){
     baysY[b]=placeItem(); y+=SH;
+    // Accommodations after this bay, NOT before a specific platform
+    accommodations.forEach((a,ai)=>{
+      if(a.afterBay===b && a.afterPlatIdx===undefined && !a.beforePlatIdx_set) accomsY[ai]=placeItem(), y+=ACCOM_H;
+    });
     platforms.forEach((p,pi)=>{
       if(p.afterBay===b){
+        // Accommodations placed BEFORE this platform (between bay and platform)
+        accommodations.forEach((a,ai)=>{ if(a.beforePlatIdx===pi){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
         platsY[pi]=placeItem(); y+=PLAT_H;
-        // Accommodations linked to this platform
+        // Accommodations placed AFTER this platform
         accommodations.forEach((a,ai)=>{ if(a.afterPlatIdx===pi){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
       }
     });
-    // Accommodations after this bay (not platform-linked)
-    accommodations.forEach((a,ai)=>{ if(a.afterBay===b && a.afterPlatIdx===undefined){ accomsY[ai]=placeItem(); y+=ACCOM_H; } });
   }
   return {baysY, platsY, accomsY, totalH:y};
 }
@@ -20036,14 +20036,24 @@ function drawOverview(){
       ctx.beginPath(); ctx.moveTo(gx,bYa[b]); ctx.lineTo(gx+rows*SW,bYa[b]); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(gx,bYa[b]+SH); ctx.lineTo(gx+rows*SW,bYa[b]+SH); ctx.stroke();
     }
-    // Dotted bay separator lines — visually marks where each bay begins/ends
+    // Dotted separator lines — top and bottom of each bay gap
     ctx.save();
-    ctx.strokeStyle='rgba(94,184,255,0.45)'; ctx.lineWidth=1;
-    ctx.setLineDash([4, 5]);
-    for(let b=1;b<cfg.bays;b++){
-      const sepY=(bYa[b-1]+SH + bYa[b]) / 2; // midpoint between bays
-      ctx.beginPath(); ctx.moveTo(gx,sepY); ctx.lineTo(gx+rows*SW,sepY); ctx.stroke();
+    ctx.strokeStyle='rgba(94,184,255,0.55)'; ctx.lineWidth=1.5;
+    ctx.setLineDash([6, 5]);
+    for(let b=0;b<cfg.bays;b++){
+      // Line at top of bay (between previous item and this bay)
+      ctx.beginPath(); ctx.moveTo(gx,bYa[b]); ctx.lineTo(gx+rows*SW,bYa[b]); ctx.stroke();
+      // Line at bottom of bay
+      ctx.beginPath(); ctx.moveTo(gx,bYa[b]+SH); ctx.lineTo(gx+rows*SW,bYa[b]+SH); ctx.stroke();
     }
+    // Also dotted lines at top/bottom of each platform
+    ctx.strokeStyle='rgba(60,180,80,0.45)'; ctx.lineWidth=1;
+    ctx.setLineDash([4, 6]);
+    platforms.forEach((p,pi)=>{
+      const pRows=totalRowsForPlat(pi), pOx=bayOffsetX(pRows);
+      ctx.beginPath(); ctx.moveTo(gx+pOx,pYa[pi]); ctx.lineTo(gx+pOx+pRows*SW,pYa[pi]); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gx+pOx,pYa[pi]+PLAT_H); ctx.lineTo(gx+pOx+pRows*SW,pYa[pi]+PLAT_H); ctx.stroke();
+    });
     // Also draw top and bottom of each bay as clear solid lines
     ctx.setLineDash([]);
     ctx.strokeStyle='rgba(160,80,10,0.55)'; ctx.lineWidth=0.8;
@@ -24868,7 +24878,7 @@ function renderAutoGrids(){
   if(summary) summary.innerHTML = summaryLines.length ? summaryLines.join(' &nbsp;|&nbsp; ') : '<span style="color:#6a9ac0">Select a source bay in each group above</span>';
 
   const execBtn = document.getElementById('bc-exec-btn');
-  const hasWork = BC_COLORS.some(c=>(bcAutoPairs[c]&&bcAutoPairs[c].src)!==null && bcAutoPairs[c]?.(tgts&&tgts.size)>0);
+  const hasWork = BC_COLORS.some(c=>bcAutoPairs[c] && bcAutoPairs[c].src!==null && bcAutoPairs[c].tgts && bcAutoPairs[c].tgts.size>0);
   if(execBtn){ execBtn.disabled=!hasWork; execBtn.style.opacity=hasWork?'1':'0.4'; }
 }
 
@@ -24948,8 +24958,12 @@ function renderBayCopyTool(){
   cnt.textContent=bcTargets.size===0?'No target bays selected':`${bcTargets.size} target bay${bcTargets.size>1?'s':''} selected`;
 
   const execBtn=document.getElementById('bc-exec-btn');
-  execBtn.disabled = bcTargets.size===0;
-  execBtn.style.opacity = bcTargets.size===0 ? '0.4' : '1';
+  // In auto mode, enable if any color group has a source + targets
+  const hasAutoWork = bcAutoMode && typeof bcAutoPairs!=='undefined' &&
+    BC_COLORS.some(c=>bcAutoPairs[c] && bcAutoPairs[c].src!==null && bcAutoPairs[c].tgts && bcAutoPairs[c].tgts.size>0);
+  const canExec = bcTargets.size>0 || hasAutoWork;
+  execBtn.disabled = !canExec;
+  execBtn.style.opacity = canExec ? '1' : '0.4';
 }
 
 function bcExecuteCopy(){
@@ -24989,6 +25003,7 @@ function bcExecuteCopy(){
 
 function _bcDoCopy(){
   const src = bcSrcBay;
+  if(src===null || src===undefined) return; // no source bay selected
   const srcRows = totalRowsForBay(src);
   // Snapshot targets into an Array immediately — prevents any mid-iteration mutation
   // and ensures AUTO mode per-color targets are frozen at call time.
@@ -29101,6 +29116,56 @@ function hcnApplyAutoFill(){
   margin-right:6px;
 }
 
+
+@media (max-width: 700px) {
+  #accomMgrPanel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 90vh !important;
+    border-left: none !important;
+    border-right: none !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 12px 12px 0 0;
+  }
+  #accomMgrOverlay {
+    align-items: flex-end !important;
+  }
+  #accomMgrBayList {
+    max-height: 65vh !important;
+  }
+  .acm-bay-row {
+    flex-wrap: wrap;
+    min-height: 28px;
+    margin-bottom: 4px;
+  }
+  .acm-bay-slot {
+    min-width: 80px !important;
+    padding: 3px 6px !important;
+    font-size: 8px !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    border-bottom: none !important;
+  }
+  .acm-slot {
+    width: 100% !important;
+    padding: 3px 6px !important;
+    gap: 4px !important;
+  }
+  .acm-add-btn {
+    font-size: 9px !important;
+    padding: 4px 8px !important;
+  }
+  .acm-chip {
+    font-size: 8px !important;
+    padding: 3px 7px !important;
+  }
+  .acm-aft-label {
+    font-size: 7px !important;
+  }
+}
 html.day-mode #accomMgrOverlay { background:rgba(100,140,180,0.55); }
 html.day-mode #accomMgrPanel {
   background:#e8f2fa !important;
@@ -29600,54 +29665,69 @@ function renderAccomMgrBayList(){
   function makePlatInfoRows(afterBay){
     platforms.forEach((p, pi) => {
       if(p.afterBay !== afterBay) return;
-      const pRow = document.createElement('div');
-      pRow.className = 'acm-bay-row';
-      pRow.style.cssText = 'background:rgba(30,60,30,0.12);border-left:2px solid rgba(60,160,80,0.4);';
 
-      // Platform label
-      const pLbl = document.createElement('div');
-      pLbl.className = 'acm-bay-slot';
-      pLbl.style.cssText = 'color:#40b060;background:rgba(20,50,20,0.25);border-color:rgba(40,120,60,0.3);font-size:8px;letter-spacing:0.1em;';
-      pLbl.textContent = '▤  ' + (p.name || ('PLT '+(pi+1))).toUpperCase();
-      pRow.appendChild(pLbl);
+      // Platform wrapper — contains label + two sub-rows (BEFORE / AFT)
+      const pWrap = document.createElement('div');
+      pWrap.style.cssText = 'border-left:3px solid rgba(60,160,80,0.5);margin-bottom:4px;';
 
-      // Block slot for this platform (afterPlatIdx = pi)
-      const platSlotKey = 'plat_' + pi;
+      // Platform header row
+      const pHeader = document.createElement('div');
+      pHeader.style.cssText = 'display:flex;align-items:center;padding:4px 10px;background:rgba(20,50,20,0.30);gap:8px;';
+      const pIcon = document.createElement('span');
+      pIcon.style.cssText = 'color:#40b060;font-size:9px;font-weight:800;letter-spacing:0.12em;';
+      pIcon.textContent = '▤  ' + (p.name || ('P'+(pi+1))).toUpperCase();
+      pHeader.appendChild(pIcon);
+      pWrap.appendChild(pHeader);
+
+      // Helper: make one sub-row (BEFORE or AFT)
+      function makeSubRow(label, color, hasBlock, getBlock, onAdd, onDel){
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 10px 5px 16px;' +
+          'border-top:1px solid rgba(60,160,80,0.15);background:rgba(10,25,15,0.20);';
+        const lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:0.1em;color:'+color+';min-width:52px;text-transform:uppercase;';
+        lbl.textContent = label;
+        row.appendChild(lbl);
+        if(!hasBlock){
+          ACCOM_TYPES.forEach(t => {
+            const btn = document.createElement('button');
+            btn.className = 'acm-add-btn';
+            btn.textContent = '+ ' + t.label;
+            btn.onclick = () => onAdd(t.label);
+            row.appendChild(btn);
+          });
+        } else {
+          const block = getBlock();
+          const typeInfo = ACCOM_TYPES.find(t => t.label === block.label) || ACCOM_TYPES[0];
+          const chip = document.createElement('div'); chip.className = 'acm-chip';
+          chip.innerHTML = typeInfo.icon + ' ' + block.label;
+          const dBtn = document.createElement('button'); dBtn.className='acm-chip-del'; dBtn.textContent='✕';
+          dBtn.onclick = onDel;
+          chip.appendChild(dBtn); row.appendChild(chip);
+        }
+        return row;
+      }
+
+      // BEFORE sub-row
+      const alreadyBefore = accommodations.some(a => a.beforePlatIdx === pi);
+      pWrap.appendChild(makeSubRow(
+        '▲ Before', '#5ea8e8', alreadyBefore,
+        () => accommodations[accommodations.findIndex(a=>a.beforePlatIdx===pi)],
+        (lbl) => { accommodations.push({afterBay:p.afterBay,label:lbl,beforePlatIdx:pi,beforePlatIdx_set:true}); renderAccomMgrBayList(); markDirty&&markDirty(); draw(); },
+        () => { const i=accommodations.findIndex(a=>a.beforePlatIdx===pi); accommodations.splice(i,1); renderAccomMgrBayList(); markDirty&&markDirty(); draw(); }
+      ));
+
+      // AFT sub-row
       const alreadyHere = accommodations.some(a => a.afterPlatIdx === pi);
 
-      const pSlot = document.createElement('div');
-      pSlot.style.cssText = 'display:flex;align-items:center;gap:6px;flex:1;padding:4px 8px;' +
-        'background:rgba(20,50,20,0.06);border:1px solid rgba(40,120,60,0.2);flex-wrap:wrap;min-height:30px;';
 
-      if(!alreadyHere){
-        const aftLbl = document.createElement('span');
-        aftLbl.className = 'acm-aft-label';
-        aftLbl.textContent = '▼ AFT';
-        pSlot.appendChild(aftLbl);
-        ACCOM_TYPES.forEach(t => {
-          const btn = document.createElement('button');
-          btn.className = 'acm-add-btn';
-          btn.textContent = '+ ' + t.label;
-          btn.title = 'Place ' + t.label + ' block after ' + (p.name || 'platform');
-          btn.onclick = () => confirmAddAccomAfterPlat(pi, t.label);
-          pSlot.appendChild(btn);
-        });
-      } else {
-        // Show existing block chip
-        const existingIdx = accommodations.findIndex(a => a.afterPlatIdx === pi);
-        const existing = accommodations[existingIdx];
-        const typeInfo = ACCOM_TYPES.find(t => t.label === existing.label) || ACCOM_TYPES[0];
-        const chip = document.createElement('div');
-        chip.className = 'acm-chip';
-        chip.innerHTML = typeInfo.icon + ' ' + existing.label;
-        const dBtn = document.createElement('button');
-        dBtn.className = 'acm-chip-del'; dBtn.textContent = '✕';
-        dBtn.onclick = () => deleteAccom(existingIdx);
-        chip.appendChild(dBtn);
-        pSlot.appendChild(chip);
-      }
-      pRow.appendChild(pSlot);
-      container.appendChild(pRow);
+      pWrap.appendChild(makeSubRow(
+        '▼ Aft', '#40b060', alreadyHere,
+        () => accommodations[accommodations.findIndex(a=>a.afterPlatIdx===pi)],
+        (lbl) => { confirmAddAccomAfterPlat(pi, lbl); },
+        () => { const i=accommodations.findIndex(a=>a.afterPlatIdx===pi); accommodations.splice(i,1); renderAccomMgrBayList(); markDirty&&markDirty(); draw(); }
+      ));
+      container.appendChild(pWrap);
     });
   }
 
@@ -41993,7 +42073,7 @@ window.statsExportWord = function(){
     '<div class="hdr-meta">'+now+'  &nbsp;|&nbsp;  '+cfg.bays+' Bay'+(cfg.bays!==1?'s':'')+'  —  All Data</div>',
     '</div>',
     inner,
-    '</body></html>'
+    '</body></body></html>'
   ].join('\n');
 
   var blob = new Blob([html],{type:'application/msword'});
@@ -44905,18 +44985,10 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
         <button class="dd-action" onclick="openBulkMarkDialog('flat','hc');closeRsMenus()">▬  MARK ALL FLAT RUBBER — CURRENT HC</button>
         <div class="dd-sep"></div>
         <div class="dd-section">DISPLAY</div>
-        <button class="dd-action dd-disabled">◯  SEAL COLOUR SCHEME (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  LABEL SIZE (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  SHOW / HIDE SEAL TYPES (v.NEXT)</button>
         <div class="dd-sep"></div>
         <div class="dd-section">DEFAULTS</div>
-        <button class="dd-action dd-disabled">◯  DEFAULT SEAL TYPE (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  DEFAULT STATUS (v.NEXT)</button>
         <div class="dd-sep"></div>
-        <div class="dd-section">DATA</div>
-        <button class="dd-action dd-disabled">◯  INSPECTION PARAMETERS (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  VESSEL SEAL LIBRARY (v.NEXT)</button>
-      </div>
+        </div>
     </div>
 
     <!-- ── TOOLS ── -->
@@ -44933,19 +45005,10 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
         <button class="dd-action" onclick="toggleChanPaintTool();closeRsMenus()">⊟  MARK CHANNEL — CLICK TO SET STATUS</button>
         <div class="dd-sep"></div>
         <div class="dd-section">SEAL TOOLS</div>
-        <button class="dd-action dd-disabled">◯  PLACE RUBBER SEAL (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  RUBBER SEAL LIBRARY (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  RUBBER SEAL MANAGER (v.NEXT)</button>
         <div class="dd-sep"></div>
         <div class="dd-section">BATCH OPERATIONS</div>
-        <button class="dd-action dd-disabled">◯  MARK ALL — OK/REPLACED (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  MARK ALL — NOT EDITED (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  COPY STATUS FROM HC (v.NEXT)</button>
         <div class="dd-sep"></div>
-        <div class="dd-section">MAINTENANCE</div>
-        <button class="dd-action dd-disabled">◯  REPLACE SCHEDULE PLANNER (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  DEFECT LOG (v.NEXT)</button>
-      </div>
+        </div>
     </div>
 
     <!-- ── STATISTICS ── -->
@@ -44957,19 +45020,13 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
       </button>
       <div class="dropdown" id="rsDropStats" style="display:none;position:absolute;top:100%;left:0;min-width:240px;z-index:3600;max-height:calc(100vh - 90px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#1e4a74 transparent;">
         <div class="dd-section">VESSEL SUMMARY</div>
-        <button class="dd-action dd-disabled">◯  SEAL STATUS OVERVIEW (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  DMG/MISS BREAKDOWN BY HC (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  PARTIAL SEAL COUNT (v.NEXT)</button>
         <div class="dd-sep"></div>
         <div class="dd-section">TRENDS</div>
-        <button class="dd-action dd-disabled">◯  INSPECTION HISTORY (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  WEAR RATE ANALYSIS (v.NEXT)</button>
         <div class="dd-sep"></div>
         <div class="dd-section">REPORTING</div>
         <button class="dd-action" onclick="openRsConditionStats();closeRsMenus()">▦  RUBBER SEAL CONDITION</button>
         <button class="dd-action" onclick="openChanConditionStats();closeRsMenus()">⊟  RETAINING CHANNEL CONDITION</button>
         <button class="dd-action" onclick="openFlatRubberStats();closeRsMenus()">▬  FLAT RUBBER CONDITION</button>
-        <button class="dd-action dd-disabled">◯  OPEN STATISTICS PANEL (v.NEXT)</button>
       </div>
     </div>
 
@@ -44986,17 +45043,10 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
         <button class="dd-action" onclick="exportChanConditionPDF();closeRsMenus()">⊟  EXPORT PDF — RETAINING CHANNEL CONDITION</button>
         <button class="dd-action" onclick="exportFlatRubberPDF();closeRsMenus()">▬  EXPORT PDF — FLAT RUBBER CONDITION</button>
         <button class="dd-action" onclick="exportAllBaysRubberSealsPDF();closeRsMenus()">◯  EXPORT PDF — ALL BAYS — RUBBER SEALS (A4)</button>
-        <button class="dd-action dd-disabled">◯  EXPORT PDF — SELECTED HC (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  EXPORT PDF — SCHEMATIC ONLY (v.NEXT)</button>
         <div class="dd-sep"></div>
         <div class="dd-section">DATA</div>
-        <button class="dd-action dd-disabled">◯  EXPORT CSV — SEAL INSPECTION DATA (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  EXPORT JSON — FULL SEAL DATASET (v.NEXT)</button>
         <div class="dd-sep"></div>
-        <div class="dd-section">REPORT</div>
-        <button class="dd-action dd-disabled">◯  GENERATE INSPECTION REPORT (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  MAINTENANCE WORK ORDER (v.NEXT)</button>
-      </div>
+        </div>
     </div>
 
     <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
@@ -45226,9 +45276,16 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     padding: 8px 10px !important;
+    min-height: 0 !important;
+  }
+  /* Only target the Rubber Packing type selector */
+  .rs-type-sel {
+    font-size: 8px !important;
+    padding: 1px 3px !important;
+    height: 22px !important;
   }
 
-  /* Seal rows: stack instead of grid */
+  /* Seal rows */
   .rs-seal-row {
     grid-template-columns: 1fr !important;
     gap: 5px !important;
@@ -54061,10 +54118,7 @@ function _rsResetPanels(){
         <div class="dd-section">VESSEL SUMMARY</div>
         <button class="dd-action" onclick="_lbOpenStats();_lbCloseMenus()">▦  LASHING BRIDGE EYE STATUS</button>
         <div class="dd-sep"></div>
-        <div class="dd-section">BY BRIDGE</div>
-        <button class="dd-action dd-disabled">◯  PER-BRIDGE BREAKDOWN (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  DEFECT HEAT MAP (v.NEXT)</button>
-      </div>
+        </div>
     </div>
 
     <!-- EXPORT MENU -->
@@ -54080,10 +54134,7 @@ function _rsResetPanels(){
         <button class="dd-action" onclick="_lbExportAllPDF();_lbCloseMenus()">⬆  EXPORT PDF — ALL BRIDGES (LANDSCAPE)</button>
         <button class="dd-action" onclick="_lbExportCurrentPDF();_lbCloseMenus()">⬆  EXPORT PDF — CURRENT BRIDGE (LANDSCAPE)</button>
         <div class="dd-sep"></div>
-        <div class="dd-section">DATA</div>
-        <button class="dd-action dd-disabled">◯  EXPORT CSV — EYE STATUS (v.NEXT)</button>
-        <button class="dd-action dd-disabled">◯  EXPORT JSON — FULL LB DATASET (v.NEXT)</button>
-      </div>
+        </div>
     </div>
 
     <!-- LB PALETTE BUTTON -->
@@ -61496,5 +61547,28 @@ function _exportBakedAccounts(){
   URL.revokeObjectURL(url);
   alert('Downloaded file with ' + _accounts.length + ' account(s) baked in.\nUpload this file to GitHub to make accounts available on all devices.');
 }
+</script>
+<script>
+// ── Floating window drag ────────────────────────────────────────────────
+(function(){
+  var _fpDrag=null;
+  var FLOAT_IDS=['lbPalette','lbEyePlacerPal','flexipadPlacerPal','ventPlacerPal','hddPlacerPal','flexipadManipPal','rpPlacerPal','rpManipPal','mlPanel','objManipPal','hcShapePal','hcManipPal','lashEyePlacerPal','hcStopPlacerPal','hcStopManipPal','layersPal','cranePal','markPal','heightPicker'];
+  function makeDraggable(el){
+    if(!el||el._fpDragSetup)return;
+    el._fpDragSetup=true;
+    var h=el.querySelector('.fp-drag-handle');
+    if(!h){h=document.createElement('div');h.className='fp-drag-handle';h.style.cssText='width:100%;height:20px;cursor:grab;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:none;-webkit-user-select:none;user-select:none;';h.innerHTML='<div style="width:28px;height:3px;border-radius:2px;background:rgba(94,184,255,0.35);pointer-events:none;"></div>';el.insertBefore(h,el.firstChild);}
+    var _t=null,_mv=false,_sx=0,_sy=0;
+    h.addEventListener('touchstart',function(e){e.stopPropagation();_mv=false;_sx=e.touches[0].clientX;_sy=e.touches[0].clientY;_t=setTimeout(function(){var r=el.getBoundingClientRect();el.style.left=r.left+'px';el.style.top=r.top+'px';el.style.right='auto';el.style.bottom='auto';_fpDrag={el:el,sx:_sx,sy:_sy,ol:r.left,ot:r.top};h.style.background='rgba(94,184,255,0.15)';},400);},{passive:true});
+    h.addEventListener('touchmove',function(e){if(Math.abs(e.touches[0].clientX-_sx)>6||Math.abs(e.touches[0].clientY-_sy)>6){_mv=true;if(_t){clearTimeout(_t);_t=null;}}if(!_fpDrag)return;e.preventDefault();e.stopPropagation();var nx=Math.max(0,Math.min(window.innerWidth-el.offsetWidth,_fpDrag.ol+(e.touches[0].clientX-_fpDrag.sx)));var ny=Math.max(0,Math.min(window.innerHeight-el.offsetHeight,_fpDrag.ot+(e.touches[0].clientY-_fpDrag.sy)));_fpDrag.el.style.left=nx+'px';_fpDrag.el.style.top=ny+'px';},{passive:false});
+    h.addEventListener('touchend',function(){if(_t){clearTimeout(_t);_t=null;}if(_fpDrag){h.style.background='';_fpDrag=null;}});
+    h.addEventListener('mousedown',function(e){e.preventDefault();e.stopPropagation();var r=el.getBoundingClientRect();el.style.left=r.left+'px';el.style.top=r.top+'px';el.style.right='auto';el.style.bottom='auto';_fpDrag={el:el,sx:e.clientX,sy:e.clientY,ol:r.left,ot:r.top};h.style.cursor='grabbing';function mv(ev){var nx=Math.max(0,Math.min(window.innerWidth-el.offsetWidth,_fpDrag.ol+(ev.clientX-_fpDrag.sx)));var ny=Math.max(0,Math.min(window.innerHeight-el.offsetHeight,_fpDrag.ot+(ev.clientY-_fpDrag.sy)));el.style.left=nx+'px';el.style.top=ny+'px';}function up(){_fpDrag=null;h.style.cursor='grab';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);}document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});
+  }
+  function setupAll(){FLOAT_IDS.forEach(function(id){makeDraggable(document.getElementById(id));});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupAll);
+  else setTimeout(setupAll,800);
+  var obs=new MutationObserver(function(muts){muts.forEach(function(m){if(m.type==='attributes'&&m.attributeName==='style'){var el=m.target;if(el.id&&FLOAT_IDS.indexOf(el.id)!==-1&&el.style.display!=='none')makeDraggable(el);}});});
+  document.addEventListener('DOMContentLoaded',function(){FLOAT_IDS.forEach(function(id){var el=document.getElementById(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['style']});});});
+})();
 </script>
 
