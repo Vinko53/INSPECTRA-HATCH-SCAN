@@ -8229,7 +8229,14 @@ function setView(m){
   // Handle Rubber Seals view overlay
   const rsOv = document.getElementById('rsOverlay');
   if(m==='rs'){
-    if(rsOv){ rsOv.style.display='flex'; _rsRender(); }
+    if(rsOv){ rsOv.style.display='flex';
+      if(window.innerWidth<=700&&_rsSelBay===null){
+        var _b=typeof bayOrder!=='undefined'?bayOrder:Object.keys(typeof hatchData!=='undefined'?hatchData:{}).map(Number).sort(function(a,b){return a-b;});
+        if(_b&&_b.length){_rsSelBay=_b[0];_rsSelHc=1;}
+      }
+      _rsRender();
+      if(window.innerWidth<=700&&typeof _rsResetPanels==='function') setTimeout(_rsResetPanels,500);
+    }
     // Elevate save button + dot above the overlay
     const _rsb = document.getElementById('floatSaveBtn');
     const _rsd = document.getElementById('floatSaveDot');
@@ -45689,6 +45696,23 @@ function _rsToggleOverview(){
   const _isMob = window.innerWidth <= 700;
   if(panel){
     if(_isMob){
+      var d1=document.getElementById('rsDivider1');
+      if(_rsOvVisible){
+        // Show: reset to equal thirds
+        if(typeof _rsResetPanels==='function') _rsResetPanels();
+        if(btn){btn.style.color='var(--bright)';btn.style.borderColor='var(--bright)';}
+      } else {
+        // Hide overview
+        panel.style.setProperty('height','0','important');
+        panel.style.setProperty('max-height','0','important');
+        panel.style.setProperty('flex','0 0 0','important');
+        panel.style.overflow='hidden';
+        if(d1) d1.style.display='none';
+        var strip=document.getElementById('rsSchematicStrip');
+        if(strip){strip.style.setProperty('flex','0 0 50vh','important');strip.style.setProperty('height','50vh','important');}
+        if(btn){btn.style.color='var(--text2)';btn.style.borderColor='var(--line)';}
+      }
+      return;
       // On mobile: full-width stacked, use max-height to collapse
       panel.style.width     = '100%';
       panel.style.flexBasis = 'auto';
@@ -46415,13 +46439,19 @@ function _rsShowDetail(bay, hcNum){
   const _isMobSch = window.innerWidth <= 700;
   if(strip){
     strip.style.display       = 'flex';
-    strip.style.flexDirection = _isMobSch ? 'column' : 'column';
+    strip.style.flexDirection = 'column';
     if(_isMobSch){
       strip.style.width    = '100%';
       strip.style.minWidth = '0';
       strip.style.maxWidth = '100%';
-      strip.style.height   = 'auto';
-      strip.style.maxHeight= '40vh';
+      // Heights managed by _rsResetPanels — don't override here
+      var d1=document.getElementById('rsDivider1'),d2=document.getElementById('rsDivider2');
+      if(d1) d1.style.display='flex';
+      if(d2) d2.style.display='flex';
+      // Only reset if strip has no explicit height set yet
+      if(!strip.style.getPropertyPriority('height')){
+        setTimeout(function(){if(typeof _rsResetPanels==='function')_rsResetPanels();},50);
+      }
     }
   }
 
@@ -54934,6 +54964,7 @@ function _dbg(msg){ /* debug disabled */ }
 
 // ── LB divider: inline HTML event handlers ───────────────────────────────
 var _lbDivRafPending = false;
+var _divDragState=null;
 function _lbDivTouchStart(e){
   e.preventDefault(); e.stopPropagation();
   var pan=document.getElementById('lbLeft');
@@ -55020,7 +55051,6 @@ function _rsDivMouseDown(e,divId){
 }
 
 // ── Shared drag state ────────────────────────────────────────────────────
-var _divDragState=null;
 (function(){
   document.addEventListener('touchend',function(){if(_divDragState&&_divDragState.onDone)_divDragState.onDone();_divDragState=null;});
   document.addEventListener('mouseup',function(){if(_divDragState&&_divDragState.onDone)_divDragState.onDone();_divDragState=null;});
@@ -56061,6 +56091,7 @@ function _lbOpenOverlay(){
   if(typeof _lbOvDrawVessel === 'function') _lbOvDrawVessel();
   if(typeof _lbRebuildList === 'function') _lbRebuildList();
   requestAnimationFrame(function(){ if(typeof _lbDraw === 'function') _lbDraw(); });
+  if(window.innerWidth <= 700 && typeof _lbResetPanels === 'function') setTimeout(_lbResetPanels, 300);
 }
 
 (function(){
@@ -56832,12 +56863,24 @@ function _lbToggleOverview(){
   const _lbIsMob = window.innerWidth <= 700;
   if(panel){
     if(_lbIsMob){
-      panel.style.width     = '100%';
-      panel.style.flexBasis = 'auto';
-      panel.style.maxHeight = _lbOvPanelVisible ? '35vh' : '0';
-      panel.style.minHeight = _lbOvPanelVisible ? '140px' : '0';
-      panel.style.borderRight  = 'none';
-      panel.style.borderBottom = _lbOvPanelVisible ? '2px solid var(--line)' : 'none';
+      var divH=document.getElementById('lbDividerHandle');
+      if(_lbOvPanelVisible){
+        // Show: reset to equal split
+        if(typeof _lbResetPanels==='function') _lbResetPanels();
+        if(btn){btn.style.color='var(--bright)';btn.style.borderColor='var(--bright)';}
+      } else {
+        // Hide: collapse overview, bridge fills screen
+        panel.style.setProperty('height','0','important');
+        panel.style.setProperty('max-height','0','important');
+        panel.style.setProperty('flex','0 0 0','important');
+        panel.style.overflow='hidden';
+        if(divH) divH.style.display='none';
+        var right=document.getElementById('lbRight');
+        if(right){right.style.display='flex';right.style.flexDirection='column';right.style.setProperty('flex','1 1 auto','important');}
+        if(btn){btn.style.color='var(--text2)';btn.style.borderColor='var(--line)';}
+        setTimeout(function(){if(typeof _lbDraw==='function')_lbDraw();},50);
+      }
+      return;
     } else {
       panel.style.width    = _lbOvPanelVisible ? '360px' : '0';
       panel.style.flexBasis= _lbOvPanelVisible ? '360px' : '0';
