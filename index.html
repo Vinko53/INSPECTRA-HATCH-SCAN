@@ -55148,7 +55148,24 @@ function _lbZoomBtn(factor){
 }
 
 function _lbZoomReset(){
-  _lbZoom = 1; _lbPanX = 0; _lbPanY = 0;
+  if(window.innerWidth <= 700){
+    // Mobile: fit bridge width to screen, center vertically
+    var b = _lbSelBridge ? lbData.bridges.find(x=>x.id===_lbSelBridge) : null;
+    var wrap = document.getElementById('lbCanvasWrap');
+    if(b && wrap){
+      var rows  = _lbGetBridgeRows(b);
+      var nBays = rows.length;
+      var worldW = Math.max(wrap.clientWidth, nBays * 60 + 200);
+      var worldH = Math.max(wrap.clientHeight, 700);
+      _lbZoom = (wrap.clientWidth - 10) / worldW;
+      _lbPanX = 5;
+      _lbPanY = 0;
+    } else {
+      _lbZoom = 1; _lbPanX = 0; _lbPanY = 0;
+    }
+  } else {
+    _lbZoom = 1; _lbPanX = 0; _lbPanY = 0;
+  }
   _lbUpdateZoomPct();
   _lbDraw();
 }
@@ -57589,7 +57606,11 @@ function _lbDrawSideView(ctx, W, H, b, side){
   const nBays  = rows.length;
   const nCols  = nBays + 1;
   const levels = b.levels || 1;       // number of horizontal platforms (beams)
-  const cw = W, ch = H;  // layout in world coords; zoom/pan via canvas transform
+  // On mobile: use fixed world size so bridge renders at full detail
+  // regardless of canvas panel height. User can pan/zoom freely.
+  const isMob  = window.innerWidth <= 700;
+  const cw = isMob ? Math.max(W, nBays * 60 + 200) : W;
+  const ch = isMob ? Math.max(H, 700) : H;
 
   // Layout
   const PAD_L = 100, PAD_T = 50;
@@ -57842,7 +57863,8 @@ function _lbDrawBothView(ctx, W, H, b){
   const nBays  = rows.length;
   const nCols  = nBays + 1;
   const levels = b.levels || 1;
-  const cw = W, ch = H;  // layout in world coords; zoom/pan via canvas transform
+  const isMob=window.innerWidth<=700;
+  const cw=isMob?Math.max(W,700):W, ch=isMob?Math.max(H,700):H;  // layout in world coords; zoom/pan via canvas transform
 
   const PAD_L = 58, PAD_T = 28, PAD_B = 28;
   const platW  = cw - PAD_L * 2;
