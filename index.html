@@ -45224,7 +45224,7 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 }
 @media (max-width: 420px) {
   #rsLeft { max-height: 32vh !important; }
-  #rsSchematicStrip { max-height: 35vh !important; }
+  #rsSchematicStrip { max-height: none; }
 }
 
 html.day-mode #rsOverlay,
@@ -53872,22 +53872,26 @@ function _rsResetPanels(){
     setTimeout(function(){
       _rsResetPanels();
     }, 100);
-    // Step 2 (450ms): panels settled — reset zoom and re-trigger original sizing
+    // Step 2 (450ms): draw schematic at correct size
     setTimeout(function(){
-      // Reset schematic zoom transform so it measures correctly
-      if(typeof window._rsSchZoomReset === 'function') window._rsSchZoomReset();
-      // Re-run the original _rsShowDetail canvas sizing by calling _orig again
-      // This fires rAF which now measures the correct (mobile-sized) strip
+      var strip = document.getElementById('rsSchematicStrip');
+      var schWrap = document.getElementById('rsSchWrap');
+      var zoomLayer = document.getElementById('rsSchZoomLayer');
       var sch = document.getElementById('rsSchematic');
-      var wrap = document.getElementById('rsSchWrap');
-      if(sch && wrap){
-        var w = wrap.offsetWidth  || wrap.clientWidth  || window.innerWidth;
-        var h = wrap.offsetHeight || wrap.clientHeight || Math.round(window.innerHeight*0.28);
-        if(w > 10 && h > 10){
-          sch.width  = w;  sch.height  = h;
-          sch.style.width  = w+'px';  sch.style.height = h+'px';
-        }
-      }
+      if(!strip || !sch) return;
+      // Force strip to be visible with explicit dimensions
+      var sw = window.innerWidth;
+      var sh = strip.offsetHeight || strip.clientHeight || Math.round(window.innerHeight*0.28);
+      if(sh < 60) sh = Math.round(window.innerHeight * 0.28);
+      // Reset zoom transform
+      if(typeof window._rsSchZoomReset==='function') window._rsSchZoomReset();
+      if(zoomLayer) zoomLayer.style.transform = 'translate(0px,0px) scale(1)';
+      // Size the canvas to fill the strip
+      var cw = sw - 4;
+      var ch = sh - 4;
+      sch.width  = cw;  sch.style.width  = cw+'px';
+      sch.height = ch;  sch.style.height = ch+'px';
+      // Draw
       if(typeof _rsDrawSchematic==='function') _rsDrawSchematic(bay, hcNum);
     }, 450);
   };
