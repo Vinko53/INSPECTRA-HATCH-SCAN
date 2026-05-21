@@ -55265,6 +55265,14 @@ function _lbZoomReset(){
         _t0 = { type:'pan',
           sx: e.touches[0].clientX, sy: e.touches[0].clientY,
           ox: _lbPanX, oy: _lbPanY };
+        if(_lbPaletteVisible && _lbSelBridge){
+          // Start palette drag from touch position
+          var _c = document.getElementById('lbCanvas');
+          var _r = _c ? _c.getBoundingClientRect() : wrap.getBoundingClientRect();
+          _lbPalDragX0 = _lbPalDragX1 = e.touches[0].clientX - _r.left;
+          _lbPalDragY0 = _lbPalDragY1 = e.touches[0].clientY - _r.top;
+          _lbPalDragActive = true;
+        }
       } else if(e.touches.length === 2){
         _t0 = { type:'pinch',
           d:  Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
@@ -55278,9 +55286,18 @@ function _lbZoomReset(){
       e.preventDefault();
       if(!_t0) return;
       if(_t0.type === 'pan' && e.touches.length === 1){
-        _lbPanX = _t0.ox + (e.touches[0].clientX - _t0.sx);
-        _lbPanY = _t0.oy + (e.touches[0].clientY - _t0.sy);
-        _lbDraw();
+        if(_lbPaletteVisible && _lbSelBridge){
+          // Palette active: rubber-band drag-paint
+          var canvas = document.getElementById('lbCanvas');
+          var rect = canvas ? canvas.getBoundingClientRect() : wrap.getBoundingClientRect();
+          _lbPalDragX1 = e.touches[0].clientX - rect.left;
+          _lbPalDragY1 = e.touches[0].clientY - rect.top;
+          _lbDraw();
+        } else {
+          _lbPanX = _t0.ox + (e.touches[0].clientX - _t0.sx);
+          _lbPanY = _t0.oy + (e.touches[0].clientY - _t0.sy);
+          _lbDraw();
+        }
       } else if(_t0.type === 'pinch' && e.touches.length === 2){
         const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
                              e.touches[0].clientY - e.touches[1].clientY);
@@ -55296,12 +55313,20 @@ function _lbZoomReset(){
     }, {passive:false});
     wrap.addEventListener('touchend', function(e){
       if(_t0 && _t0.type === 'pan' && e.changedTouches.length){
-        const dx = Math.abs(e.changedTouches[0].clientX - _t0.sx);
-        const dy = Math.abs(e.changedTouches[0].clientY - _t0.sy);
-        if(dx < 5 && dy < 5){
-          const fe = {clientX: e.changedTouches[0].clientX,
-                      clientY: e.changedTouches[0].clientY, button:0};
-          _lbHandleClick(fe);
+        const t   = e.changedTouches[0];
+        const dx  = Math.abs(t.clientX - _t0.sx);
+        const dy  = Math.abs(t.clientY - _t0.sy);
+        if(dx < 8 && dy < 8){
+          // Tap — route to palette paint or bridge select
+          const fe = {clientX: t.clientX, clientY: t.clientY, button: 0,
+                      ctrlKey: false, preventDefault: function(){}};
+          if(_lbPaletteVisible && _lbSelBridge){
+            // Palette active — paint eye under finger
+            _lbPalMouseDown(fe);
+            _lbPalMouseUp(fe);
+          } else {
+            _lbHandleClick(fe);
+          }
         }
       }
       _t0 = null;
@@ -59486,7 +59511,7 @@ function _lbPaintEyesInRect(wxMin, wyMin, wxMax, wyMax){
 
 function _lbPalMouseDown(e){
   if(!_lbPaletteVisible || !_lbSelBridge) return;
-  if(e.button !== 0) return;
+  if(e.button !== undefined && e.button !== 0) return;
   if(e.ctrlKey) return;
   var canvas = document.getElementById('lbCanvas');
   if(!canvas) return;
