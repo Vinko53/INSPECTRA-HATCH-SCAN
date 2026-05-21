@@ -53759,20 +53759,27 @@ function _rsResetPanels(){
     // Schematic canvas — resize and redraw
     var strip=document.getElementById('rsSchematicStrip');
     var sch=document.getElementById('rsSchematic');
+    // Force strip and canvas fully visible
+    var strip2=document.getElementById('rsSchematicStrip');
+    var schWrap=document.getElementById('rsSchWrap');
+    var zl=document.getElementById('rsSchZoomLayer');
+    if(strip2){
+      strip2.style.setProperty('display','flex','important');
+      strip2.style.setProperty('visibility','visible','important');
+    }
+    if(schWrap){
+      schWrap.style.setProperty('overflow','visible','important');
+    }
+    if(zl) zl.style.transform='translate(0px,0px) scale(1)';
     if(sch){
-      // Use window dimensions as guaranteed fallback
-      var w = window.innerWidth - 4;
-      var h = Math.round(window.innerHeight * 0.3);
-      sch.width = w;  sch.style.width  = w+'px';
-      sch.height = h; sch.style.height = h+'px';
-      // Reset zoom layer
-      var zl = document.getElementById('rsSchZoomLayer');
-      if(zl) zl.style.transform = 'translate(0px,0px) scale(1)';
+      var cw=window.innerWidth-8, ch=Math.round(window.innerHeight*0.28);
+      sch.width=cw; sch.height=ch;
+      sch.style.width=cw+'px'; sch.style.height=ch+'px';
+      sch.style.setProperty('position','static','important');
     }
-    if(_rsSelBay!==null && _rsSelHc!==null && typeof _rsDrawSchematic==='function'){
+    if(_rsSelBay!==null && _rsSelHc!==null && typeof _rsDrawSchematic==='function')
       _rsDrawSchematic(_rsSelBay, _rsSelHc);
-    }
-  }, 200);
+  }, 400);
 }
 
 // ── Touch: vessel overview canvas (pan + pinch zoom) ─────────────────────
