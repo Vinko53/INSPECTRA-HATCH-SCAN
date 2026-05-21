@@ -53625,11 +53625,13 @@ function _rsResetPanels(){
   }
   if(strip){
     strip.style.display='flex'; strip.style.flexDirection='column';
-    strip.style.overflow='hidden'; strip.style.width='100%';
-    strip.style.setProperty('height', third+'px', 'important');
-    strip.style.setProperty('max-height', third+'px', 'important');
-    strip.style.setProperty('flex', '0 0 '+third+'px', 'important');
-    strip.style.minWidth='0'; strip.style.maxWidth='100%';
+    strip.style.overflow='hidden';
+    strip.style.setProperty('width',     '100%',       'important');
+    strip.style.setProperty('min-width', '0',          'important');
+    strip.style.setProperty('max-width', '100%',       'important');
+    strip.style.setProperty('height',    third+'px',   'important');
+    strip.style.setProperty('max-height',third+'px',   'important');
+    strip.style.setProperty('flex',      '0 0 '+third+'px', 'important');
   }
   if(right){
     right.style.setProperty('flex', '1 1 auto', 'important');
@@ -53763,11 +53765,8 @@ function _rsResetPanels(){
     var d2=document.getElementById('rsDivider2');
     if(d1) d1.style.display='flex';
     if(d2) d2.style.display='flex';
-    // Reset panels only if not already sized (first HC select)
-    var strip = document.getElementById('rsSchematicStrip');
-    if(strip && !strip.style.getPropertyPriority('height')){
-      setTimeout(_rsResetPanels, 100);
-    }
+    // Always reset panels on mobile to ensure correct sizing
+    setTimeout(_rsResetPanels, 50);
   };
 })();
 
@@ -53947,7 +53946,7 @@ function _rsResetPanels(){
   <!-- ══ END LB TOP BAR ══ -->
 
   <!-- ══ MAIN CONTENT ══ -->
-  <div style="flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0;">
+  <div id="lbBody" style="flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0;">
 
     <!-- LEFT: Bridge selector list -->
     <div id="lbLeft" style="flex:0 0 360px;width:360px;border-right:2px solid var(--line);
