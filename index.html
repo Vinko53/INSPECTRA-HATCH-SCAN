@@ -53872,22 +53872,23 @@ function _rsResetPanels(){
     setTimeout(function(){
       _rsResetPanels();
     }, 100);
-    // Step 2 (450ms): after panels settled, resize canvas and redraw
+    // Step 2 (450ms): panels settled — reset zoom and re-trigger original sizing
     setTimeout(function(){
-      var strip=document.getElementById('rsSchematicStrip');
-      var sch=document.getElementById('rsSchematic');
-      var wrap=document.getElementById('rsSchWrap');
-      if(strip && sch){
-        var w = Math.max(50, strip.offsetWidth || strip.clientWidth);
-        var h = Math.max(50, strip.offsetHeight || strip.clientHeight);
-        if(w < 100) w = window.innerWidth; // fallback
-        if(h < 100) h = Math.round(window.innerHeight * 0.28);
-        sch.width  = w;
-        sch.height = h;
-        sch.style.width  = w + 'px';
-        sch.style.height = h + 'px';
-        if(typeof _rsDrawSchematic==='function') _rsDrawSchematic(bay, hcNum);
+      // Reset schematic zoom transform so it measures correctly
+      if(typeof window._rsSchZoomReset === 'function') window._rsSchZoomReset();
+      // Re-run the original _rsShowDetail canvas sizing by calling _orig again
+      // This fires rAF which now measures the correct (mobile-sized) strip
+      var sch = document.getElementById('rsSchematic');
+      var wrap = document.getElementById('rsSchWrap');
+      if(sch && wrap){
+        var w = wrap.offsetWidth  || wrap.clientWidth  || window.innerWidth;
+        var h = wrap.offsetHeight || wrap.clientHeight || Math.round(window.innerHeight*0.28);
+        if(w > 10 && h > 10){
+          sch.width  = w;  sch.height  = h;
+          sch.style.width  = w+'px';  sch.style.height = h+'px';
+        }
       }
+      if(typeof _rsDrawSchematic==='function') _rsDrawSchematic(bay, hcNum);
     }, 450);
   };
 })();
