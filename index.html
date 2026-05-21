@@ -3233,16 +3233,17 @@ html.gray-panels .mob-group.mob-open .mob-group-hdr { background: #98bcd4; color
   /* Full-screen modals */
   #lbEditorOverlay > div, #lbStatsOverlay > div, #subStatsModal > div
   { width: 100vw !important; max-width: 100vw !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; }
-  /* RS and LB dropdown menus — full-width bottom sheet on phone */
+  /* RS and LB dropdown menus — open below top bar on phone */
   #rsTopBar .dropdown.open, #lbTopBar .dropdown.open,
   #rsTopBar .dropdown[style*="display:block"], #lbTopBar .dropdown[style*="display:block"],
   .rs-menu-wrap .dropdown, #lbDropSettings, #lbDropFittings, #lbDropStats, #lbDropExport {
     position: fixed !important;
     left: 0 !important; right: 0 !important;
-    bottom: 0 !important; top: auto !important;
-    width: 100vw !important; max-height: 60vh !important;
+    top: calc(env(safe-area-inset-top, 0px) + 44px) !important;
+    bottom: auto !important;
+    width: 100vw !important; max-height: 70vh !important;
     overflow-y: auto !important;
-    border-radius: 12px 12px 0 0 !important;
+    border-radius: 0 0 12px 12px !important;
     z-index: 99990 !important;
   }
 }
@@ -44929,7 +44930,9 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
       </div>
     </div>
 
-    <div class="rs-divider-handle" id="rsDivider1" oncontextmenu="return false;" ontouchstart="_rsDivTouchStart(event,'rsDivider1')" ontouchmove="_rsDivTouchMove(event,'rsDivider1')" ontouchend="_rsDivTouchEnd()" onmousedown="_rsDivMouseDown(event,'rsDivider1')" style="display:none;flex-shrink:0;width:100%;height:44px;background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;align-items:center;justify-content:center;cursor:ns-resize;-webkit-user-select:none;user-select:none;touch-action:none;position:relative;z-index:20;gap:8px;"><div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div><span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;">DRAG</span><div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div></div>
+    <div class="rs-divider-handle" id="rsDivider1" oncontextmenu="return false;"
+  ontouchstart="_rsDivTouchStart(event,'rsDivider1')" ontouchmove="_rsDivTouchMove(event,'rsDivider1')" ontouchend="_rsDivTouchEnd()" onmousedown="_rsDivMouseDown(event,'rsDivider1')"
+  style="display:none;flex-shrink:0;width:100%;height:16px;background:rgba(45,127,193,0.06);border-top:1px solid rgba(94,184,255,0.25);border-bottom:1px solid rgba(94,184,255,0.25);align-items:center;justify-content:center;cursor:ns-resize;-webkit-user-select:none;user-select:none;touch-action:none;position:relative;z-index:20;"><div style="width:32px;height:3px;border-radius:2px;background:rgba(94,184,255,0.5);pointer-events:none;"></div></div><span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;">DRAG</span><div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div></div>
 
     <!-- RIGHT: detail panel — schematic column (left) + seal rows (right) -->
     <div id="rsRight" style="flex:1;display:flex;flex-direction:row;
@@ -44961,7 +44964,9 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
 
       </div>
 
-      <div class="rs-divider-handle" id="rsDivider2" oncontextmenu="return false;" ontouchstart="_rsDivTouchStart(event,'rsDivider2')" ontouchmove="_rsDivTouchMove(event,'rsDivider2')" ontouchend="_rsDivTouchEnd()" onmousedown="_rsDivMouseDown(event,'rsDivider2')" style="display:none;flex-shrink:0;width:100%;height:44px;background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;align-items:center;justify-content:center;cursor:ns-resize;-webkit-user-select:none;user-select:none;touch-action:none;position:relative;z-index:20;gap:8px;"><div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div><span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;">DRAG</span><div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div></div>
+      <div class="rs-divider-handle" id="rsDivider2" oncontextmenu="return false;"
+  ontouchstart="_rsDivTouchStart(event,'rsDivider2')" ontouchmove="_rsDivTouchMove(event,'rsDivider2')" ontouchend="_rsDivTouchEnd()" onmousedown="_rsDivMouseDown(event,'rsDivider2')"
+  style="display:none;flex-shrink:0;width:100%;height:16px;background:rgba(45,127,193,0.06);border-top:1px solid rgba(94,184,255,0.25);border-bottom:1px solid rgba(94,184,255,0.25);align-items:center;justify-content:center;cursor:ns-resize;-webkit-user-select:none;user-select:none;touch-action:none;position:relative;z-index:20;"><div style="width:32px;height:3px;border-radius:2px;background:rgba(94,184,255,0.5);pointer-events:none;"></div></div><span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;">DRAG</span><div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div></div>
 
       <!-- SEAL ROWS — scrollable, takes all remaining width -->
       <div id="rsDetailBody"
@@ -53776,7 +53781,7 @@ document.addEventListener('mousedown', function(e){
       </div>
     </div>
 
-    <div id="lbDividerHandle" oncontextmenu="return false;" ontouchstart="_lbDivTouchStart(event)" ontouchmove="_lbDivTouchMove(event)" ontouchend="_lbDivTouchEnd(event)" onmousedown="_lbDivMouseDown(event)" style="display:none;flex-shrink:0;width:100%;height:44px;background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;align-items:center;justify-content:center;cursor:ns-resize;-webkit-user-select:none;user-select:none;touch-action:none;position:relative;z-index:20;gap:8px;"><div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div><span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;">DRAG</span><div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div></div>
+    <div id="lbDividerHandle" oncontextmenu="return false;" ontouchstart="_lbDivTouchStart(event)" ontouchmove="_lbDivTouchMove(event)" ontouchend="_lbDivTouchEnd(event)" onmousedown="_lbDivMouseDown(event)" style="display:none;flex-shrink:0;width:100%;height:16px;background:rgba(45,127,193,0.06);border-top:1px solid rgba(94,184,255,0.25);border-bottom:1px solid rgba(94,184,255,0.25);align-items:center;justify-content:center;cursor:ns-resize;-webkit-user-select:none;user-select:none;touch-action:none;position:relative;z-index:20;"><div style="width:32px;height:3px;border-radius:2px;background:rgba(94,184,255,0.5);pointer-events:none;"></div></div>
 
     <!-- RIGHT: drawing canvas area -->
     <div id="lbRight" style="flex:1;display:flex;flex-direction:column;overflow:hidden;
@@ -54985,7 +54990,7 @@ function _lbDivTouchStart(e){
   e.preventDefault(); e.stopPropagation();
   var pan=document.getElementById('lbLeft');
   var tb=document.getElementById('lbTopBar'), ov=document.getElementById('lbOverlay');
-  var DIV_H=44, MIN=60;
+  var DIV_H=16, MIN=60;
   var avail=(ov?ov.clientHeight:window.innerHeight)-(tb?tb.clientHeight:44)-DIV_H;
   var d=document.getElementById('lbDividerHandle');
   if(d) d.style.background='rgba(94,184,255,0.5)';
@@ -55094,7 +55099,7 @@ function _lbResetPanels(){
     if(cv&&wrap&&wrap.offsetWidth>0){cv.width=wrap.offsetWidth;cv.height=wrap.offsetHeight;}
     if(typeof _lbOvAutoFit==='function')_lbOvAutoFit();
     if(typeof _lbOvDrawVessel==='function')_lbOvDrawVessel();
-    if(typeof _lbDraw==='function')_lbDraw();
+    if(typeof _lbZoomReset==='function')_lbZoomReset(); else if(typeof _lbDraw==='function')_lbDraw();
   },200);
 }
 
@@ -55238,31 +55243,52 @@ function _lbZoomReset(){
 
     let _t0 = null;
     wrap.addEventListener('touchstart', function(e){
-      if(e.touches.length === 2){
-        _t0 = {
+      e.preventDefault();
+      if(e.touches.length === 1){
+        _t0 = { type:'pan',
+          sx: e.touches[0].clientX, sy: e.touches[0].clientY,
+          ox: _lbPanX, oy: _lbPanY };
+      } else if(e.touches.length === 2){
+        _t0 = { type:'pinch',
           d:  Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
                          e.touches[0].clientY - e.touches[1].clientY),
           cx: (e.touches[0].clientX + e.touches[1].clientX) / 2,
           cy: (e.touches[0].clientY + e.touches[1].clientY) / 2
         };
-        e.preventDefault();
       }
     }, {passive:false});
     wrap.addEventListener('touchmove', function(e){
-      if(e.touches.length === 2 && _t0){
+      e.preventDefault();
+      if(!_t0) return;
+      if(_t0.type === 'pan' && e.touches.length === 1){
+        _lbPanX = _t0.ox + (e.touches[0].clientX - _t0.sx);
+        _lbPanY = _t0.oy + (e.touches[0].clientY - _t0.sy);
+        _lbDraw();
+      } else if(_t0.type === 'pinch' && e.touches.length === 2){
         const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
                              e.touches[0].clientY - e.touches[1].clientY);
-        const rect   = wrap.getBoundingClientRect();
-        const ox     = _t0.cx - rect.left, oy = _t0.cy - rect.top;
-        const newZ   = Math.max(0.2, Math.min(10, _lbZoom * (d / _t0.d)));
+        const rect = wrap.getBoundingClientRect();
+        const ox   = _t0.cx - rect.left, oy = _t0.cy - rect.top;
+        const newZ = Math.max(0.2, Math.min(10, _lbZoom * (d / _t0.d)));
         _lbPanX = ox + (_lbPanX - ox) * (d / _t0.d);
         _lbPanY = oy + (_lbPanY - oy) * (d / _t0.d);
         _lbZoom = newZ; _t0.d = d;
         _lbUpdateZoomPct();
-        _lbDraw(); e.preventDefault();
+        _lbDraw();
       }
     }, {passive:false});
-    wrap.addEventListener('touchend', function(){ _t0 = null; });
+    wrap.addEventListener('touchend', function(e){
+      if(_t0 && _t0.type === 'pan' && e.changedTouches.length){
+        const dx = Math.abs(e.changedTouches[0].clientX - _t0.sx);
+        const dy = Math.abs(e.changedTouches[0].clientY - _t0.sy);
+        if(dx < 5 && dy < 5){
+          const fe = {clientX: e.changedTouches[0].clientX,
+                      clientY: e.changedTouches[0].clientY, button:0};
+          _lbHandleClick(fe);
+        }
+      }
+      _t0 = null;
+    });
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _init);
@@ -55628,6 +55654,58 @@ function _lbOvInitCanvas(){
     if(!_lbOvPanning && !_lbOvDragBridgeId) wrap.style.cursor = 'grab';
     if(_lbOvHovBridge){ _lbOvHovBridge = null; _lbOvDrawVessel(); }
   });
+
+  // ── Touch: 1-finger pan + 2-finger pinch zoom ──────────────────────
+  var _ovT = null;
+  canvas.addEventListener('touchstart', function(e){
+    e.preventDefault();
+    if(e.touches.length === 1){
+      _ovT = { type:'pan', sx:e.touches[0].clientX, sy:e.touches[0].clientY,
+               ox:_lbOvOffX, oy:_lbOvOffY, moved:false };
+    } else if(e.touches.length === 2){
+      _ovT = { type:'pinch',
+               d:  Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
+                              e.touches[0].clientY-e.touches[1].clientY),
+               cx: (e.touches[0].clientX+e.touches[1].clientX)/2,
+               cy: (e.touches[0].clientY+e.touches[1].clientY)/2,
+               oz: _lbOvZoom, ox:_lbOvOffX, oy:_lbOvOffY };
+    }
+  }, {passive:false});
+  canvas.addEventListener('touchmove', function(e){
+    e.preventDefault();
+    if(!_ovT) return;
+    if(_ovT.type === 'pan' && e.touches.length === 1){
+      var dx = e.touches[0].clientX - _ovT.sx;
+      var dy = e.touches[0].clientY - _ovT.sy;
+      if(Math.abs(dx)>3||Math.abs(dy)>3) _ovT.moved = true;
+      _lbOvOffX = _ovT.ox + dx;
+      _lbOvOffY = _ovT.oy + dy;
+      _lbOvDrawVessel();
+    } else if(_ovT.type === 'pinch' && e.touches.length === 2){
+      var d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
+                         e.touches[0].clientY-e.touches[1].clientY);
+      var scale = d / _ovT.d;
+      var newZ  = Math.max(0.1, Math.min(4, _ovT.oz * scale));
+      var rect  = canvas.getBoundingClientRect();
+      var px = _ovT.cx - rect.left, py = _ovT.cy - rect.top;
+      _lbOvOffX = px - (px - _ovT.ox) * newZ / _ovT.oz;
+      _lbOvOffY = py - (py - _ovT.oy) * newZ / _ovT.oz;
+      _lbOvZoom = newZ;
+      _lbOvDrawVessel();
+    }
+  }, {passive:false});
+  canvas.addEventListener('touchend', function(e){
+    e.preventDefault();
+    if(_ovT && _ovT.type === 'pan' && !_ovT.moved && e.changedTouches.length){
+      // Tap — select bridge
+      var t = e.changedTouches[0];
+      var rect = canvas.getBoundingClientRect();
+      var mx = (t.clientX - rect.left - _lbOvOffX - 40) / _lbOvZoom;
+      var my = (t.clientY - rect.top  - _lbOvOffY - 30) / _lbOvZoom;
+      _lbOvHitTest(mx, my);
+    }
+    _ovT = null;
+  }, {passive:false});
 }
 
 function _lbOvHitTest(mx, my){
@@ -56618,22 +56696,30 @@ function _lbEditorAutoGen(){
 
   // Gap 0: FWD end (before first sequence item)
   if(sequence.length > 0){
-    const firstBayAB = sequence.find(s=>s.type==='bay')?.(afterBay!=null?afterBay:0);
+    const firstBayEntry = sequence.find(s=>s.type==='bay');
+    const firstBayAB = firstBayEntry ? firstBayEntry.afterBay : 0;
     pushBridge(gapIdx++, firstBayAB);
   }
 
   // Gaps between consecutive sequence items — one bridge per gap, NO skipping
   for(let i=0; i<sequence.length-1; i++){
     const cur = sequence[i];
-    // afterBay for row lookup: use nearest bay
-    const rowBay = cur.type==='bay' ? cur.afterBay
-                 : (sequence.slice(i+1).find(s=>s.type==='bay')?.(afterBay!=null?afterBay:cur.afterBay));
+    // afterBay for row lookup: use nearest bay index
+    let rowBay;
+    if(cur.type==='bay'){
+      rowBay = cur.afterBay;
+    } else {
+      const nextBay = sequence.slice(i+1).find(s=>s.type==='bay');
+      const prevBay = sequence.slice(0,i+1).reverse().find(s=>s.type==='bay');
+      rowBay = nextBay ? nextBay.afterBay : (prevBay ? prevBay.afterBay : 0);
+    }
     pushBridge(gapIdx++, rowBay);
   }
 
   // Last gap: AFT end (after last sequence item)
   if(sequence.length > 0){
-    const lastBayAB = [...sequence].reverse().find(s=>s.type==='bay')?.(afterBay!=null?afterBay:totalBays)-1;
+    const lastBayEntry = [...sequence].reverse().find(s=>s.type==='bay');
+    const lastBayAB = lastBayEntry ? lastBayEntry.afterBay : totalBays - 1;
     pushBridge(gapIdx++, lastBayAB);
   }
 
