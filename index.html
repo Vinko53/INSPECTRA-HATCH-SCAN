@@ -54349,7 +54349,9 @@ function _divSetupLongPress(el, panelId, onDone){
     if(e.touches[0]) _divMove(e.touches[0].clientY);
     var pan=_divDragState?document.getElementById(_divDragState.panelId):null;
     _dbg('MOVE y='+(e.touches[0]?Math.round(e.touches[0].clientY):'?')
-      +' newH='+(_divDragState?Math.round(_divDragState.startH+(e.touches[0].clientY-_divDragState.startClientY)):'-')
+      +' startH='+(_divDragState?Math.round(_divDragState.startH):'-')
+      +' max='+(_divDragState?Math.round(_divDragState.max):'-')
+      +' newH='+(_divDragState&&e.touches[0]?Math.round(_divDragState.startH+(e.touches[0].clientY-_divDragState.startClientY)):'-')
       +' panH='+(pan?pan.offsetHeight:'-'));
   }, {passive: false, capture: true});
 
