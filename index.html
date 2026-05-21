@@ -53868,23 +53868,27 @@ function _rsResetPanels(){
     var d2=document.getElementById('rsDivider2');
     if(d1) d1.style.display='flex';
     if(d2) d2.style.display='flex';
-    // Reset panels - use longer delay so original rAF completes first
+    // Step 1 (100ms): reset panels to correct mobile dimensions
     setTimeout(function(){
       _rsResetPanels();
-      // Re-draw schematic after panel resize completes
-      setTimeout(function(){
-        if(_rsSelBay!==null && _rsSelHc!==null && typeof _rsDrawSchematic==='function'){
-          var strip=document.getElementById('rsSchematicStrip');
-          var sch=document.getElementById('rsSchematic');
-          if(strip && sch && strip.offsetWidth > 0){
-            var w=strip.offsetWidth, h=strip.offsetHeight||200;
-            sch.width=w; sch.height=h;
-            sch.style.width=w+'px'; sch.style.height=h+'px';
-          }
-          _rsDrawSchematic(_rsSelBay, _rsSelHc);
-        }
-      }, 300);
     }, 100);
+    // Step 2 (450ms): after panels settled, resize canvas and redraw
+    setTimeout(function(){
+      var strip=document.getElementById('rsSchematicStrip');
+      var sch=document.getElementById('rsSchematic');
+      var wrap=document.getElementById('rsSchWrap');
+      if(strip && sch){
+        var w = Math.max(50, strip.offsetWidth || strip.clientWidth);
+        var h = Math.max(50, strip.offsetHeight || strip.clientHeight);
+        if(w < 100) w = window.innerWidth; // fallback
+        if(h < 100) h = Math.round(window.innerHeight * 0.28);
+        sch.width  = w;
+        sch.height = h;
+        sch.style.width  = w + 'px';
+        sch.style.height = h + 'px';
+        if(typeof _rsDrawSchematic==='function') _rsDrawSchematic(bay, hcNum);
+      }
+    }, 450);
   };
 })();
 
