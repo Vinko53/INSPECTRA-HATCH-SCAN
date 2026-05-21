@@ -53789,14 +53789,27 @@ function _rsResetPanels(){
       strip2.style.setProperty('visibility','visible','important');
     }
     if(schWrap){
-      schWrap.style.setProperty('overflow','visible','important');
+      schWrap.style.setProperty('overflow','hidden','important');
+      schWrap.style.setProperty('width', window.innerWidth+'px', 'important');
     }
     if(zl){ zl.style.transform=''; zl.style.removeProperty('transform'); }
     if(sch){
-      var cw=window.innerWidth-8, ch=Math.round(window.innerHeight*0.28);
-      sch.width=cw; sch.height=ch;
-      sch.style.width=cw+'px'; sch.style.height=ch+'px';
+      // On mobile: canvas draws landscape, CSS rotates 90° to portrait
+      // Screen height for middle panel, screen width becomes drawing height
+      var panelH = Math.round(window.innerHeight*0.28);
+      var panelW = window.innerWidth - 8;
+      // Canvas pixel dimensions: draw in landscape (W=panelH, H=panelW)
+      // Then CSS rotate -90deg so it appears portrait on screen
+      var cw = panelH;  // canvas draw width = panel height
+      var ch = panelW;  // canvas draw height = panel width
+      sch.width  = cw;
+      sch.height = ch;
+      // CSS: display at rotated size, centered in panel
+      sch.style.width    = cw+'px';
+      sch.style.height   = ch+'px';
       sch.style.setProperty('position','static','important');
+      sch.style.setProperty('transform','rotate(-90deg) translateX(-'+ch+'px)','important');
+      sch.style.setProperty('transform-origin','0 0','important');
     }
     // Paint red first to confirm canvas is reachable
     if(sch){
