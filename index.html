@@ -53777,6 +53777,14 @@ function _rsResetPanels(){
       sch.style.width=cw+'px'; sch.style.height=ch+'px';
       sch.style.setProperty('position','static','important');
     }
+    // Paint red first to confirm canvas is reachable
+    if(sch){
+      var dbg=sch.getContext('2d');
+      if(dbg){
+        dbg.fillStyle='red';
+        dbg.fillRect(0,0,sch.width||window.innerWidth,sch.height||200);
+      }
+    }
     if(_rsSelBay!==null && _rsSelHc!==null && typeof _rsDrawSchematic==='function')
       _rsDrawSchematic(_rsSelBay, _rsSelHc);
   }, 400);
