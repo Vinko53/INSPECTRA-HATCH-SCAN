@@ -44388,7 +44388,6 @@ document.addEventListener('mousedown', e => {
 
     <!-- LB PALETTE BUTTON -->
     <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
-    <button onclick="(function(){var p=document.getElementById('lbLeft');if(p){var h=p.offsetHeight;p.style.setProperty('height',(h>200?'100px':'300px'),'important');p.style.setProperty('max-height',(h>200?'100px':'300px'),'important');p.style.setProperty('flex','0 0 '+(h>200?'100':'300')+'px','important');_dbg('TEST h:'+h+' → '+p.offsetHeight+' cs:'+p.style.height);}})()" style="background:rgba(255,0,128,0.7);color:#fff;font-size:8px;padding:2px 5px;border:none;border-radius:3px;flex-shrink:0;">TST</button>
     <button class="btn" id="lbBtnPalette" onclick="_lbTogglePalette()"
       style="font-size:9px;letter-spacing:0.1em;overflow:visible;">
       ● PALETTE
@@ -54261,18 +54260,7 @@ function _rsApplyPanelMode(){} // no-op — replaced by drag
 
 
 // ── DEBUG: visible toast for touch events ────────────────────────────────
-function _dbg(msg){
-  var d = document.getElementById('_dbgToast');
-  if(!d){
-    d = document.createElement('div');
-    d.id = '_dbgToast';
-    d.style.cssText = 'position:fixed;bottom:80px;left:10px;right:10px;z-index:99999;'
-      + 'background:rgba(0,0,0,0.85);color:#0f0;font-family:monospace;font-size:11px;'
-      + 'padding:8px;border-radius:6px;pointer-events:none;white-space:pre-wrap;';
-    document.body.appendChild(d);
-  }
-  d.textContent = msg;
-}
+function _dbg(msg){ /* debug disabled */ }
 
 // ── Drag-resize dividers for LB and Seals modules ───────────────────────
 // Behaviour:
@@ -54288,10 +54276,11 @@ function _lbDivTouchStart(e){
   var pan = document.getElementById('lbLeft');
   var tb  = document.getElementById('lbTopBar');
   var ov  = document.getElementById('lbOverlay');
-  var avail = (ov?ov.clientHeight:window.innerHeight) - (tb?tb.clientHeight:44);
+  var DIV_H = 44, MIN = 60;
+  var avail = (ov?ov.clientHeight:window.innerHeight) - (tb?tb.clientHeight:44) - DIV_H;
   _divDragState = {divId:'lbDividerHandle', panelId:'lbLeft',
     startH: pan ? pan.getBoundingClientRect().height : 200,
-    startClientY: e.touches[0].clientY, min:60, max:avail-60,
+    startClientY: e.touches[0].clientY, min:MIN, max:avail-MIN,
     onDone: function(){
       setTimeout(function(){
         var cv=document.getElementById('lbOvCanvas'), wrap=document.getElementById('lbOvCanvasWrap');
@@ -54335,33 +54324,49 @@ function _lbDivMouseDown(e){
 }
 
 // ── RS dividers: inline HTML event handlers ─────────────────────────────
+function _rsGetAvail(){
+  var ov=document.getElementById('rsOverlay'), tb=document.getElementById('rsTopBar');
+  return (ov?ov.clientHeight:window.innerHeight)-(tb?tb.clientHeight:44);
+}
+function _rsDivOnDone(){
+  setTimeout(function(){
+    var cv=document.getElementById('rsCanvas'),wrap=document.getElementById('rsCanvasWrap');
+    if(cv&&wrap&&wrap.offsetWidth>0){cv.width=wrap.offsetWidth;cv.height=wrap.offsetHeight;}
+    if(typeof _rsAutoFitZoom==='function') _rsAutoFitZoom();
+    if(typeof _rsDrawOverview==='function') _rsDrawOverview();
+  },50);
+}
 function _rsDivTouchStart(e, divId){
   e.preventDefault(); e.stopPropagation();
-  var panId = divId==='rsDivider1' ? 'rsLeft' : 'rsSchematicStrip';
-  var pan=document.getElementById(panId), tb=document.getElementById('rsTopBar'), ov=document.getElementById('rsOverlay');
-  var avail=(ov?ov.clientHeight:window.innerHeight)-(tb?tb.clientHeight:44);
-  if(divId==='rsDivider2'){
-    var left=document.getElementById('rsLeft');
-    avail -= (left?left.offsetHeight:0)+44;
+  var MIN=60, DIV_H=44;
+  var avail=_rsGetAvail();
+  var left=document.getElementById('rsLeft');
+  var strip=document.getElementById('rsSchematicStrip');
+  var leftH=left?left.offsetHeight:100;
+  var stripH=strip?strip.offsetHeight:100;
+  var panId, startH, min, max;
+  if(divId==='rsDivider1'){
+    // Divider1 controls rsLeft height
+    // Max: can't go so far down that strip would be < MIN
+    panId='rsLeft'; startH=leftH;
+    min=MIN;
+    max=avail - DIV_H*2 - MIN - stripH; // leave room for strip+detail
+    // Also clamp: leftH + DIV1 + stripH + DIV2 + detail >= avail, detail>=MIN
+    max=Math.min(max, avail - DIV_H*2 - MIN*2);
+  } else {
+    // Divider2 controls rsSchematicStrip height
+    // Min: strip can't go above divider1 position (rsLeft bottom)
+    panId='rsSchematicStrip'; startH=stripH;
+    min=MIN;
+    max=avail - leftH - DIV_H*2 - MIN; // leave room for detail
   }
-  _divDragState={divId:divId, panelId:panId,
-    startH:pan?pan.getBoundingClientRect().height:200, startClientY:e.touches[0].clientY,
-    min:60, max:avail-60,
-    onDone:function(){
-      // Resize canvas and redraw — no panel reset
-      setTimeout(function(){
-        var cv=document.getElementById('rsCanvas'), wrap=document.getElementById('rsCanvasWrap');
-        if(cv&&wrap&&wrap.offsetWidth>0){ cv.width=wrap.offsetWidth; cv.height=wrap.offsetHeight; }
-        if(typeof _rsAutoFitZoom==='function') _rsAutoFitZoom();
-        if(typeof _rsDrawOverview==='function') _rsDrawOverview();
-      }, 50);
-    }};
-  _dbg('RS DRAG START '+panId+' h='+Math.round(_divDragState.startH));
+  _divDragState={divId:divId,panelId:panId,startH:startH,startClientY:e.touches[0].clientY,
+    min:Math.max(MIN,min),max:Math.max(min+MIN,max),onDone:_rsDivOnDone};
 }
 function _rsDivTouchMove(e, divId){
   e.preventDefault(); e.stopPropagation();
   if(!_divDragState) return;
-  var newH=Math.max(_divDragState.min, Math.min(_divDragState.max,
+  var newH=Math.max(_divDragState.min,Math.min(_divDragState.max,
     _divDragState.startH+(e.touches[0].clientY-_divDragState.startClientY)));
   var pan=document.getElementById(_divDragState.panelId);
   if(pan){
@@ -54369,15 +54374,21 @@ function _rsDivTouchMove(e, divId){
     pan.style.setProperty('max-height', newH+'px','important');
     pan.style.setProperty('flex',       '0 0 '+newH+'px','important');
   }
-  _dbg('RS DRAG MOVE newH='+Math.round(newH)+' panH='+(pan?pan.offsetHeight:'-'));
 }
-function _rsDivTouchEnd(){ if(_divDragState&&_divDragState.onDone)_divDragState.onDone(); _divDragState=null; _dbg('RS DRAG END'); }
+function _rsDivTouchEnd(){if(_divDragState&&_divDragState.onDone)_divDragState.onDone();_divDragState=null;}
 function _rsDivMouseDown(e, divId){
   e.preventDefault();
-  var panId=divId==='rsDivider1'?'rsLeft':'rsSchematicStrip';
-  var pan=document.getElementById(panId),tb=document.getElementById('rsTopBar'),ov=document.getElementById('rsOverlay');
-  var avail=(ov?ov.clientHeight:window.innerHeight)-(tb?tb.clientHeight:44);
-  _divDragState={divId:divId,panelId:panId,startH:pan?pan.getBoundingClientRect().height:200,startClientY:e.clientY,min:60,max:avail-60,onDone:function(){if(typeof _rsDrawOverview==='function')_rsDrawOverview();}};
+  var MIN=60,DIV_H=44,avail=_rsGetAvail();
+  var left=document.getElementById('rsLeft'),strip=document.getElementById('rsSchematicStrip');
+  var leftH=left?left.offsetHeight:100,stripH=strip?strip.offsetHeight:100;
+  var panId,startH,min,max;
+  if(divId==='rsDivider1'){
+    panId='rsLeft';startH=leftH;min=MIN;max=avail-DIV_H*2-MIN*2;
+  } else {
+    panId='rsSchematicStrip';startH=stripH;min=MIN;max=avail-leftH-DIV_H*2-MIN;
+  }
+  _divDragState={divId:divId,panelId:panId,startH:startH,startClientY:e.clientY,
+    min:Math.max(MIN,min),max:Math.max(min+MIN,max),onDone:_rsDivOnDone};
 }
 
 var _divDragState = null;
@@ -54517,30 +54528,41 @@ function _rsInitDividers(){
 // ── Reset to equal splits ──────────────────────────────────────────────
 function _lbResetPanels(){
   if(window.innerWidth > 700) return;
-  // Clear all inline overrides — let CSS take over (48vh/flex:1)
   var left  = document.getElementById('lbLeft');
   var right = document.getElementById('lbRight');
   var div   = document.getElementById('lbDividerHandle');
-  // Clear JS overrides, let CSS defaults restore layout
+  var tb    = document.getElementById('lbTopBar');
+  var ov    = document.getElementById('lbOverlay');
+  var avail = (ov?ov.clientHeight:window.innerHeight) - (tb?tb.clientHeight:44) - 44;
+  var half  = Math.round(avail / 2);
+  if(half < 80){ setTimeout(_lbResetPanels, 150); return; }
   if(left){
-    left.style.cssText = '';
-    _dbg('lbReset: left h='+left.offsetHeight+' avail='+_divAvail('lb'));
+    // Restore display and layout, then set height
+    left.style.display       = 'flex';
+    left.style.flexDirection = 'column';
+    left.style.overflow      = 'hidden';
+    left.style.width         = '100%';
+    left.style.setProperty('height',     half+'px', 'important');
+    left.style.setProperty('max-height', half+'px', 'important');
+    left.style.setProperty('flex',       '0 0 '+half+'px', 'important');
   }
-  if(right){ right.style.cssText = ''; }
+  if(right){
+    right.style.display       = 'flex';
+    right.style.flexDirection = 'column';
+    right.style.overflow      = 'hidden';
+    right.style.setProperty('flex', '1 1 auto', 'important');
+  }
   if(div) div.style.display = 'flex';
-  // Wait for layout, then resize canvas and draw
   setTimeout(function(){
     var cv   = document.getElementById('lbOvCanvas');
     var wrap = document.getElementById('lbOvCanvasWrap');
-    if(!cv || !wrap) return;
-    var w = wrap.offsetWidth  || 375;
-    var h = wrap.offsetHeight || 200;
-    if(w > 0 && h > 0){ cv.width = w; cv.height = h; }
+    if(cv && wrap && wrap.offsetWidth > 0){
+      cv.width = wrap.offsetWidth; cv.height = wrap.offsetHeight;
+    }
     if(typeof _lbOvAutoFit==='function') _lbOvAutoFit();
     if(typeof _lbOvDrawVessel==='function') _lbOvDrawVessel();
     if(typeof _lbDraw==='function') _lbDraw();
-    // DO NOT call _lbInitDivider — it clones elements and destroys inline handlers
-  }, 300);
+  }, 200);
 }
 function _rsResetPanels(){
   if(window.innerWidth > 700) return;
@@ -54549,23 +54571,41 @@ function _rsResetPanels(){
   var d1    = document.getElementById('rsDivider1');
   var d2    = document.getElementById('rsDivider2');
   var right = document.getElementById('rsRight');
-  // Clear all inline overrides — let CSS restore 30vh/38vh defaults
-  if(left){  left.style.cssText=''; left.style.display=''; left.style.overflow=''; }
-  if(strip){ strip.style.cssText=''; strip.style.display=''; strip.style.overflow=''; }
-  if(right){ right.style.cssText=''; right.style.display='flex'; right.style.flexDirection='column'; }
+  var tb    = document.getElementById('rsTopBar');
+  var ov    = document.getElementById('rsOverlay');
+  var avail = (ov?ov.clientHeight:window.innerHeight) - (tb?tb.clientHeight:44) - 88; // 2 dividers
+  var third = Math.round(avail / 3);
+  if(third < 60){ setTimeout(_rsResetPanels, 150); return; }
+  if(left){
+    left.style.display='flex'; left.style.flexDirection='column';
+    left.style.overflow='hidden'; left.style.width='100%';
+    left.style.setProperty('height',     third+'px', 'important');
+    left.style.setProperty('max-height', third+'px', 'important');
+    left.style.setProperty('flex',       '0 0 '+third+'px', 'important');
+  }
+  if(strip){
+    strip.style.display='flex'; strip.style.flexDirection='column';
+    strip.style.overflow='hidden'; strip.style.width='100%';
+    strip.style.setProperty('height',     third+'px', 'important');
+    strip.style.setProperty('max-height', third+'px', 'important');
+    strip.style.setProperty('flex',       '0 0 '+third+'px', 'important');
+  }
+  if(right){
+    right.style.display='flex'; right.style.flexDirection='column';
+    right.style.overflow='hidden';
+    right.style.setProperty('flex', '1 1 auto', 'important');
+  }
   if(d1) d1.style.display='flex';
   if(d2) d2.style.display='flex';
   setTimeout(function(){
     var cv   = document.getElementById('rsCanvas');
     var wrap = document.getElementById('rsCanvasWrap');
-    if(!cv || !wrap) return;
-    var w = wrap.offsetWidth  || 375;
-    var h = wrap.offsetHeight || 200;
-    if(w > 0 && h > 0){ cv.width = w; cv.height = h; }
+    if(cv && wrap && wrap.offsetWidth > 0){
+      cv.width = wrap.offsetWidth; cv.height = wrap.offsetHeight;
+    }
     if(typeof _rsAutoFitZoom==='function') _rsAutoFitZoom();
     if(typeof _rsDrawOverview==='function') _rsDrawOverview();
-    // DO NOT call _rsInitDividers — it clones elements and destroys inline handlers
-  }, 300);
+  }, 200);
 }
 
 (function(){
