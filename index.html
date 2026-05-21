@@ -3505,6 +3505,22 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
 @media (max-width: 420px) {
   #lbLeft { height: 38vh; max-height: 38vh; }
 }
+/* ── RS module: mobile layout overrides ────────────────────────────── */
+@media (max-width: 700px) {
+  #rsBody { flex-direction: column !important; }
+  #rsRight { flex-direction: column !important; }
+  #rsSchematicStrip {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .rs-divider-handle { display: flex !important; }
+  #rsDivider1, #rsDivider2 {
+    touch-action: none !important;
+    -webkit-user-select: none !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -53677,7 +53693,10 @@ function _rsResetPanels(){
   var ov    = document.getElementById('rsOverlay');
   // Switch outer wrapper to column
   if(body){ body.style.display='flex'; body.style.flexDirection='column'; }
-  if(right){ right.style.display='flex'; right.style.flexDirection='column'; }
+  if(right){
+    right.style.display='flex';
+    right.style.setProperty('flex-direction','column','important');
+  }
   // Measure available height
   var ovH = ov ? (ov.getBoundingClientRect().height || window.innerHeight) : window.innerHeight;
   var tbH = tb ? (tb.getBoundingClientRect().height || 44) : 44;
@@ -53849,8 +53868,23 @@ function _rsResetPanels(){
     var d2=document.getElementById('rsDivider2');
     if(d1) d1.style.display='flex';
     if(d2) d2.style.display='flex';
-    // Always reset panels on mobile to ensure correct sizing
-    setTimeout(_rsResetPanels, 50);
+    // Reset panels - use longer delay so original rAF completes first
+    setTimeout(function(){
+      _rsResetPanels();
+      // Re-draw schematic after panel resize completes
+      setTimeout(function(){
+        if(_rsSelBay!==null && _rsSelHc!==null && typeof _rsDrawSchematic==='function'){
+          var strip=document.getElementById('rsSchematicStrip');
+          var sch=document.getElementById('rsSchematic');
+          if(strip && sch && strip.offsetWidth > 0){
+            var w=strip.offsetWidth, h=strip.offsetHeight||200;
+            sch.width=w; sch.height=h;
+            sch.style.width=w+'px'; sch.style.height=h+'px';
+          }
+          _rsDrawSchematic(_rsSelBay, _rsSelHc);
+        }
+      }, 300);
+    }, 100);
   };
 })();
 
