@@ -53891,6 +53891,9 @@ function _rsResetPanels(){
       var ch = sh - 4;
       sch.width  = cw;  sch.style.width  = cw+'px';
       sch.height = ch;  sch.style.height = ch+'px';
+      // Debug: paint red to confirm canvas is reachable
+      var dbgCtx = sch.getContext('2d');
+      if(dbgCtx){ dbgCtx.fillStyle='red'; dbgCtx.fillRect(0,0,cw,ch); }
       // Draw
       if(typeof _rsDrawSchematic==='function') _rsDrawSchematic(bay, hcNum);
     }, 450);
