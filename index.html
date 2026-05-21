@@ -44388,6 +44388,7 @@ document.addEventListener('mousedown', e => {
 
     <!-- LB PALETTE BUTTON -->
     <div style="width:1px;height:20px;background:var(--line);margin:0 4px;flex-shrink:0;"></div>
+    <button onclick="(function(){var p=document.getElementById('lbLeft');if(p){var h=p.offsetHeight;p.style.setProperty('height',(h>200?'100px':'300px'),'important');p.style.setProperty('max-height',(h>200?'100px':'300px'),'important');p.style.setProperty('flex','0 0 '+(h>200?'100':'300')+'px','important');_dbg('TEST h:'+h+' → '+p.offsetHeight+' cs:'+p.style.height);}})()" style="background:rgba(255,0,128,0.7);color:#fff;font-size:8px;padding:2px 5px;border:none;border-radius:3px;flex-shrink:0;">TST</button>
     <button class="btn" id="lbBtnPalette" onclick="_lbTogglePalette()"
       style="font-size:9px;letter-spacing:0.1em;overflow:visible;">
       ● PALETTE
