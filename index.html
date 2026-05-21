@@ -8230,7 +8230,18 @@ function setView(m){
   // Handle Rubber Seals view overlay
   const rsOv = document.getElementById('rsOverlay');
   if(m==='rs'){
-    if(rsOv){ rsOv.style.display='flex'; _rsRender(); }
+    if(rsOv){ rsOv.style.display='flex';
+      // On mobile: auto-select first HC so all 3 panels are visible
+      if(window.innerWidth <= 700 && _rsSelBay === null){
+        var _bays = typeof bayOrder!=='undefined' ? bayOrder :
+          Object.keys(typeof hatchData!=='undefined'?hatchData:{}).map(Number).sort(function(a,b){return a-b;});
+        if(_bays && _bays.length){ _rsSelBay=_bays[0]; _rsSelHc=1; }
+      }
+      _rsRender();
+      if(window.innerWidth <= 700 && typeof _rsResetPanels==='function'){
+        setTimeout(_rsResetPanels, 300);
+      }
+    }
     // Elevate save button + dot above the overlay
     const _rsb = document.getElementById('floatSaveBtn');
     const _rsd = document.getElementById('floatSaveDot');
@@ -47215,13 +47226,20 @@ function _rsShowDetail(bay, hcNum){
   const _isMobSch = window.innerWidth <= 700;
   if(strip){
     strip.style.display       = 'flex';
-    strip.style.flexDirection = _isMobSch ? 'column' : 'column';
+    strip.style.flexDirection = 'column';
     if(_isMobSch){
       strip.style.width    = '100%';
       strip.style.minWidth = '0';
       strip.style.maxWidth = '100%';
-      strip.style.height   = 'auto';
-      strip.style.maxHeight= '40vh';
+      // On mobile: ensure dividers visible and strip has proper height
+      var d1=document.getElementById('rsDivider1'), d2=document.getElementById('rsDivider2');
+      if(d1) d1.style.display='flex';
+      if(d2) d2.style.display='flex';
+      // If strip has no explicit height (first open), reset all panels
+      var stripH = strip.getBoundingClientRect().height;
+      if(stripH < 50){
+        setTimeout(function(){ if(typeof _rsResetPanels==='function') _rsResetPanels(); }, 50);
+      }
     }
   }
 
@@ -54294,6 +54312,7 @@ function _lbDivTouchStart(e){
   if(d){d.style.background='rgba(94,184,255,0.5)';}
   _dbg('LB DRAG START h='+Math.round(_divDragState.startH)+' avail='+Math.round(avail));
 }
+var _lbDivRafPending = false;
 function _lbDivTouchMove(e){
   e.preventDefault(); e.stopPropagation();
   if(!_divDragState) return;
@@ -54305,7 +54324,33 @@ function _lbDivTouchMove(e){
     pan.style.setProperty('max-height', newH+'px','important');
     pan.style.setProperty('flex',       '0 0 '+newH+'px','important');
   }
-  _dbg('LB DRAG MOVE newH='+Math.round(newH)+' panH='+(pan?pan.offsetHeight:'-'));
+  // Live redraw throttled to one frame
+  if(!_lbDivRafPending){
+    _lbDivRafPending = true;
+    requestAnimationFrame(function(){
+      _lbDivRafPending = false;
+      // Resize overview canvas to new panel height
+      var cv   = document.getElementById('lbOvCanvas');
+      var wrap = document.getElementById('lbOvCanvasWrap');
+      if(cv && wrap && wrap.offsetWidth > 0 && wrap.offsetHeight > 0){
+        if(cv.width !== wrap.offsetWidth || cv.height !== wrap.offsetHeight){
+          cv.width  = wrap.offsetWidth;
+          cv.height = wrap.offsetHeight;
+        }
+        if(typeof _lbOvDrawVessel === 'function') _lbOvDrawVessel();
+      }
+      // Resize bridge canvas and redraw
+      var cv2  = document.getElementById('lbCanvas');
+      var wrap2= document.getElementById('lbCanvasWrap');
+      if(cv2 && wrap2 && wrap2.offsetWidth > 0 && wrap2.offsetHeight > 0){
+        if(cv2.width !== wrap2.offsetWidth || cv2.height !== wrap2.offsetHeight){
+          cv2.width  = wrap2.offsetWidth;
+          cv2.height = wrap2.offsetHeight;
+        }
+        if(typeof _lbDraw === 'function') _lbDraw();
+      }
+    });
+  }
 }
 function _lbDivTouchEnd(e){
   if(_divDragState && _divDragState.onDone) _divDragState.onDone();
@@ -54338,31 +54383,33 @@ function _rsDivOnDone(){
 }
 function _rsDivTouchStart(e, divId){
   e.preventDefault(); e.stopPropagation();
-  var MIN=60, DIV_H=44;
+  var MIN=80, DIV_H=44;
   var avail=_rsGetAvail();
-  var left=document.getElementById('rsLeft');
+  var left =document.getElementById('rsLeft');
   var strip=document.getElementById('rsSchematicStrip');
-  var leftH=left?left.offsetHeight:100;
-  var stripH=strip?strip.offsetHeight:100;
+  var leftH = left  ? left.getBoundingClientRect().height  : 100;
+  var stripH= strip ? strip.getBoundingClientRect().height : 100;
   var panId, startH, min, max;
   if(divId==='rsDivider1'){
-    // Divider1 controls rsLeft height
-    // Max: can't go so far down that strip would be < MIN
     panId='rsLeft'; startH=leftH;
-    min=MIN;
-    max=avail - DIV_H*2 - MIN - stripH; // leave room for strip+detail
-    // Also clamp: leftH + DIV1 + stripH + DIV2 + detail >= avail, detail>=MIN
-    max=Math.min(max, avail - DIV_H*2 - MIN*2);
+    min = MIN;
+    // Max: can't push down past where strip+detail would have < MIN each
+    max = avail - DIV_H*2 - stripH - MIN;
+    max = Math.min(max, avail - DIV_H*2 - MIN*2);
   } else {
-    // Divider2 controls rsSchematicStrip height
-    // Min: strip can't go above divider1 position (rsLeft bottom)
     panId='rsSchematicStrip'; startH=stripH;
-    min=MIN;
-    max=avail - leftH - DIV_H*2 - MIN; // leave room for detail
+    min = MIN;
+    // Max: can't push down so detail < MIN
+    max = avail - leftH - DIV_H*2 - MIN;
+    // Min: can't go above where it would overlap left panel
+    // (already handled by min=MIN since strip starts below left)
   }
-  _divDragState={divId:divId,panelId:panId,startH:startH,startClientY:e.touches[0].clientY,
-    min:Math.max(MIN,min),max:Math.max(min+MIN,max),onDone:_rsDivOnDone};
+  _divDragState={divId:divId,panelId:panId,startH:startH,
+    startClientY:e.touches[0].clientY,
+    min:Math.max(MIN, min), max:Math.max(MIN*2, max),
+    onDone:_rsDivOnDone};
 }
+var _rsDivRafPending = false;
 function _rsDivTouchMove(e, divId){
   e.preventDefault(); e.stopPropagation();
   if(!_divDragState) return;
@@ -54373,6 +54420,25 @@ function _rsDivTouchMove(e, divId){
     pan.style.setProperty('height',     newH+'px','important');
     pan.style.setProperty('max-height', newH+'px','important');
     pan.style.setProperty('flex',       '0 0 '+newH+'px','important');
+  }
+  if(!_rsDivRafPending){
+    _rsDivRafPending = true;
+    requestAnimationFrame(function(){
+      _rsDivRafPending = false;
+      var cv  = document.getElementById('rsCanvas');
+      var wrap= document.getElementById('rsCanvasWrap');
+      if(cv && wrap && wrap.offsetWidth > 0 && wrap.offsetHeight > 0){
+        if(cv.width !== wrap.offsetWidth || cv.height !== wrap.offsetHeight){
+          cv.width = wrap.offsetWidth; cv.height = wrap.offsetHeight;
+        }
+        if(typeof _rsDrawOverview === 'function') _rsDrawOverview();
+      }
+      // Also redraw schematic if visible
+      var sl = document.getElementById('rsSchZoomLayer');
+      if(sl && typeof window._rsSchZoomReset === 'function'){
+        // Only reset zoom if panel size changed significantly
+      }
+    });
   }
 }
 function _rsDivTouchEnd(){if(_divDragState&&_divDragState.onDone)_divDragState.onDone();_divDragState=null;}
