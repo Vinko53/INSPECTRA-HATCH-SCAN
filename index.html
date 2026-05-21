@@ -53759,16 +53759,19 @@ function _rsResetPanels(){
     // Schematic canvas — resize and redraw
     var strip=document.getElementById('rsSchematicStrip');
     var sch=document.getElementById('rsSchematic');
-    if(strip && sch){
-      var w=strip.offsetWidth||strip.clientWidth||350;
-      var h=strip.offsetHeight||strip.clientHeight||200;
-      if(w>0 && h>0){
-        sch.width=w; sch.height=h;
-        sch.style.width=w+'px'; sch.style.height=h+'px';
-      }
+    if(sch){
+      // Use window dimensions as guaranteed fallback
+      var w = window.innerWidth - 4;
+      var h = Math.round(window.innerHeight * 0.3);
+      sch.width = w;  sch.style.width  = w+'px';
+      sch.height = h; sch.style.height = h+'px';
+      // Reset zoom layer
+      var zl = document.getElementById('rsSchZoomLayer');
+      if(zl) zl.style.transform = 'translate(0px,0px) scale(1)';
     }
-    if(_rsSelBay!==null && _rsSelHc!==null && typeof _rsDrawSchematic==='function')
+    if(_rsSelBay!==null && _rsSelHc!==null && typeof _rsDrawSchematic==='function'){
       _rsDrawSchematic(_rsSelBay, _rsSelHc);
+    }
   }, 200);
 }
 
