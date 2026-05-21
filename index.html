@@ -53658,9 +53658,29 @@ document.addEventListener('mousedown', function(e){
   setTimeout(function(){
     const orig = window._rsShowDetail;
     if(typeof orig === 'function'){
-      window._rsShowDetail = function(){
+      window._rsShowDetail = function(bay, hcNum){
         _z=1; _tx=0; _ty=0; _applyTransform();
         orig.apply(this, arguments);
+        // ── Mobile: resize schematic canvas after panels settle ──
+        if(window.innerWidth > 700) return;
+        var d1=document.getElementById('rsDivider1');
+        var d2=document.getElementById('rsDivider2');
+        if(d1) d1.style.display='flex';
+        if(d2) d2.style.display='flex';
+        setTimeout(function(){ if(typeof _rsResetPanels==='function') _rsResetPanels(); }, 100);
+        setTimeout(function(){
+          var strip=document.getElementById('rsSchematicStrip');
+          var sch=document.getElementById('rsSchematic');
+          if(!strip||!sch) return;
+          var cw=window.innerWidth-4;
+          var ch=Math.max(60,strip.offsetHeight-4||Math.round(window.innerHeight*0.28));
+          _z=1; _tx=0; _ty=0; _applyTransform();
+          sch.width=cw; sch.height=ch;
+          sch.style.width=cw+'px'; sch.style.height=ch+'px';
+          var ctx=sch.getContext('2d');
+          if(ctx){ctx.fillStyle='red';ctx.fillRect(0,0,cw,ch);}
+          if(typeof _rsDrawSchematic==='function') _rsDrawSchematic(bay, hcNum);
+        }, 500);
       };
     }
   }, 500);
@@ -53858,47 +53878,7 @@ function _rsResetPanels(){
   else setTimeout(addSchTouch, 600);
 })();
 
-// ── Override _rsShowDetail: after desktop logic, activate mobile layout ───
-(function(){
-  var _orig = _rsShowDetail;
-  _rsShowDetail = function(bay, hcNum){
-    _orig(bay, hcNum);
-    if(window.innerWidth > 700) return;
-    var d1=document.getElementById('rsDivider1');
-    var d2=document.getElementById('rsDivider2');
-    if(d1) d1.style.display='flex';
-    if(d2) d2.style.display='flex';
-    // Step 1 (100ms): reset panels to correct mobile dimensions
-    setTimeout(function(){
-      _rsResetPanels();
-    }, 100);
-    // Step 2 (450ms): draw schematic at correct size
-    setTimeout(function(){
-      var strip = document.getElementById('rsSchematicStrip');
-      var schWrap = document.getElementById('rsSchWrap');
-      var zoomLayer = document.getElementById('rsSchZoomLayer');
-      var sch = document.getElementById('rsSchematic');
-      if(!strip || !sch) return;
-      // Force strip to be visible with explicit dimensions
-      var sw = window.innerWidth;
-      var sh = strip.offsetHeight || strip.clientHeight || Math.round(window.innerHeight*0.28);
-      if(sh < 60) sh = Math.round(window.innerHeight * 0.28);
-      // Reset zoom transform
-      if(typeof window._rsSchZoomReset==='function') window._rsSchZoomReset();
-      if(zoomLayer) zoomLayer.style.transform = 'translate(0px,0px) scale(1)';
-      // Size the canvas to fill the strip
-      var cw = sw - 4;
-      var ch = sh - 4;
-      sch.width  = cw;  sch.style.width  = cw+'px';
-      sch.height = ch;  sch.style.height = ch+'px';
-      // Debug: paint red to confirm canvas is reachable
-      var dbgCtx = sch.getContext('2d');
-      if(dbgCtx){ dbgCtx.fillStyle='red'; dbgCtx.fillRect(0,0,cw,ch); }
-      // Draw
-      if(typeof _rsDrawSchematic==='function') _rsDrawSchematic(bay, hcNum);
-    }, 450);
-  };
-})();
+// _rsShowDetail mobile logic is inside zoom IIFE
 
 // ── Override _rsToggleOverview: mobile = reset/collapse panels ────────────
 (function(){
