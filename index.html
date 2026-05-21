@@ -44432,6 +44432,10 @@ document.addEventListener('mousedown', e => {
     <!-- Drag-to-resize divider (mobile only) -->
     <div id="lbDividerHandle"
       oncontextmenu="return false;"
+      ontouchstart="_lbDivTouchStart(event)"
+      ontouchmove="_lbDivTouchMove(event)"
+      ontouchend="_lbDivTouchEnd(event)"
+      onmousedown="_lbDivMouseDown(event)"
       style="display:none;flex-shrink:0;width:100%;height:44px;
         background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;
         align-items:center;justify-content:center;cursor:ns-resize;
@@ -45505,7 +45509,8 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
           background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;
           align-items:center;justify-content:center;cursor:ns-resize;
           -webkit-user-select:none;user-select:none;touch-action:none;
-          position:relative;z-index:20;gap:8px;">
+          position:relative;z-index:20;gap:8px;"
+      ontouchstart="_rsDivTouchStart(event,'rsDivider1')" ontouchmove="_rsDivTouchMove(event,'rsDivider1')" ontouchend="_rsDivTouchEnd()" onmousedown="_rsDivMouseDown(event,'rsDivider1')">
         <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
         <span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;letter-spacing:0.1em;">DRAG</span>
         <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
@@ -45549,7 +45554,8 @@ html.day-mode .rsc-bar-track,html.gray-panels .rsc-bar-track{background:rgba(0,0
             background:rgba(45,127,193,0.25);border-top:2px solid #5eb8ff;border-bottom:2px solid #5eb8ff;
             align-items:center;justify-content:center;cursor:ns-resize;
             -webkit-user-select:none;user-select:none;touch-action:none;
-            position:relative;z-index:20;gap:8px;">
+            position:relative;z-index:20;gap:8px;"
+      ontouchstart="_rsDivTouchStart(event,'rsDivider2')" ontouchmove="_rsDivTouchMove(event,'rsDivider2')" ontouchend="_rsDivTouchEnd()" onmousedown="_rsDivMouseDown(event,'rsDivider2')">
           <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
           <span style="font-family:monospace;font-size:9px;color:#5eb8ff;pointer-events:none;letter-spacing:0.1em;">DRAG</span>
           <div style="width:50px;height:5px;border-radius:3px;background:#5eb8ff;pointer-events:none;"></div>
@@ -54258,6 +54264,89 @@ function _dbg(msg){
 //   • Drag up/down — panel resizes, can reach up to the menu bar
 //   • Finger up — locked at new position, canvases redraw
 //   • Overview button — resets all panels to equal split
+
+
+// ── LB divider: inline HTML event handlers ──────────────────────────────
+function _lbDivTouchStart(e){
+  e.preventDefault(); e.stopPropagation();
+  var pan = document.getElementById('lbLeft');
+  var tb  = document.getElementById('lbTopBar');
+  var ov  = document.getElementById('lbOverlay');
+  var avail = (ov?ov.clientHeight:window.innerHeight) - (tb?tb.clientHeight:44);
+  _divDragState = {divId:'lbDividerHandle', panelId:'lbLeft',
+    startH: pan ? pan.getBoundingClientRect().height : 200,
+    startClientY: e.touches[0].clientY, min:60, max:avail-60,
+    onDone: function(){ if(typeof _lbDraw==='function')_lbDraw(); if(typeof _lbOvDrawVessel==='function')_lbOvDrawVessel(); }};
+  var d=document.getElementById('lbDividerHandle');
+  if(d){d.style.background='rgba(94,184,255,0.5)';}
+  _dbg('LB DRAG START h='+Math.round(_divDragState.startH)+' avail='+Math.round(avail));
+}
+function _lbDivTouchMove(e){
+  e.preventDefault(); e.stopPropagation();
+  if(!_divDragState) return;
+  var newH = Math.max(_divDragState.min, Math.min(_divDragState.max,
+    _divDragState.startH + (e.touches[0].clientY - _divDragState.startClientY)));
+  var pan = document.getElementById('lbLeft');
+  if(pan){
+    pan.style.setProperty('height',     newH+'px','important');
+    pan.style.setProperty('max-height', newH+'px','important');
+    pan.style.setProperty('flex',       '0 0 '+newH+'px','important');
+  }
+  _dbg('LB DRAG MOVE newH='+Math.round(newH)+' panH='+(pan?pan.offsetHeight:'-'));
+}
+function _lbDivTouchEnd(e){
+  if(_divDragState && _divDragState.onDone) _divDragState.onDone();
+  _divDragState = null;
+  var d=document.getElementById('lbDividerHandle');
+  if(d) d.style.background='rgba(45,127,193,0.25)';
+  _dbg('LB DRAG END');
+}
+function _lbDivMouseDown(e){
+  e.preventDefault();
+  var pan=document.getElementById('lbLeft'), tb=document.getElementById('lbTopBar'), ov=document.getElementById('lbOverlay');
+  var avail=(ov?ov.clientHeight:window.innerHeight)-(tb?tb.clientHeight:44);
+  _divDragState={divId:'lbDividerHandle',panelId:'lbLeft',
+    startH:pan?pan.getBoundingClientRect().height:200, startClientY:e.clientY,
+    min:60, max:avail-60, onDone:function(){if(typeof _lbDraw==='function')_lbDraw();}};
+}
+
+// ── RS dividers: inline HTML event handlers ─────────────────────────────
+function _rsDivTouchStart(e, divId){
+  e.preventDefault(); e.stopPropagation();
+  var panId = divId==='rsDivider1' ? 'rsLeft' : 'rsSchematicStrip';
+  var pan=document.getElementById(panId), tb=document.getElementById('rsTopBar'), ov=document.getElementById('rsOverlay');
+  var avail=(ov?ov.clientHeight:window.innerHeight)-(tb?tb.clientHeight:44);
+  if(divId==='rsDivider2'){
+    var left=document.getElementById('rsLeft');
+    avail -= (left?left.offsetHeight:0)+44;
+  }
+  _divDragState={divId:divId, panelId:panId,
+    startH:pan?pan.getBoundingClientRect().height:200, startClientY:e.touches[0].clientY,
+    min:60, max:avail-60,
+    onDone:function(){if(typeof _rsDrawOverview==='function')_rsDrawOverview();}};
+  _dbg('RS DRAG START '+panId+' h='+Math.round(_divDragState.startH));
+}
+function _rsDivTouchMove(e, divId){
+  e.preventDefault(); e.stopPropagation();
+  if(!_divDragState) return;
+  var newH=Math.max(_divDragState.min, Math.min(_divDragState.max,
+    _divDragState.startH+(e.touches[0].clientY-_divDragState.startClientY)));
+  var pan=document.getElementById(_divDragState.panelId);
+  if(pan){
+    pan.style.setProperty('height',     newH+'px','important');
+    pan.style.setProperty('max-height', newH+'px','important');
+    pan.style.setProperty('flex',       '0 0 '+newH+'px','important');
+  }
+  _dbg('RS DRAG MOVE newH='+Math.round(newH)+' panH='+(pan?pan.offsetHeight:'-'));
+}
+function _rsDivTouchEnd(){ if(_divDragState&&_divDragState.onDone)_divDragState.onDone(); _divDragState=null; _dbg('RS DRAG END'); }
+function _rsDivMouseDown(e, divId){
+  e.preventDefault();
+  var panId=divId==='rsDivider1'?'rsLeft':'rsSchematicStrip';
+  var pan=document.getElementById(panId),tb=document.getElementById('rsTopBar'),ov=document.getElementById('rsOverlay');
+  var avail=(ov?ov.clientHeight:window.innerHeight)-(tb?tb.clientHeight:44);
+  _divDragState={divId:divId,panelId:panId,startH:pan?pan.getBoundingClientRect().height:200,startClientY:e.clientY,min:60,max:avail-60,onDone:function(){if(typeof _rsDrawOverview==='function')_rsDrawOverview();}};
+}
 
 var _divDragState = null;
 
