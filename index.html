@@ -1747,16 +1747,15 @@ window.addEventListener('orientationchange', function(){ setTimeout(_setAppHeigh
 
   .dd-section {
     font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
+    font-size: 8px;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #5eb8ff;
-    background: #071624;
-    padding: 5px 14px 4px;
-    border-top: 1px solid #1e4a74;
-    border-bottom: 1px solid #1e4a74;
-    margin-top: 4px;
+    color: #90d0f0;
+    background: #0a1a2c;
+    padding: 3px 14px 3px;
+    border-top: 1px solid #1a3a5a;
+    border-bottom: 1px solid #1a3a5a;
+    margin-top: 2px;
   }
   .dd-section:first-child { border-top: none; margin-top: 0; }
 
@@ -3543,28 +3542,6 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
   }
 }
 
-/* Hide scrollbars on floating palettes — scroll still works via mouse wheel */
-#lbEyePlacerPal, #flexipadPlacerPal, #ventPlacerPal, #hddPlacerPal,
-#flexipadManipPal, #rpPlacerPal, #rpManipPal, #lbPalette,
-#hcShapePal, #hcManipPal, #lashEyePlacerPal, #hcStopPlacerPal,
-#hcStopManipPal, #layersPal, #cranePal, #markPal, #heightPicker,
-#mlPanel, #objManipPal {
-  scrollbar-width: none !important;        /* Firefox */
-  -ms-overflow-style: none !important;     /* IE/Edge */
-}
-#lbEyePlacerPal::-webkit-scrollbar, #flexipadPlacerPal::-webkit-scrollbar,
-#ventPlacerPal::-webkit-scrollbar, #hddPlacerPal::-webkit-scrollbar,
-#flexipadManipPal::-webkit-scrollbar, #rpPlacerPal::-webkit-scrollbar,
-#rpManipPal::-webkit-scrollbar, #lbPalette::-webkit-scrollbar,
-#hcShapePal::-webkit-scrollbar, #hcManipPal::-webkit-scrollbar,
-#lashEyePlacerPal::-webkit-scrollbar, #hcStopPlacerPal::-webkit-scrollbar,
-#hcStopManipPal::-webkit-scrollbar, #layersPal::-webkit-scrollbar,
-#cranePal::-webkit-scrollbar, #markPal::-webkit-scrollbar,
-#heightPicker::-webkit-scrollbar, #mlPanel::-webkit-scrollbar,
-#objManipPal::-webkit-scrollbar {
-  display: none !important;
-}
-
 </style>
 </head>
 <body>
@@ -4869,12 +4846,12 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
     <!-- Mode -->
     <div style="font-size:7px;letter-spacing:0.14em;color:#a07030;text-transform:uppercase;margin-bottom:5px;">PLACEMENT MODE</div>
     <div style="display:flex;gap:4px;margin-bottom:10px;">
-      <button id="hddModeSnap" class="btn view-on" onclick="_hddFreeMode=false;_hddDeleteMode=false;_hddFlipV=false;_updateHddFlipHint();hddSyncUI()" style="flex:1;font-size:8px;">SNAP</button>
+      <button id="hddModeSnap" class="btn view-on" onclick="_hddFreeMode=false;hddSyncUI()" style="flex:1;font-size:8px;">SNAP</button>
       <button id="hddModeFree" class="btn"          onclick="_hddFreeMode=true;hddSyncUI()"  style="flex:1;font-size:8px;">FREE</button>
     </div>
     <!-- Delete -->
     <div style="border-top:1px solid #3a2010;margin:8px -12px 8px;"></div>
-    <button id="hddDeleteBtn" onclick="_hddDeleteMode=!_hddDeleteMode;if(_hddDeleteMode){_hddFlipV=false;_updateHddFlipHint();}hddSyncUI()"
+    <button id="hddDeleteBtn" onclick="_hddDeleteMode=!_hddDeleteMode;hddSyncUI()"
       style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.16em;
         padding:8px 0;cursor:pointer;border-radius:2px;transition:all 0.15s;margin-bottom:8px;
         background:transparent;color:#e05050;border:1.5px solid #883030;"
@@ -4885,7 +4862,7 @@ html.gray-panels #mobileMenuBtn { color: #0a3a70; border-right-color: #8ab0cc; }
     <div id="hddSnapHint" style="font-size:10px;letter-spacing:0.05em;margin-bottom:4px;color:#c08040;">Click near HC edge to place</div>
     <div id="hddFreeHint" style="display:none;font-size:10px;letter-spacing:0.05em;margin-bottom:4px;color:#c08040;">Click anywhere to place freely</div>
     <div id="hddDeleteHint" style="display:none;font-size:10px;letter-spacing:0.05em;margin-bottom:4px;color:#ff8080;">Click device to delete it</div>
-    <button id="hddFlipBtn" onclick="_hddFlipV=!_hddFlipV;if(_hddFlipV){_hddDeleteMode=false;}hddSyncUI();_updateHddFlipHint();draw()"
+    <button id="hddFlipBtn" onclick="_hddFlipV=!_hddFlipV;_updateHddFlipHint();draw()"
       style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;
         letter-spacing:0.12em;padding:8px 10px;border-radius:3px;cursor:pointer;
         background:rgba(180,100,20,0.12);color:#c08040;border:1px solid #6a4010;
@@ -12034,10 +12011,7 @@ function rpHandleClick(sx, sy){
             if(_rpSp2 && _rpSp2.cx > 0){
               const mirFirst = rows - 1 - _rpSp2.last;
               const mirHcNum = getHC(bay, mirFirst);
-              if(mirHcNum){
-                const mirSp2 = hcSpanCenter(bay, mirHcNum, rows, mirFirst);
-                addRp(bay, mirHcNum, mirEdge, color, n, mirSp2.first);
-              }
+              if(mirHcNum) addRp(bay, mirHcNum, mirEdge, color, n, mirFirst);
             }
           }
             draw(); return true;
@@ -13807,11 +13781,11 @@ function fxpPlaceMirrorPad(bay, rows, origX, origY, origEdge, origHcNum, origSpa
   const _HC_SEP = 2, _HC_EXT = DOT_R + 10;
   const typeId = origTypeId || null; // Fix 1: same label
 
-  // ── Helper: find last column of contiguous span starting at origSpanFirst ──
-  // Uses hcSpanCenter to correctly identify the contiguous block (not just hcNum match)
+  // ── Helper: find last column of span starting at origSpanFirst ───────────
   function _spanLast(sf){
-    const sp = hcSpanCenter(bay, origHcNum, rows, sf);
-    return sp.last;
+    let l = sf;
+    while(l+1 < rows && getHC(bay, l+1) === origHcNum) l++;
+    return l;
   }
 
   // ── Helper: is there a neighbouring HC with zero gap? ─────────────────────
@@ -17434,7 +17408,7 @@ document.getElementById('cfgRows').addEventListener('change',e=>{
 });
 
 function resetView(){
-  if(viewMode === 'lb') return;
+  if(window.viewMode === 'lb') return;
   const rows=maxTotalRows();
   // Ensure canvas size is current — sync from vp if needed
   const _vpW = vp.offsetWidth  || vp.clientWidth;
@@ -18611,17 +18585,15 @@ function setBayPanelBg(key){
 
 let _drawRafId = null;
 function scheduleDraw(){
-  if(viewMode === 'lb') return;
+  if(window.viewMode === 'lb') return;
   if(_drawRafId) return;
   _drawRafId = requestAnimationFrame(() => { _drawRafId = null; draw(); });
 }
 
 function draw(){
-  if(viewMode === 'lb') return;
+  if(window.viewMode === 'lb') return;
   const W=canvas.width, H=canvas.height;
   if(W <= 0 || H <= 0) return; // Guard: skip draw if canvas has no dimensions
-  ctx.setTransform(1,0,0,1,0,0); // Reset any stale transform before clearing
-  ctx.clearRect(0,0,W,H);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0,0,W,H);
   const _bayBg = (typeof getBayPanelBg==='function') ? getBayPanelBg() : '#ffffff';
@@ -20064,14 +20036,24 @@ function drawOverview(){
       ctx.beginPath(); ctx.moveTo(gx,bYa[b]); ctx.lineTo(gx+rows*SW,bYa[b]); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(gx,bYa[b]+SH); ctx.lineTo(gx+rows*SW,bYa[b]+SH); ctx.stroke();
     }
-    // Dotted bay separator lines — visually marks where each bay begins/ends
+    // Dotted separator lines — top and bottom of each bay gap
     ctx.save();
-    ctx.strokeStyle='rgba(94,184,255,0.45)'; ctx.lineWidth=1;
-    ctx.setLineDash([4, 5]);
-    for(let b=1;b<cfg.bays;b++){
-      const sepY=(bYa[b-1]+SH + bYa[b]) / 2; // midpoint between bays
-      ctx.beginPath(); ctx.moveTo(gx,sepY); ctx.lineTo(gx+rows*SW,sepY); ctx.stroke();
+    ctx.strokeStyle='rgba(94,184,255,0.55)'; ctx.lineWidth=1.5;
+    ctx.setLineDash([6, 5]);
+    for(let b=0;b<cfg.bays;b++){
+      // Line at top of bay (between previous item and this bay)
+      ctx.beginPath(); ctx.moveTo(gx,bYa[b]); ctx.lineTo(gx+rows*SW,bYa[b]); ctx.stroke();
+      // Line at bottom of bay
+      ctx.beginPath(); ctx.moveTo(gx,bYa[b]+SH); ctx.lineTo(gx+rows*SW,bYa[b]+SH); ctx.stroke();
     }
+    // Also dotted lines at top/bottom of each platform
+    ctx.strokeStyle='rgba(60,180,80,0.45)'; ctx.lineWidth=1;
+    ctx.setLineDash([4, 6]);
+    platforms.forEach((p,pi)=>{
+      const pRows=totalRowsForPlat(pi), pOx=bayOffsetX(pRows);
+      ctx.beginPath(); ctx.moveTo(gx+pOx,pYa[pi]); ctx.lineTo(gx+pOx+pRows*SW,pYa[pi]); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gx+pOx,pYa[pi]+PLAT_H); ctx.lineTo(gx+pOx+pRows*SW,pYa[pi]+PLAT_H); ctx.stroke();
+    });
     // Also draw top and bottom of each bay as clear solid lines
     ctx.setLineDash([]);
     ctx.strokeStyle='rgba(160,80,10,0.55)'; ctx.lineWidth=0.8;
@@ -20453,23 +20435,6 @@ function drawOverview(){
     ctx.beginPath(); ctx.moveTo(cx2,cy2-cs); ctx.lineTo(cx2,cy2+cs); ctx.stroke();
   }
 
-
-
-
-  // ── Bay separator dotted lines — always visible, grid-independent ──
-  try {
-    var _saveSep = ctx.save();
-    ctx.setLineDash([6, 5]);
-    ctx.strokeStyle = 'rgba(94,184,255,0.55)';
-    ctx.lineWidth = 1.5;
-    for(var _sb=0; _sb<cfg.bays; _sb++){
-      if(bYa[_sb]===undefined) continue;
-      ctx.beginPath(); ctx.moveTo(gx,bYa[_sb]);    ctx.lineTo(gx+rows*SW,bYa[_sb]);    ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(gx,bYa[_sb]+SH); ctx.lineTo(gx+rows*SW,bYa[_sb]+SH); ctx.stroke();
-    }
-    ctx.setLineDash([]);
-    ctx.restore();
-  } catch(_e2){}
 
 }
 
@@ -27603,31 +27568,7 @@ function hddHandleClick(sx, sy){
       pushUndo();
       const arr = hcHoldDowns[bay] || [];
       const hit = arr.find(h => h.id === hitId);
-      if(hit){
-        // Adjust position so plate center stays fixed during flip
-        // Offset between snap point and plate center in world coords
-        const _S = HDD_R * 2 / 420;
-        const _plateOffset = (270 - 187.5) * _S; // ~5.5 logical px
-        const _shift = 2 * _plateOffset;
-        hit.flipV = !hit.flipV;
-        // Shift x so the vertical plate stays at same world position
-        if(hit.side === 'port' || hit.side === 'stbd'){
-          // For port: default scale is -1 (arm left); flipV=true → scale +1 (arm right)
-          // The plate moves right when flipping port→flipV, so compensate left
-          const _isPort = hit.side === 'port';
-          const _blocked = hit.blocked || false;
-          const _defFlip = _isPort ? (_blocked ? 1 : -1) : (_blocked ? -1 : 1);
-          // New scale sign = flipV ? -_defFlip : _defFlip
-          // shift = -2 * offset * newScaleSign (cancel the displacement)
-          const _newSign = hit.flipV ? -_defFlip : _defFlip;
-          hit.x -= _shift * _newSign;
-        } else {
-          // fwd/aft: same horizontal flip
-          const _newSign = hit.flipV ? -1 : 1;
-          hit.x -= _shift * _newSign;
-        }
-        draw(); return true;
-      }
+      if(hit){ hit.flipV = !hit.flipV; draw(); return true; }
     }
     // No existing unit hit — fall through to place a new one with flipV=true
   }
@@ -56323,10 +56264,9 @@ function _lbOvDrawVessel(){
     }
   } catch(e){}
 
-  // ── Platform blocks — shown like HC panels ──
+  // ── Platform blocks ──
   try {
     if(typeof platforms !== 'undefined' && platforms.length > 0){
-      const pH = (typeof PLAT_H !== 'undefined') ? PLAT_H : SH;
       platforms.forEach((p, pi) => {
         if(pYa[pi] === undefined) return;
         const pRows = (typeof totalRowsForPlat==='function') ? totalRowsForPlat(pi) : cfg.rowsSide;
@@ -56334,27 +56274,8 @@ function _lbOvDrawVessel(){
         const ox    = gx + pOx;
         const oy    = pYa[pi];
         const pW    = pRows * SW;
-        // Platform background
-        c.fillStyle = 'rgba(80,110,150,0.20)'; c.strokeStyle = '#4a6a90'; c.lineWidth = 1.5;
-        c.beginPath(); c.rect(ox, oy, pW, pH); c.fill(); c.stroke();
-        // Draw HC-like panel columns inside platform
-        if(typeof getHC === 'function'){
-          let r2 = 0;
-          while(r2 < pRows){
-            const hn = getHC(p.afterBay + 0.5, r2); // platforms don't have bay idx — use hcMap if possible
-            // Draw each column as a panel cell
-            const cx2 = ox + r2 * SW;
-            c.fillStyle = 'rgba(160,185,210,0.35)';
-            c.strokeStyle = 'rgba(74,106,144,0.5)'; c.lineWidth = 0.5;
-            c.beginPath(); c.rect(cx2 + 1, oy + 2, SW - 2, pH - 4); c.fill(); c.stroke();
-            r2++;
-          }
-        }
-        // Platform name label
-        const pName = p.name || ('P' + (pi + 1));
-        c.font = '700 9px IBM Plex Mono';
-        c.fillStyle = '#2a4a70'; c.textAlign = 'center'; c.textBaseline = 'middle';
-        c.fillText(pName.toUpperCase(), ox + pW/2, oy + pH/2);
+        c.fillStyle = 'rgba(100,130,170,0.25)'; c.strokeStyle = '#4a6a90'; c.lineWidth = 1;
+        c.beginPath(); c.rect(ox, oy, pW, SH); c.fill(); c.stroke();
       });
     }
   } catch(e){}
@@ -56714,7 +56635,7 @@ function _lbOpenOverlay(){
   const sd = document.getElementById('floatSaveDot');
   if(sb) sb.style.zIndex = '3600';
   if(sd) sd.style.zIndex = '3601';
-  viewMode = 'lb'; window.viewMode = 'lb';
+  window.viewMode = 'lb';
   const sbMode = document.getElementById('sbMode');
   if(sbMode) sbMode.textContent = 'LB';
   lbOv.style.display = 'flex';
@@ -56724,12 +56645,10 @@ function _lbOpenOverlay(){
   if(typeof _lbRebuildList === 'function') _lbRebuildList();
   requestAnimationFrame(function(){ if(typeof _lbDraw === 'function') _lbDraw(); });
   if(window.innerWidth <= 700){
-    if(window.innerWidth<=700){
-      var _lbBd=document.getElementById('lbBody');
-      var _lbR=document.getElementById('lbRight');
-      if(_lbBd){_lbBd.style.display='flex';_lbBd.style.flexDirection='column';}
-      if(_lbR){_lbR.style.display='flex';_lbR.style.flexDirection='column';}
-    }
+    var _lbBd=document.getElementById('lbBody');
+    var _lbR=document.getElementById('lbRight');
+    if(_lbBd){_lbBd.style.display='flex';_lbBd.style.flexDirection='column';}
+    if(_lbR){_lbR.style.display='flex';_lbR.style.flexDirection='column';}
     if(typeof _lbResetPanels==='function') setTimeout(_lbResetPanels,400);
   }
 }
@@ -56751,19 +56670,15 @@ function _lbOpenOverlay(){
         const _bHV=document.getElementById('btnHV'); if(_bHV) _bHV.className='btn';
         const _bRS=document.getElementById('btnRS'); if(_bRS) _bRS.className='btn';
         const _bLB=document.getElementById('btnLB'); if(_bLB) _bLB.className='btn view-on';
-        viewMode='lb'; window.viewMode='lb';
+        window.viewMode='lb';
         const sbMode=document.getElementById('sbMode'); if(sbMode) sbMode.textContent='LB';
         _lbOvInitCanvas();
         _lbOvAutoFit();
         requestAnimationFrame(()=>{ _lbOvDrawVessel(); _lbDraw(); });
         return;
       } else {
-        // Always hide lbOverlay when switching to any non-LB view
+        window.viewMode = m;
         if(lbOv) lbOv.style.display='none';
-        window.viewMode = null; // clear lb guard so draw() works
-        // Restore vp visibility in case it was hidden
-        var _vp=document.getElementById('vp');
-        if(_vp) _vp.style.visibility='';
         const _bLB=document.getElementById('btnLB'); if(_bLB) _bLB.className='btn';
         const sb=document.getElementById('floatSaveBtn'), sd=document.getElementById('floatSaveDot');
         if(sb) sb.style.zIndex='200';
@@ -60824,7 +60739,6 @@ function _lbCopyEyesToAllBridges(){
       <div class="mob-sub-label">HC STOPPERS</div>
       <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleHcStopPlacer&&toggleHcStopPlacer()">⊗  PLACE HC STOPPER</button>
       <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof toggleHcStopManip==='function'&&toggleHcStopManip()">⊗  HC STOPPER MANIPULATOR</button>
-      <div class="mob-sub-label">FLEXIPADS</div>
       <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();toggleFlexipadPlacer&&toggleFlexipadPlacer()">▣  PLACE FLEXIPAD</button>
       <button class="mob-action" onclick="closeMobileMenu();autoSwitchBay&&autoSwitchBay();typeof toggleFlexipadAssignMode==='function'&&toggleFlexipadAssignMode()">▣  ASSIGN TYPE TO FLEXIPAD</button>
       <button class="mob-action" onclick="closeMobileMenu();openFxpLib&&openFxpLib()">▣  FLEXIPAD LIBRARY — TYPE CATALOGUE</button>
