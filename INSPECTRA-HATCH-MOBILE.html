@@ -9,7 +9,559 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Hatch Scan">
 <style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Hatch Scan — Mobile Capture</title>
+<meta name="theme-color" content="#1f3a68">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hatch Scan">
+<style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  html { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #eef2f8; color: #1a2540;
+    min-height: 100%;
+  }
+  /* Layout: a fixed top bar and bottom action bar, with the scroll area in
+     between. Using min-height:100vh on body + normal document flow is far more
+     reliable on iOS Safari than a 100vh flex column (iOS mis-measures 100vh
+     with the dynamic address bar, which can collapse a flex child to zero
+     height and hide everything below the first card). */
+  .top {
+    position: sticky; top: 0; z-index: 10; background: #1f3a68; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .top .brand { font-weight: 700; font-size: 16px; letter-spacing: .02em; }
+  .top .sub { font-weight: 300; font-size: 11px; opacity: .85; }
+  .scroll { padding: 12px 12px 120px; }
+  .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  h2 { font-size: 13px; font-weight: 700; color: #1f3a68; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .04em; }
+  label.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-size: 12px; color: #5a6a85; font-weight: 600; }
+  label.field input, label.field select {
+    font: inherit; font-size: 16px; color: #1a2540; padding: 10px 12px;
+    border: 1px solid #c7d0de; border-radius: 8px; background: #fff; width: 100%; font-weight: 400;
+  }
+  label.field input:focus, label.field select:focus { outline: none; border-color: #1f3a68; }
+  .chapter { background: #fff; border-radius: 12px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow: hidden; }
+  .chapter-head { display: flex; align-items: center; padding: 14px; cursor: pointer; background: #1f3a68; color: #fff; }
+  .chapter-head .title { font-weight: 700; font-size: 14px; flex: 1; }
+  .chapter-head .count { font-size: 12px; opacity: .9; background: rgba(255,255,255,.18); border-radius: 10px; padding: 2px 9px; margin: 0 8px; }
+  .chapter-head .caret { transition: transform .15s; }
+  .chapter.open .caret { transform: rotate(90deg); }
+  .chapter-body { padding: 12px; display: none; }
+  .chapter.open .chapter-body { display: block; }
+  .photo-item { border-top: 1px solid #eef2f8; padding-top: 12px; margin-top: 12px; }
+  .photo-item:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+  /* Two-up photo pair layout (matches the report). display:flex is used rather
+     than CSS grid for maximum iOS Safari reliability. */
+  .pair-grid { display: flex; gap: 10px; }
+  .pair-grid > * { flex: 1 1 0; min-width: 0; }
+  .pair-grid + .pair-grid { margin-top: 8px; }
+  .tile {
+    position: relative; width: 100%; border: 2px dashed #b9c4d6; border-radius: 10px;
+    background: #f5f8fc center/cover no-repeat; display: flex; align-items: center; justify-content: center;
+    color: #7a869a; font-size: 13px; text-align: center; cursor: pointer; overflow: hidden;
+    height: 0; padding-bottom: 75%; /* 4:3 fallback for iOS < 15 (no aspect-ratio) */
+  }
+  /* Center the inner content despite the padding-based ratio box */
+  .tile > div, .tile > .del { position: absolute; }
+  .tile > div { top: 50%; left: 0; right: 0; transform: translateY(-50%); }
+  @supports (aspect-ratio: 1) {
+    .tile { height: auto; padding-bottom: 0; aspect-ratio: 4/3; }
+    .tile > div { position: static; transform: none; }
+  }
+  .tile.has { border-style: solid; border-color: #1f3a68; color: transparent; }
+  .tile .cam { font-size: 30px; display: block; margin-bottom: 6px; }
+  .tile .del {
+    position: absolute; top: 6px; right: 6px; background: rgba(192,57,43,.92); color: #fff;
+    border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer;
+    display: none; align-items: center; justify-content: center; line-height: 1;
+  }
+  .tile.has .del { display: flex; }
+  .cap { width: 100%; font: inherit; font-size: 13px; color: #1a2540; margin-top: 0; padding: 8px 10px; border: 1px solid #c7d0de; border-radius: 8px; resize: vertical; min-height: 40px; }
+  .joined-cap { text-align: center; }
+  .join-btn { margin-top: 8px; width: 100%; background: #f2f5fa; color: #1f3a68; border: 1px solid #c7d0de; border-radius: 8px; padding: 8px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .add-btn { margin-top: 12px; width: 100%; background: #eaf1fb; color: #1f3a68; border: 1px dashed #1f3a68; border-radius: 8px; padding: 13px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; gap: 10px; padding: 12px; padding-bottom: max(12px, env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #d6deea; box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
+  .act { flex: 1; border: none; border-radius: 10px; padding: 15px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .open { background: #eef2f8; color: #1f3a68; border: 1px solid #c7d0de; }
+  .save { background: #1f3a68; color: #fff; }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 100; background: #1a2540; color: #fff; padding: 11px 20px; border-radius: 20px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,.3); opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .hint { font-size: 11px; color: #7a869a; padding: 4px 2px 0; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div><div class="brand">Löffler International</div><div class="sub">reporting experts</div></div>
+  </div>
+
+  <div class="scroll">
+    <div class="card">
+      <h2>Report details</h2>
+      <label class="field"><span>Vessel name</span><input type="text" id="ship" placeholder="Ship name"></label>
+      <label class="field"><span>IMO number</span><input type="text" id="imo" inputmode="numeric" maxlength="7" placeholder="XXXXXXX"></label>
+      <label class="field"><span>Date</span><input type="date" id="date"></label>
+      <label class="field"><span>Report type</span>
+        <select id="rtype">
+          <option value="daily">Daily Report</option>
+          <option value="initial">Initial Service Report</option>
+          <option value="final">Final Report</option>
+          <option value="predocking">Pre-docking Inspection</option>
+          <option value="intermediate">HC Control Inspection</option>
+          <option value="special">Special Occasion Inspection</option>
+        </select></label>
+      <label class="field"><span>Shipyard / Port</span><input type="text" id="yard" placeholder="Shipyard name"></label>
+      <div class="hint">Captured photos are resized on your phone, then saved to a file you open on the desktop app (Import mobile photos).</div>
+    </div>
+    <div id="chapters"></div>
+  </div>
+
+  <div class="actionbar">
+    <button class="act open" onclick="loadChapters()">📋 Chapters</button>
+    <button class="act open" onclick="openFile()">📂 Open</button>
+    <button class="act save" onclick="saveFile()">💾 Save</button>
+  </div>
+  <input type="file" id="openInput" accept=".json,application/json" style="display:none" onchange="handleOpen(this)">
+  <input type="file" id="chaptersInput" accept=".json,application/json" style="display:none" onchange="handleChapters(this)">
+
+<script>
+"use strict";
+// ── Chapters (must match desktop chapter IDs) ─────────────────────────
+// Only chapters that hold photo pairs on the desktop are useful for capture.
+var CHAPTERS = [
+  { id:'hatchOverview', title:'Hatch covers overview' },
+  { id:'general',       title:'General notes & remarks' },
+  { id:'safety',        title:'Safety' },
+  { id:'steel',         title:'Hatch cover top & side plates' },
+  { id:'interior',      title:'Hatch cover interior & other steel structures' },
+  { id:'vent',          title:'Hatch cover ventilation' },
+  { id:'bearing',       title:'Hatch cover bearing system' },
+  { id:'coaming',       title:'Hatch coamings' },
+  { id:'rubber',        title:'Hatch cover rubber seals' },
+  { id:'stoppers',      title:'Hatch cover stoppers & guides' },
+  { id:'antilifting',   title:'Hold down devices' },
+  { id:'sockets',       title:'Container foundations / sockets' },
+  { id:'lashing',       title:'Lashing plates' },
+  { id:'welding',       title:'Fixed lashing material in cargo holds' },
+  { id:'lashingFlatRacks', title:'Flat racks & gear boxes' }
+];
+
+// ── In-memory data model ──────────────────────────────────────────────
+// store[chapterId] = [ { photo:dataURL|null, caption:'', sub:'' }, ... ]
+// Each chapter starts with one empty PAIR (two photo frames) ready to use.
+var store = {};
+function _emptyPair(sub){ return [ {photo:null, caption:'', sub:sub||''}, {photo:null, caption:'', sub:sub||''} ]; }
+CHAPTERS.forEach(function(c){ store[c.id] = _emptyPair(); });
+
+// When chapters are imported from the desktop, the report type is fixed by
+// the desktop and must not be changed on the phone.
+var _importedFromDesktop = false;
+function _applyTypeLock(){
+  var rt=document.getElementById('rtype');
+  if(!rt) return;
+  rt.disabled = _importedFromDesktop;
+  rt.style.opacity = _importedFromDesktop ? '0.6' : '';
+  var note=document.getElementById('typeLockNote');
+  if(_importedFromDesktop){
+    if(!note){
+      note=document.createElement('div'); note.id='typeLockNote';
+      note.style.cssText='font-size:11px;color:#7a869a;margin-top:-6px;margin-bottom:12px;';
+      note.textContent='Report type is set by the desktop report (imported chapters).';
+      rt.parentNode.parentNode.insertBefore(note, rt.parentNode.nextSibling);
+    }
+  } else if(note){ note.remove(); }
+}
+
+// ── On-device photo resize (mirrors desktop defaults: ~65KB, 900px) ───
+var IMG = { targetBytes: 65*1024, targetDim: 900, startQ: 0.78, minQ: 0.40, qStep: 0.07, shrinkSteps: 2, shrinkFactor: 0.85 };
+function bytesOfDataURL(d){ var i=d.indexOf(','); var b=d.length-i-1; return Math.floor(b*3/4); }
+function optimisePhoto(file){
+  return new Promise(function(resolve){
+    if(!file || !/^image\//.test(file.type) || file.type==='image/svg+xml' || file.type==='image/gif'){
+      // fall back to raw read
+      var fr=new FileReader(); fr.onload=function(e){ resolve(e.target.result); }; fr.onerror=function(){ resolve(null); }; fr.readAsDataURL(file); return;
+    }
+    var url=URL.createObjectURL(file);
+    var img=new Image();
+    img.onload=function(){
+      try {
+        var longEdge=Math.max(img.naturalWidth, img.naturalHeight);
+        var scale=longEdge>IMG.targetDim ? (IMG.targetDim/longEdge) : 1;
+        var best=null;
+        for(var pass=0; pass<=IMG.shrinkSteps; pass++){
+          var s=scale*Math.pow(IMG.shrinkFactor, pass);
+          var w=Math.max(1, Math.round(img.naturalWidth*s));
+          var h=Math.max(1, Math.round(img.naturalHeight*s));
+          var canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+          var ctx=canvas.getContext('2d');
+          ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+          ctx.drawImage(img,0,0,w,h);
+          for(var q=IMG.startQ; q>=IMG.minQ-0.001; q-=IMG.qStep){
+            var d=canvas.toDataURL('image/jpeg', Math.max(IMG.minQ,q));
+            var bytes=bytesOfDataURL(d);
+            if(!best || bytes<best.bytes) best={src:d, bytes:bytes};
+            if(bytes<=IMG.targetBytes){ URL.revokeObjectURL(url); resolve(d); return; }
+          }
+        }
+        URL.revokeObjectURL(url);
+        resolve(best?best.src:null);
+      } catch(e){ URL.revokeObjectURL(url); resolve(null); }
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); resolve(null); };
+    img.src=url;
+  });
+}
+
+// ── Render ────────────────────────────────────────────────────────────
+function esc(s){ return (s||'').replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}); }
+
+function render(){
+  var wrap=document.getElementById('chapters');
+  wrap.innerHTML='';
+  CHAPTERS.forEach(function(ch){
+    var items=store[ch.id];
+    var withPhoto=items.filter(function(it){return it.photo;}).length;
+    var block=document.createElement('div');
+    block.className='chapter';
+    block.dataset.id=ch.id;
+    var head=document.createElement('div');
+    head.className='chapter-head';
+    head.innerHTML='<span class="title">'+esc(ch.title)+'</span>'+
+      '<span class="count">'+(withPhoto?withPhoto+' photo'+(withPhoto>1?'s':''):'')+'</span>'+
+      '<span class="caret">▶</span>';
+    head.onclick=function(){
+      var wasOpen = block.classList.contains('open');
+      // Close every chapter, then open this one (unless it was already open).
+      var all = document.querySelectorAll('.chapter');
+      for(var i=0;i<all.length;i++) all[i].classList.remove('open');
+      if(!wasOpen) {
+        block.classList.add('open');
+        block.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
+    };
+    block.appendChild(head);
+    var body=document.createElement('div');
+    body.className='chapter-body';
+    // Render items grouped in PAIRS (two tiles per row), matching the report
+    // layout. Each pair row = two tiles, then two captions beneath them.
+    for(var pi=0; pi<items.length; pi+=2){
+      body.appendChild(makePair(ch.id, pi, items[pi], (pi+1<items.length?items[pi+1]:null)));
+    }
+    var subs = (ch.subchapters && ch.subchapters.length) ? ch.subchapters : null;
+    if(subs) {
+      var lbl=document.createElement('div');
+      lbl.style.cssText='font-size:11px;color:#7a869a;margin-top:12px;font-weight:600;';
+      lbl.textContent='Add photo pair to subchapter:';
+      body.appendChild(lbl);
+      subs.forEach(function(sname){
+        var sb=document.createElement('button');
+        sb.className='add-btn';
+        sb.style.marginTop='8px';
+        sb.textContent='＋ '+sname;
+        sb.onclick=function(){ store[ch.id].push({photo:null, caption:'', sub:sname}); store[ch.id].push({photo:null, caption:'', sub:sname}); render(); var b=document.querySelector('.chapter[data-id="'+ch.id+'"]'); if(b) b.classList.add('open'); };
+        body.appendChild(sb);
+      });
+      var gen=document.createElement('button');
+      gen.className='add-btn'; gen.style.marginTop='8px';
+      gen.textContent='＋ Add photo pair (no subchapter)';
+      gen.onclick=function(){ store[ch.id].push({photo:null, caption:'', sub:''}); store[ch.id].push({photo:null, caption:'', sub:''}); render(); var b=document.querySelector('.chapter[data-id="'+ch.id+'"]'); if(b) b.classList.add('open'); };
+      body.appendChild(gen);
+    } else {
+      var addBtn=document.createElement('button');
+      addBtn.className='add-btn';
+      addBtn.textContent='＋ Add photo pair';
+      addBtn.onclick=function(){ store[ch.id].push({photo:null, caption:'', sub:''}); store[ch.id].push({photo:null, caption:'', sub:''}); render(); var b=document.querySelector('.chapter[data-id="'+ch.id+'"]'); if(b) b.classList.add('open'); };
+      body.appendChild(addBtn);
+    }
+    block.appendChild(body);
+    wrap.appendChild(block);
+  });
+}
+
+// Build a photo PAIR row: two tiles side by side, with either two separate
+// captions or one joined caption spanning both (matching the desktop report).
+function makePair(cid, baseIdx, itA, itB){
+  var pair=document.createElement('div');
+  pair.className='photo-item';
+  var subName = (itA && itA.sub) || (itB && itB.sub) || '';
+  if(subName){
+    var tag=document.createElement('div');
+    tag.style.cssText='font-size:11px;color:#1f3a68;font-weight:700;margin-bottom:6px;';
+    tag.textContent='◆ '+subName;
+    pair.appendChild(tag);
+  }
+  var grid=document.createElement('div');
+  grid.className='pair-grid';
+  grid.appendChild(makeTile(cid, baseIdx, itA));
+  if(itB) grid.appendChild(makeTile(cid, baseIdx+1, itB));
+  else grid.appendChild(document.createElement('div'));
+  pair.appendChild(grid);
+
+  var joined = !!(itA && itA.joined);
+  if(joined && itB){
+    // One caption spanning both photos.
+    var jc=document.createElement('textarea');
+    jc.className='cap joined-cap'; jc.placeholder='Caption (both photos)…';
+    jc.value=(itA && itA.joinedCaption)||'';
+    jc.oninput=function(){ store[cid][baseIdx].joinedCaption=jc.value; };
+    pair.appendChild(jc);
+  } else {
+    var caps=document.createElement('div');
+    caps.className='pair-grid';
+    caps.appendChild(makeCap(cid, baseIdx, itA));
+    if(itB) caps.appendChild(makeCap(cid, baseIdx+1, itB));
+    else caps.appendChild(document.createElement('div'));
+    pair.appendChild(caps);
+  }
+
+  // Join / split toggle (only meaningful when the pair has two photos).
+  if(itB){
+    var jbtn=document.createElement('button');
+    jbtn.className='join-btn';
+    jbtn.textContent = joined ? '↔ Split caption' : '↔ Join caption';
+    jbtn.onclick=function(){
+      store[cid][baseIdx].joined = !joined;
+      // On first join, seed the joined caption from the two separate ones.
+      if(!joined){
+        var a=(itA&&itA.caption)||'', b=(itB&&itB.caption)||'';
+        if(!store[cid][baseIdx].joinedCaption) store[cid][baseIdx].joinedCaption=(a+(a&&b?' ':'')+b);
+      }
+      render();
+      var bl=document.querySelector('.chapter[data-id="'+cid+'"]'); if(bl) bl.classList.add('open');
+    };
+    pair.appendChild(jbtn);
+  }
+  return pair;
+}
+
+function makeTile(cid, idx, it){
+  var tile=document.createElement('div');
+  tile.className='tile'+(it && it.photo?' has':'');
+  if(it && it.photo) tile.style.backgroundImage="url('"+it.photo+"')";
+  tile.innerHTML=((it&&it.photo)?'':'<div><span class="cam">📷</span>Tap: camera<br><span style="font-size:11px;opacity:.8;">Hold: library</span></div>')+'<button class="del" title="Remove">✕</button>';
+
+  var pressTimer=null, longFired=false, LONG_MS=500;
+
+  function startPress(ev){
+    // Ignore the delete button
+    if(ev.target && ev.target.classList && ev.target.classList.contains('del')) return;
+    longFired=false;
+    clearTimeout(pressTimer);
+    pressTimer=setTimeout(function(){
+      longFired=true;
+      if(navigator.vibrate){ try{ navigator.vibrate(15); }catch(e){} }
+      capture(cid, idx, 'library');     // long press → photo library
+    }, LONG_MS);
+  }
+  function endPress(ev){
+    clearTimeout(pressTimer);
+    if(ev.target && ev.target.classList && ev.target.classList.contains('del')){
+      store[cid][idx].photo=null; render(); return;
+    }
+    if(!longFired){
+      capture(cid, idx, 'camera');      // short tap → camera
+    }
+  }
+  function cancelPress(){ clearTimeout(pressTimer); }
+
+  // Use pointer events where available (covers touch + mouse); fall back to touch/mouse.
+  if(window.PointerEvent){
+    tile.addEventListener('pointerdown', startPress);
+    tile.addEventListener('pointerup', endPress);
+    tile.addEventListener('pointercancel', cancelPress);
+    tile.addEventListener('pointerleave', cancelPress);
+  } else {
+    tile.addEventListener('touchstart', startPress, {passive:true});
+    tile.addEventListener('touchend', function(ev){ ev.preventDefault(); endPress(ev); });
+    tile.addEventListener('touchcancel', cancelPress);
+    tile.addEventListener('mousedown', startPress);
+    tile.addEventListener('mouseup', endPress);
+    tile.addEventListener('mouseleave', cancelPress);
+  }
+  // Prevent the iOS long-press callout (copy/save menu) on the tile.
+  tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+  tile.style.webkitTouchCallout='none';
+  tile.style.webkitUserSelect='none';
+  tile.style.userSelect='none';
+
+  return tile;
+}
+
+function makeCap(cid, idx, it){
+  var cap=document.createElement('textarea');
+  cap.className='cap'; cap.placeholder='Caption…'; cap.value=(it&&it.caption)||'';
+  cap.oninput=function(){ store[cid][idx].caption=cap.value; };
+  return cap;
+}
+
+// ── Capture ───────────────────────────────────────────────────────────
+// mode 'camera'  → open the camera directly (capture attribute)
+// mode 'library' → open the photo library / file picker (no capture attribute)
+function isIOS(){
+  var ua=navigator.userAgent||'';
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
+function capture(cid, idx, mode){
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  if(mode==='camera'){
+    // Request the camera explicitly. On iOS this opens the camera directly.
+    inp.setAttribute('capture','environment');
+  } else {
+    // Library/file picker: no capture attribute, so the OS shows the gallery.
+    inp.removeAttribute('capture');
+  }
+  inp.style.cssText='position:fixed;top:-1000px;left:-1000px;width:1px;height:1px;opacity:0;';
+  document.body.appendChild(inp);
+  function cleanup(){ try{ inp.remove(); }catch(e){} }
+  inp.addEventListener('change', function(){
+    var f=inp.files && inp.files[0];
+    if(f){
+      toast('Processing photo…');
+      optimisePhoto(f).then(function(src){
+        if(src){ store[cid][idx].photo=src; render(); var b=document.querySelector('.chapter[data-id="'+cid+'"]'); if(b) b.classList.add('open'); toast('Photo added'); }
+        else toast('Could not read photo');
+      });
+    }
+    cleanup();
+  });
+  inp.click();
+}
+
+// ── Toast ───────────────────────────────────────────────────────────
+var _toastEl=null, _toastT=null;
+function toast(msg){
+  if(!_toastEl){ _toastEl=document.createElement('div'); _toastEl.className='toast'; document.body.appendChild(_toastEl); }
+  _toastEl.textContent=msg; _toastEl.classList.add('show');
+  clearTimeout(_toastT); _toastT=setTimeout(function(){ _toastEl.classList.remove('show'); }, 2000);
+}
+
+// ── Save / Open (simple bundle format) ───────────────────────────────
+// Format the desktop "Import mobile photos" button understands.
+function buildBundle(){
+  var photos={};
+  CHAPTERS.forEach(function(ch){
+    var items=store[ch.id]||[];
+    var out=[];
+    for(var i=0;i<items.length;i+=2){
+      var a=items[i], b=(i+1<items.length?items[i+1]:null);
+      var joined=!!(a && a.joined) && !!b;
+      var jcap=(a && a.joinedCaption)||'';
+      // Keep only photos that actually have an image, but preserve join flags.
+      if(a && a.photo) out.push({ photo:a.photo, caption:(joined?jcap:(a.caption||'')), sub:a.sub||'', joined:joined, joinedCaption:jcap, pairStart:true });
+      if(b && b.photo) out.push({ photo:b.photo, caption:(joined?'':(b.caption||'')), sub:b.sub||'', joined:joined, joinedCaption:jcap, pairStart:false });
+    }
+    if(out.length) photos[ch.id]=out;
+  });
+  return {
+    type: 'hc-mobile-photo-bundle',
+    version: 1,
+    createdAt: new Date().toISOString(),
+    header: {
+      shipName: document.getElementById('ship').value || '',
+      imo: document.getElementById('imo').value || '',
+      date: document.getElementById('date').value || '',
+      reportType: document.getElementById('rtype').value || 'daily',
+      shipyard: document.getElementById('yard').value || ''
+    },
+    photos: photos
+  };
+}
+function saveFile(){
+  var bundle=buildBundle();
+  var ship=(bundle.header.shipName||'Mobile').replace(/[\/\\:*?"<>|]/g,'').replace(/\s+/g,' ').trim();
+  var d=bundle.header.date ? bundle.header.date.replace(/-/g,'') : (new Date().toISOString().slice(0,10).replace(/-/g,''));
+  var name=d+'_HC_Mobile_'+ship+'.json';
+  var blob=new Blob([JSON.stringify(bundle)], {type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+  toast('Saved: '+name);
+}
+function openFile(){ document.getElementById('openInput').click(); }
+function handleOpen(inp){
+  var f=inp.files && inp.files[0]; if(!f) return;
+  var fr=new FileReader();
+  fr.onload=function(e){
+    try {
+      var b=JSON.parse(e.target.result);
+      if(b.type!=='hc-mobile-photo-bundle'){ toast('Not a mobile photo file'); return; }
+      // load header
+      if(b.header){
+        document.getElementById('ship').value=b.header.shipName||'';
+        document.getElementById('imo').value=b.header.imo||'';
+        document.getElementById('date').value=b.header.date||'';
+        document.getElementById('rtype').value=b.header.reportType||'daily';
+        document.getElementById('yard').value=b.header.shipyard||'';
+      }
+      // load photos
+      CHAPTERS.forEach(function(ch){ store[ch.id]=[]; });
+      if(b.photos){ Object.keys(b.photos).forEach(function(cid){ if(store[cid]!==undefined){ store[cid]=b.photos[cid].map(function(it){ return { photo: it.photo||null, caption: it.caption||'', sub: it.sub||'', joined: !!it.joined, joinedCaption: it.joinedCaption||'' }; }); } }); }
+      // Chapters with no saved photos still show one empty pair, ready to use.
+      CHAPTERS.forEach(function(ch){ if(!store[ch.id] || !store[ch.id].length) store[ch.id]=_emptyPair(); });
+      render();
+      toast('Opened');
+    } catch(err){ toast('Could not open file'); }
+  };
+  fr.readAsText(f);
+  inp.value='';
+}
+
+// ── Load chapter structure exported from the desktop ──────────────────
+function loadChapters(){ document.getElementById('chaptersInput').click(); }
+function handleChapters(inp){
+  var f=inp.files && inp.files[0]; if(!f) return;
+  var fr=new FileReader();
+  fr.onload=function(e){
+    try {
+      var st=JSON.parse(e.target.result);
+      if(st.type!=='hc-chapter-structure' || !Array.isArray(st.chapters)){ toast('Not a chapter file'); return; }
+      // Replace the chapter list with the desktop's (only photo-capable ones).
+      var newChapters=[];
+      st.chapters.forEach(function(c){
+        if(c.canPhoto===false) return; // skip chapters that hold no photos
+        newChapters.push({ id:c.id, title:c.title||c.id, subchapters: Array.isArray(c.subchapters)?c.subchapters.slice():[] });
+      });
+      if(!newChapters.length){ toast('No photo chapters in file'); return; }
+      // Preserve any already-captured photos for chapters that still exist.
+      var oldStore=store;
+      CHAPTERS=newChapters;
+      store={};
+      CHAPTERS.forEach(function(c){ store[c.id]= (oldStore[c.id] && oldStore[c.id].length ? oldStore[c.id] : _emptyPair()); });
+      // This report's structure now comes from the desktop. If the desktop
+      // included a report type, apply it; then LOCK the selector so it can't
+      // be changed on the phone (the desktop defines the report).
+      _importedFromDesktop = true;
+      if(st.reportType){ var rt=document.getElementById('rtype'); if(rt){ rt.value=st.reportType; } }
+      _applyTypeLock();
+      render();
+      toast('Loaded '+CHAPTERS.length+' chapters');
+    } catch(err){ toast('Could not read chapter file'); }
+  };
+  fr.readAsText(f);
+  inp.value='';
+}
+
+// default date = today
+try {
+  var _d=new Date(); var _s=_d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0');
+  var _de=document.getElementById('date'); if(_de) _de.value=_s;
+} catch(e){}
+try { render(); } catch(e){}
+// Re-render once more after full load in case anything was delayed on iOS.
+window.addEventListener('load', function(){ try { if(!document.querySelectorAll('.chapter').length) render(); } catch(e){} });
+</script>
+</body>
+</html>
+
   html, body { margin: 0; padding: 0; }
   html { height: 100%; }
   body {
