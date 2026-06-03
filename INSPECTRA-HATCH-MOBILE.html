@@ -24,7 +24,7 @@
      height and hide everything below the first card). */
   .top {
     position: sticky; top: 0; z-index: 10; background: #1f3a68; color: #fff;
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: center; justify-content: center; text-align: center;
     padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
   }
   .top .brand { font-weight: 700; font-size: 16px; letter-spacing: .02em; }
@@ -36,6 +36,20 @@
   label.field input, label.field select {
     font: inherit; font-size: 16px; color: #1a2540; padding: 10px 12px;
     border: 1px solid #c7d0de; border-radius: 8px; background: #fff; width: 100%; font-weight: 400;
+    -webkit-appearance: none; appearance: none; box-sizing: border-box;
+  }
+  /* iOS Safari gives <input type="date"> its own intrinsic width and centered
+     text, which made it overflow the card. Force it to behave like the others. */
+  label.field input[type="date"] {
+    -webkit-appearance: none; appearance: none;
+    min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box;
+    text-align: left; display: block;
+  }
+  label.field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+  /* Custom dropdown arrow for the select (native one removed by appearance:none) */
+  label.field select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%231f3a68' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px;
   }
   label.field input:focus, label.field select:focus { outline: none; border-color: #1f3a68; }
   .chapter { background: #fff; border-radius: 12px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow: hidden; }
