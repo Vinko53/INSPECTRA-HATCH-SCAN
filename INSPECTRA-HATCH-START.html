@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>INSPECTRA — Hatch Scan</title>
+<meta name="theme-color" content="#1f3a68">
+<style>
+  html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:linear-gradient(135deg,#1f3a68,#2c5599 45%,#1b3360);color:#fff;}
+  .wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box;}
+  .brand{font-weight:700;font-size:22px;letter-spacing:.02em;}
+  .sub{font-weight:300;font-size:13px;opacity:.85;margin-top:2px;}
+  .msg{margin-top:22px;font-size:14px;opacity:.9;}
+  .spin{margin-top:18px;width:34px;height:34px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:s 1s linear infinite;}
+  @keyframes s{to{transform:rotate(360deg);}}
+  .links{margin-top:26px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  a.btn{display:inline-block;padding:11px 18px;border-radius:999px;text-decoration:none;font-weight:600;font-size:13px;
+    background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.42));color:#1f3a68;border:1px solid rgba(255,255,255,.7);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.9),0 3px 10px rgba(10,30,70,.35);}
+  .note{margin-top:18px;font-size:11px;opacity:.6;max-width:320px;line-height:1.4;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="brand">Löffler International</div>
+      <div class="sub">reporting experts · Hatch Scan</div>
+    </div>
+    <div class="spin" id="spin"></div>
+    <div class="msg" id="msg">Opening the right version for your device…</div>
+    <!-- Fallback links appear if auto-redirect doesn't fire -->
+    <div class="links" id="links" style="display:none;">
+      <a class="btn" id="lapLink">Open desktop version</a>
+      <a class="btn" id="mobLink">Open mobile version</a>
+    </div>
+    <div class="note" id="note" style="display:none;"></div>
+  </div>
+
+<script>
+"use strict";
+// ==== FILENAMES AS THEY EXIST IN THE GITHUB REPO ====================
+// Desktop file name contains spaces/parentheses, so it is percent-encoded
+// (space → %20, ( → %28, ) → %29) so the browser can open it reliably.
+var DESKTOP_FILE = "Last_DEBUGED_LB2_-_2026-05-09T092934_756%20%283%29.html";
+var MOBILE_FILE  = "INSPECTRA-HATCH-MOBILE.html";
+// =====================================================================
+
+// Device detection. iPadOS reports as desktop Safari, so we also treat
+// touch + coarse-pointer as mobile-ish; but iPads are large, so we use a
+// width check too: phones (small screens) → mobile, everything else → desktop.
+function isPhone(){
+  var ua = navigator.userAgent || navigator.vendor || "";
+  var iOSphone = /iPhone|iPod/.test(ua);
+  var android  = /Android/.test(ua) && /Mobile/.test(ua);
+  var generic  = /Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+  // Small viewport is the strongest signal of a phone-sized screen.
+  var smallScreen = Math.min(window.screen.width, window.screen.height) <= 500
+                 || Math.min(window.innerWidth, window.innerHeight) <= 500;
+  return iOSphone || android || (generic && smallScreen);
+}
+
+var target = isPhone() ? MOBILE_FILE : DESKTOP_FILE;
+
+// Build links for the fallback UI.
+document.getElementById('lapLink').href = DESKTOP_FILE;
+document.getElementById('mobLink').href = MOBILE_FILE;
+
+// Redirect. If for any reason it doesn't navigate within 2.5s, show manual links.
+try {
+  window.location.replace(target);
+} catch(e) {
+  showFallback();
+}
+setTimeout(showFallback, 2500);
+
+function showFallback(){
+  var spin=document.getElementById('spin'); if(spin) spin.style.display='none';
+  document.getElementById('msg').textContent = 'Choose a version:';
+  document.getElementById('links').style.display = 'flex';
+  var note=document.getElementById('note');
+  note.style.display='block';
+  note.textContent = 'You were detected as ' + (isPhone() ? 'a phone' : 'a laptop/desktop') + '. Tap a button if it did not open automatically.';
+}
+</script>
+</body>
+</html>
