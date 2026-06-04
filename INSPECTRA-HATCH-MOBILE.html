@@ -29,6 +29,14 @@
   }
   .top .brand { font-weight: 700; font-size: 16px; letter-spacing: .02em; }
   .top .sub { font-weight: 300; font-size: 11px; opacity: .85; }
+  /* Discreet live size / photo-count meter, top-left of the header */
+  .meter {
+    position: absolute; left: 12px; top: max(12px, env(safe-area-inset-top));
+    display: flex; flex-direction: column; align-items: flex-start;
+    line-height: 1.25; pointer-events: none;
+  }
+  .meter #meterSize { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.92); }
+  .meter #meterPhotos { font-size: 9px; font-weight: 400; color: rgba(255,255,255,.65); }
   .scroll { padding: 12px 12px 120px; }
   .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
   h2 { font-size: 13px; font-weight: 700; color: #1f3a68; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .04em; }
@@ -53,10 +61,20 @@
   }
   label.field input:focus, label.field select:focus { outline: none; border-color: #1f3a68; }
   .chapter { background: #fff; border-radius: 12px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow: hidden; }
-  .chapter-head { display: flex; align-items: center; padding: 14px; cursor: pointer; background: #1f3a68; color: #fff; }
-  .chapter-head .title { font-weight: 700; font-size: 14px; flex: 1; }
-  .chapter-head .count { font-size: 12px; opacity: .9; background: rgba(255,255,255,.18); border-radius: 10px; padding: 2px 9px; margin: 0 8px; }
-  .chapter-head .caret { transition: transform .15s; }
+  .chapter-head {
+    display: flex; align-items: center; padding: 14px; cursor: pointer;
+    color: #fff; position: relative; overflow: hidden;
+    background: linear-gradient(135deg,#274a82,#2c5599 55%,#1f3f74);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -2px 8px rgba(10,25,55,.35);
+  }
+  .chapter-head::after {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,.14), transparent); pointer-events: none;
+  }
+  .chapter-head > * { position: relative; z-index: 1; }
+  .chapter-head .title { font-weight: 700; font-size: 14px; flex: 1; text-shadow: 0 1px 2px rgba(10,25,55,.4); }
+  .chapter-head .count { font-size: 12px; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 3px 10px; margin: 0 8px; }
+  .chapter-head .caret { transition: transform .15s; opacity: .9; }
   .chapter.open .caret { transform: rotate(90deg); }
   .chapter-body { padding: 12px; display: none; }
   .chapter.open .chapter-body { display: block; }
@@ -88,11 +106,23 @@
     display: none; align-items: center; justify-content: center; line-height: 1;
   }
   .tile.has .del { display: flex; }
+  /* Library (gallery) button — always available, bottom-right corner of the frame */
+  .tile .lib {
+    position: absolute; bottom: 6px; right: 6px; background: rgba(31,58,104,.92); color: #fff;
+    border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1; z-index: 2;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
   .cap { width: 100%; font: inherit; font-size: 13px; color: #1a2540; margin-top: 0; padding: 8px 10px; border: 1px solid #c7d0de; border-radius: 8px; resize: vertical; min-height: 40px; }
   .joined-cap { text-align: center; }
+  /* Cover photo tile — wider aspect, it's the main vessel shot */
+  .cover-tile { padding-bottom: 56% !important; }
+  @supports (aspect-ratio: 1) { .cover-tile { padding-bottom: 0 !important; aspect-ratio: 16/9; } }
   .join-btn { margin-top: 8px; width: 100%; background: #f2f5fa; color: #1f3a68; border: 1px solid #c7d0de; border-radius: 8px; padding: 8px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
   .subch-group { border: 1px solid #dbe3ef; border-radius: 10px; padding: 10px; margin-bottom: 12px; background: #fafcff; }
-  .subch-title { font-size: 12px; font-weight: 700; color: #1f3a68; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #e4eaf3; text-transform: uppercase; letter-spacing: .03em; }
+  .subch-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; padding: 7px 10px; border-radius: 7px; background: linear-gradient(135deg,#1f3a68,#2c5599); text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; box-shadow: 0 1px 3px rgba(10,30,70,.25); }
+  .subch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 6px; border-radius: 5px; background: rgba(255,255,255,.92); color: #1f3a68; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+  .ch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 8px; background: linear-gradient(180deg,rgba(255,255,255,.98),rgba(225,235,250,.85)); color: #1f3a68; font-size: 13px; font-weight: 800; flex-shrink: 0; margin-right: 10px; box-shadow: inset 0 1px 1px rgba(255,255,255,.9), 0 1px 3px rgba(10,30,70,.4); }
   .add-btn { margin-top: 12px; width: 100%; background: #eaf1fb; color: #1f3a68; border: 1px dashed #1f3a68; border-radius: 8px; padding: 13px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   .actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; gap: 8px; padding: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #d6deea; box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
   .act { flex: 1; border: none; border-radius: 10px; padding: 13px 6px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
@@ -114,6 +144,7 @@
 </head>
 <body>
   <div class="top">
+    <div class="meter" id="meter"><span id="meterSize">0.0 MB</span><span id="meterPhotos">0 photos</span></div>
     <div><div class="brand">Löffler International</div><div class="sub">reporting experts</div></div>
   </div>
 
@@ -211,6 +242,8 @@ function _seedChapter(ch){
   return _emptyPair();
 }
 CHAPTERS.forEach(function(c){ store[c.id] = _seedChapter(c); });
+// Cover photo — a single optional vessel photo shown as chapter "0".
+var coverPhoto = { photo:null, caption:'' };
 
 // When chapters are imported from the desktop, the report type is fixed by
 // the desktop and must not be changed on the phone.
@@ -254,6 +287,7 @@ function onReportTypeChange(){
 
 // ── New report ────────────────────────────────────────────────────────
 function _hasAnyPhotos(){
+  if(coverPhoto && coverPhoto.photo) return true;
   for(var cid in store){ if(!store.hasOwnProperty(cid)) continue;
     var arr=store[cid]||[]; for(var i=0;i<arr.length;i++){ if(arr[i].photo) return true; } }
   return false;
@@ -280,6 +314,7 @@ function doNewReport(mode){
   // Clear all photos/captions; reseed empty frames for the active structure.
   store={};
   CHAPTERS.forEach(function(c){ store[c.id]=_seedChapter(c); });
+  coverPhoto={ photo:null, caption:'' };
   // Clear header fields (keep date defaulting to today).
   ['ship','imo','yard'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   var d=new Date(); var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -335,7 +370,42 @@ function esc(s){ return (s||'').replace(/[<>&]/g,function(c){return {'<':'&lt;',
 function render(){
   var wrap=document.getElementById('chapters');
   wrap.innerHTML='';
-  CHAPTERS.forEach(function(ch){
+
+  // ── Cover photo block (chapter 0) ──────────────────────────────────
+  (function(){
+    var block=document.createElement('div');
+    block.className='chapter';
+    block.dataset.id='__cover__';
+    var head=document.createElement('div');
+    head.className='chapter-head';
+    head.innerHTML='<span class="ch-num">0</span>'+
+      '<span class="title">Cover photo</span>'+
+      '<span class="count">'+(coverPhoto.photo?'1 photo':'')+'</span>'+
+      '<span class="caret">▶</span>';
+    head.onclick=function(){
+      var wasOpen=block.classList.contains('open');
+      var all=document.querySelectorAll('.chapter');
+      for(var i=0;i<all.length;i++) all[i].classList.remove('open');
+      if(!wasOpen){ block.classList.add('open'); block.scrollIntoView({behavior:'smooth',block:'start'}); }
+    };
+    block.appendChild(head);
+    var body=document.createElement('div');
+    body.className='chapter-body';
+    // Single full-width cover tile (no pair, no extra frames).
+    var item=document.createElement('div');
+    item.className='photo-item';
+    item.appendChild(makeCoverTile());
+    var cap=document.createElement('textarea');
+    cap.className='cap'; cap.placeholder='Cover caption (optional)…'; cap.value=coverPhoto.caption||'';
+    cap.oninput=function(){ coverPhoto.caption=cap.value; };
+    item.appendChild(cap);
+    body.appendChild(item);
+    block.appendChild(body);
+    wrap.appendChild(block);
+  })();
+
+  CHAPTERS.forEach(function(ch, chIdx){
+    var chNum = chIdx + 1;   // chapter number (1, 2, 3 …), matching the desktop
     var items=store[ch.id];
     var withPhoto=items.filter(function(it){return it.photo;}).length;
     var block=document.createElement('div');
@@ -343,7 +413,8 @@ function render(){
     block.dataset.id=ch.id;
     var head=document.createElement('div');
     head.className='chapter-head';
-    head.innerHTML='<span class="title">'+esc(ch.title)+'</span>'+
+    head.innerHTML='<span class="ch-num">'+chNum+'</span>'+
+      '<span class="title">'+esc(ch.title)+'</span>'+
       '<span class="count">'+(withPhoto?withPhoto+' photo'+(withPhoto>1?'s':''):'')+'</span>'+
       '<span class="caret">▶</span>';
     head.onclick=function(){
@@ -367,12 +438,12 @@ function render(){
       // Photos live INSIDE each subchapter. The main chapter has no general
       // (no-subchapter) frames. Each subchapter shows its own pairs + its own
       // "Add photo pair" button.
-      subs.forEach(function(sname){
+      subs.forEach(function(sname, subIdx){
         var swrap=document.createElement('div');
         swrap.className='subch-group';
         var sh=document.createElement('div');
         sh.className='subch-title';
-        sh.textContent=sname;
+        sh.innerHTML='<span class="subch-num">'+chNum+'.'+(subIdx+1)+'</span> '+esc(sname);
         swrap.appendChild(sh);
         // pairs belonging to this subchapter (preserve their absolute indices)
         var idxs=[];
@@ -406,6 +477,23 @@ function render(){
     block.appendChild(body);
     wrap.appendChild(block);
   });
+  updateMeter();
+  if(typeof scheduleAutosave==='function') scheduleAutosave();
+}
+
+// Live report size (MB) and total photo count, shown top-left of the header.
+function updateMeter(){
+  var bytes=0, count=0;
+  if(coverPhoto && coverPhoto.photo){ bytes+=bytesOfDataURL(coverPhoto.photo); count++; }
+  for(var cid in store){ if(!store.hasOwnProperty(cid)) continue;
+    var arr=store[cid]||[];
+    for(var i=0;i<arr.length;i++){ if(arr[i].photo){ bytes+=bytesOfDataURL(arr[i].photo); count++; } }
+  }
+  var mb=bytes/(1024*1024);
+  var sizeEl=document.getElementById('meterSize');
+  var phEl=document.getElementById('meterPhotos');
+  if(sizeEl) sizeEl.textContent=(mb<10 ? mb.toFixed(1) : Math.round(mb))+' MB';
+  if(phEl) phEl.textContent=count+(count===1?' photo':' photos');
 }
 
 // Build a photo PAIR row: two tiles side by side, with either two separate
@@ -461,52 +549,18 @@ function makeTile(cid, idx, it){
   var tile=document.createElement('div');
   tile.className='tile'+(it && it.photo?' has':'');
   if(it && it.photo) tile.style.backgroundImage="url('"+it.photo+"')";
-  tile.innerHTML=((it&&it.photo)?'':'<div><span class="cam">📷</span>Tap: camera<br><span style="font-size:11px;opacity:.8;">Hold: library</span></div>')+'<button class="del" title="Remove">✕</button>';
-
-  var pressTimer=null, longFired=false, LONG_MS=500;
-
-  function startPress(ev){
-    // Ignore the delete button
-    if(ev.target && ev.target.classList && ev.target.classList.contains('del')) return;
-    longFired=false;
-    clearTimeout(pressTimer);
-    pressTimer=setTimeout(function(){
-      longFired=true;
-      if(navigator.vibrate){ try{ navigator.vibrate(15); }catch(e){} }
-      capture(cid, idx, 'library');     // long press → photo library
-    }, LONG_MS);
-  }
-  function endPress(ev){
-    clearTimeout(pressTimer);
-    if(ev.target && ev.target.classList && ev.target.classList.contains('del')){
-      store[cid][idx].photo=null; render(); return;
-    }
-    if(!longFired){
-      capture(cid, idx, 'camera');      // short tap → camera
-    }
-  }
-  function cancelPress(){ clearTimeout(pressTimer); }
-
-  // Use pointer events where available (covers touch + mouse); fall back to touch/mouse.
-  if(window.PointerEvent){
-    tile.addEventListener('pointerdown', startPress);
-    tile.addEventListener('pointerup', endPress);
-    tile.addEventListener('pointercancel', cancelPress);
-    tile.addEventListener('pointerleave', cancelPress);
-  } else {
-    tile.addEventListener('touchstart', startPress, {passive:true});
-    tile.addEventListener('touchend', function(ev){ ev.preventDefault(); endPress(ev); });
-    tile.addEventListener('touchcancel', cancelPress);
-    tile.addEventListener('mousedown', startPress);
-    tile.addEventListener('mouseup', endPress);
-    tile.addEventListener('mouseleave', cancelPress);
-  }
-  // Prevent the iOS long-press callout (copy/save menu) on the tile.
+  tile.innerHTML=((it&&it.photo)?'':'<div><span class="cam">📷</span>Camera</div>')+
+    '<button class="lib" title="Choose from library">🖼️</button>'+
+    '<button class="del" title="Remove">✕</button>';
+  // Single tap on the frame → camera. The 🖼️ button → photo library.
+  // (Both are direct-tap gestures, which iOS Safari requires to open a file picker.)
+  tile.addEventListener('click', function(ev){
+    if(ev.target.classList.contains('del')){ store[cid][idx].photo=null; render(); return; }
+    if(ev.target.classList.contains('lib')){ capture(cid, idx, 'library'); return; }
+    capture(cid, idx, 'camera');
+  });
   tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   tile.style.webkitTouchCallout='none';
-  tile.style.webkitUserSelect='none';
-  tile.style.userSelect='none';
-
   return tile;
 }
 
@@ -515,6 +569,24 @@ function makeCap(cid, idx, it){
   cap.className='cap'; cap.placeholder='Caption…'; cap.value=(it&&it.caption)||'';
   cap.oninput=function(){ store[cid][idx].caption=cap.value; };
   return cap;
+}
+
+// Single cover-photo tile (writes to the coverPhoto object, not the store).
+function makeCoverTile(){
+  var tile=document.createElement('div');
+  tile.className='tile cover-tile'+(coverPhoto.photo?' has':'');
+  if(coverPhoto.photo) tile.style.backgroundImage="url('"+coverPhoto.photo+"')";
+  tile.innerHTML=((coverPhoto.photo)?'':'<div><span class="cam">📷</span>Camera</div>')+
+    '<button class="lib" title="Choose from library">🖼️</button>'+
+    '<button class="del" title="Remove">✕</button>';
+  tile.addEventListener('click', function(ev){
+    if(ev.target.classList.contains('del')){ coverPhoto.photo=null; render(); return; }
+    if(ev.target.classList.contains('lib')){ capture('__cover__',0,'library'); return; }
+    capture('__cover__',0,'camera');
+  });
+  tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+  tile.style.webkitTouchCallout='none';
+  return tile;
 }
 
 // ── Capture ───────────────────────────────────────────────────────────
@@ -542,7 +614,13 @@ function capture(cid, idx, mode){
     if(f){
       toast('Processing photo…');
       optimisePhoto(f).then(function(src){
-        if(src){ store[cid][idx].photo=src; render(); var b=document.querySelector('.chapter[data-id="'+cid+'"]'); if(b) b.classList.add('open'); toast('Photo added'); }
+        if(src){
+          if(cid==='__cover__'){ coverPhoto.photo=src; }
+          else { store[cid][idx].photo=src; }
+          render();
+          var b=document.querySelector('.chapter[data-id="'+cid+'"]'); if(b) b.classList.add('open');
+          toast('Photo added');
+        }
         else toast('Could not read photo');
       });
     }
@@ -587,7 +665,8 @@ function buildBundle(){
       reportType: document.getElementById('rtype').value || 'daily',
       shipyard: document.getElementById('yard').value || ''
     },
-    photos: photos
+    photos: photos,
+    cover: coverPhoto.photo ? { photo: coverPhoto.photo, caption: coverPhoto.caption||'' } : null
   };
 }
 function saveFile(){
@@ -602,6 +681,21 @@ function saveFile(){
   toast('Saved: '+name);
 }
 function openFile(){ document.getElementById('openInput').click(); }
+// Apply a bundle object to the app state (shared by file-open and autosave-restore).
+function _applyBundleObject(b){
+  if(b.header){
+    document.getElementById('ship').value=b.header.shipName||'';
+    document.getElementById('imo').value=b.header.imo||'';
+    document.getElementById('date').value=b.header.date||'';
+    document.getElementById('rtype').value=b.header.reportType||'daily';
+    document.getElementById('yard').value=b.header.shipyard||'';
+  }
+  CHAPTERS.forEach(function(ch){ store[ch.id]=[]; });
+  if(b.photos){ Object.keys(b.photos).forEach(function(cid){ if(store[cid]!==undefined){ store[cid]=b.photos[cid].map(function(it){ return { photo: it.photo||null, caption: it.caption||'', sub: it.sub||'', joined: !!it.joined, joinedCaption: it.joinedCaption||'' }; }); } }); }
+  CHAPTERS.forEach(function(ch){ if(!store[ch.id] || !store[ch.id].length) store[ch.id]=_seedChapter(ch); });
+  coverPhoto = (b.cover && b.cover.photo) ? { photo:b.cover.photo, caption:b.cover.caption||'' } : { photo:null, caption:'' };
+  render();
+}
 function handleOpen(inp){
   var f=inp.files && inp.files[0]; if(!f) return;
   var fr=new FileReader();
@@ -609,20 +703,7 @@ function handleOpen(inp){
     try {
       var b=JSON.parse(e.target.result);
       if(b.type!=='hc-mobile-photo-bundle'){ toast('Not a mobile photo file'); return; }
-      // load header
-      if(b.header){
-        document.getElementById('ship').value=b.header.shipName||'';
-        document.getElementById('imo').value=b.header.imo||'';
-        document.getElementById('date').value=b.header.date||'';
-        document.getElementById('rtype').value=b.header.reportType||'daily';
-        document.getElementById('yard').value=b.header.shipyard||'';
-      }
-      // load photos
-      CHAPTERS.forEach(function(ch){ store[ch.id]=[]; });
-      if(b.photos){ Object.keys(b.photos).forEach(function(cid){ if(store[cid]!==undefined){ store[cid]=b.photos[cid].map(function(it){ return { photo: it.photo||null, caption: it.caption||'', sub: it.sub||'', joined: !!it.joined, joinedCaption: it.joinedCaption||'' }; }); } }); }
-      // Chapters with no saved photos still show empty frames, ready to use.
-      CHAPTERS.forEach(function(ch){ if(!store[ch.id] || !store[ch.id].length) store[ch.id]=_seedChapter(ch); });
-      render();
+      _applyBundleObject(b);
       toast('Opened');
     } catch(err){ toast('Could not open file'); }
   };
@@ -656,6 +737,15 @@ function handleChapters(inp){
       // be changed on the phone (the desktop defines the report).
       _importedFromDesktop = true;
       if(st.reportType){ var rt=document.getElementById('rtype'); if(rt){ rt.value=st.reportType; } }
+      // Pre-fill header details exported from the desktop (ship, IMO, date, shipyard).
+      if(st.header){
+        var h=st.header;
+        var setVal=function(id,v){ var el=document.getElementById(id); if(el && v) el.value=v; };
+        setVal('ship', h.shipName);
+        setVal('imo', h.imo);
+        setVal('date', h.date);
+        setVal('yard', h.shipyard);
+      }
       _applyTypeLock();
       render();
       toast('Loaded '+CHAPTERS.length+' chapters');
@@ -663,6 +753,76 @@ function handleChapters(inp){
   };
   fr.readAsText(f);
   inp.value='';
+}
+
+// ── Autosave to the phone's local storage (IndexedDB) ─────────────────
+// Silently keeps ONE slot with the latest work, so a closed tab, reload, or
+// phone restart during the day won't lose collected photos. The evening
+// "Save" file remains the real backup the desktop imports.
+var _DB_NAME='inspectra_hatch_mobile', _DB_STORE='autosave', _DB_KEY='current';
+var _db=null, _autosaveTimer=null, _autosaveReady=false;
+
+function _openDB(cb){
+  try{
+    var req=indexedDB.open(_DB_NAME,1);
+    req.onupgradeneeded=function(e){ var db=e.target.result; if(!db.objectStoreNames.contains(_DB_STORE)) db.createObjectStore(_DB_STORE); };
+    req.onsuccess=function(e){ _db=e.target.result; _autosaveReady=true; cb && cb(true); };
+    req.onerror=function(){ _autosaveReady=false; cb && cb(false); };
+  }catch(e){ _autosaveReady=false; cb && cb(false); }
+}
+function _autosaveNow(){
+  if(!_db) return;
+  try{
+    var bundle=buildBundle();
+    bundle._savedAt=new Date().toISOString();
+    var tx=_db.transaction(_DB_STORE,'readwrite');
+    tx.objectStore(_DB_STORE).put(bundle,_DB_KEY);
+  }catch(e){}
+}
+// Debounced trigger — called from render() on every change.
+function scheduleAutosave(){
+  if(!_autosaveReady) return;
+  clearTimeout(_autosaveTimer);
+  _autosaveTimer=setTimeout(_autosaveNow,600);
+}
+function _loadAutosave(cb){
+  if(!_db){ cb(null); return; }
+  try{
+    var tx=_db.transaction(_DB_STORE,'readonly');
+    var rq=tx.objectStore(_DB_STORE).get(_DB_KEY);
+    rq.onsuccess=function(){ cb(rq.result||null); };
+    rq.onerror=function(){ cb(null); };
+  }catch(e){ cb(null); }
+}
+function _clearAutosave(){
+  if(!_db) return;
+  try{ var tx=_db.transaction(_DB_STORE,'readwrite'); tx.objectStore(_DB_STORE).delete(_DB_KEY); }catch(e){}
+}
+function _bundleHasContent(b){
+  if(!b) return false;
+  if(b.cover && b.cover.photo) return true;
+  if(b.photos){ for(var k in b.photos){ if(b.photos[k] && b.photos[k].length) return true; } }
+  if(b.header && (b.header.shipName||b.header.imo||b.header.shipyard)) return true;
+  return false;
+}
+// Offer-to-restore bar shown on open when autosaved work exists.
+function _offerRestore(b){
+  var when='';
+  try{ if(b._savedAt){ var dt=new Date(b._savedAt); when=dt.toLocaleString(); } }catch(e){}
+  var bar=document.createElement('div');
+  bar.id='restoreBar';
+  bar.style.cssText='position:fixed;left:0;right:0;bottom:74px;z-index:300;margin:0 12px;background:#1f3a68;color:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 6px 22px rgba(10,30,70,.45);display:flex;align-items:center;gap:10px;font-size:13px;';
+  bar.innerHTML='<div style="flex:1;line-height:1.3;">Unsaved work from earlier was found'+(when?(' ('+when+')'):'')+'. Restore it?</div>';
+  var yes=document.createElement('button');
+  yes.textContent='Restore';
+  yes.style.cssText='background:#fff;color:#1f3a68;border:none;border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;';
+  yes.onclick=function(){ try{ _applyBundleObject(b); }catch(e){} bar.remove(); toast('Restored'); };
+  var no=document.createElement('button');
+  no.textContent='Discard';
+  no.style.cssText='background:transparent;color:#cdd8ec;border:1px solid #4a648e;border-radius:8px;padding:9px 12px;font:inherit;cursor:pointer;';
+  no.onclick=function(){ _clearAutosave(); bar.remove(); };
+  bar.appendChild(yes); bar.appendChild(no);
+  document.body.appendChild(bar);
 }
 
 // default date = today
@@ -673,6 +833,25 @@ try {
 try { render(); } catch(e){}
 // Re-render once more after full load in case anything was delayed on iOS.
 window.addEventListener('load', function(){ try { if(!document.querySelectorAll('.chapter').length) render(); } catch(e){} });
+
+// Open the local DB, then offer to restore any autosaved session.
+_openDB(function(ok){
+  if(!ok) return;            // storage unavailable → app still works, just no autosave
+  _loadAutosave(function(b){
+    if(_bundleHasContent(b)) _offerRestore(b);
+    // Save immediately after first paint so a fresh session is captured too.
+    scheduleAutosave();
+  });
+});
+
+// Header field edits also trigger autosave (they don't go through render()).
+['ship','imo','date','yard','rtype'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el){
+    el.addEventListener('input', function(){ if(typeof scheduleAutosave==='function') scheduleAutosave(); });
+    el.addEventListener('change', function(){ if(typeof scheduleAutosave==='function') scheduleAutosave(); });
+  }
+});
 </script>
 </body>
 </html>
