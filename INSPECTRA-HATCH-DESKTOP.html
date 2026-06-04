@@ -3413,6 +3413,50 @@ function _wireRestoredSubchWidgets(root) {
   });
 }
 
+// Restore confirmed subchapters from a mobile bundle's structure array.
+// For each chapter, ensures the section has a confirmed .subch-label-bar for
+// every subchapter name — including empty ones that carry no photos — without
+// duplicating any that already exist. Reuses _buildSubchWidget +
+// _wireRestoredSubchWidgets so the restored widgets behave identically to
+// user-created ones. Safe to call after reflow has built the sections.
+function _restoreSubchaptersFromStructure(structure) {
+  if(!Array.isArray(structure)) return;
+  structure.forEach(function(ch){
+    if(!ch || !ch.id || !Array.isArray(ch.subchapters) || !ch.subchapters.length) return;
+    const sec = document.querySelector('.section[data-sid="' + ch.id + '"]');
+    if(!sec) return;
+    const body = sec.querySelector('.section-body') || sec;
+    // Names already confirmed in this section (avoid duplicates).
+    const existing = new Set(
+      [...body.querySelectorAll('.subch-wrap .subch-label-bar[data-name]')]
+        .map(function(b){ return (b.dataset.name||'').trim(); })
+        .filter(Boolean)
+    );
+    // The empty widget reflow created (no confirmed name yet), if any.
+    let emptyWrap = [...body.querySelectorAll('.subch-wrap')].find(function(w){
+      const lb = w.querySelector('.subch-label-bar');
+      return !(lb && lb.dataset && lb.dataset.name);
+    });
+    ch.subchapters.forEach(function(name){
+      name = (name||'').trim();
+      if(!name || existing.has(name)) return;
+      let wrap;
+      if(emptyWrap) { wrap = emptyWrap; emptyWrap = null; }   // reuse the reflow-made empty one first
+      else {
+        wrap = _buildSubchWidget(ch.id);
+        // Insert before the chapter-level add-pair row if present, else append.
+        body.appendChild(wrap);
+      }
+      const lb = wrap.querySelector('.subch-label-bar');
+      if(lb) lb.dataset.name = name;     // pre-set; wiring will make it visible
+      existing.add(name);
+    });
+    // Wire all (restored) widgets in this section and renumber.
+    if(typeof _wireRestoredSubchWidgets === 'function') _wireRestoredSubchWidgets(sec);
+    if(typeof _renumberSubchapters === 'function') _renumberSubchapters(body);
+  });
+}
+
 const SECTIONS = [
   { id:'hatchOverview', title:'Hatch covers overview',
      body:`<div class="label">Comments:</div>
@@ -13097,7 +13141,9 @@ function _applyMobileBundle(bundle) {
   }
   if(h.reportType) {
     const sel=document.getElementById('subjectType');
-    if(sel && sel.value==='daily' && h.reportType!=='daily') { sel.value=h.reportType; if(typeof updateSubject==='function'){ try{ updateSubject(); }catch(e){} } }
+    // Always match the report type that was set on the mobile side, so the
+    // desktop report type reflects the file being imported.
+    if(sel && sel.value !== h.reportType) { sel.value=h.reportType; if(typeof updateSubject==='function'){ try{ updateSubject(); }catch(e){} } }
   }
 
   // 1b. Cover photo → the cover-page vessel photo (only if empty).
@@ -13136,11 +13182,26 @@ function _applyMobileBundle(bundle) {
       if(ch && !ch.enabled) ch.enabled = true;
     }
   });
+  // Also enable any chapter that carries subchapter structure (even with no
+  // photos yet) so its empty subchapters can be restored below.
+  if(Array.isArray(bundle.structure) && typeof chapterState !== 'undefined') {
+    bundle.structure.forEach(sc => {
+      if(sc && sc.id && Array.isArray(sc.subchapters) && sc.subchapters.length) {
+        const ch = chapterState.find(c => c.id === sc.id);
+        if(ch && !ch.enabled) ch.enabled = true;
+      }
+    });
+  }
   // Reflow once so any newly-enabled chapters build their sections.
   if(typeof doReflow === 'function') doReflow();
 
   // Defer the actual photo placement until sections exist after reflow.
   requestAnimationFrame(() => requestAnimationFrame(() => {
+    // Restore subchapters FIRST (including empty ones) so photos tagged with a
+    // subchapter land under the right label, and empty subchapters survive.
+    if(bundle.structure) {
+      try { _restoreSubchaptersFromStructure(bundle.structure); } catch(e){}
+    }
     // Phase A: ensure each chapter has enough photo pairs (add them all first,
     // BEFORE placing anything, so reflow churn doesn't invalidate our work).
     chapterIds.forEach(cid => {
@@ -13202,6 +13263,11 @@ function _applyMobileBundle(bundle) {
         });
       });
       if(typeof doReflow === 'function') doReflow();
+      // Re-apply subchapter structure after the final reflow, so any empty
+      // subchapters that reflow may have rebuilt are restored once more.
+      if(bundle.structure) {
+        requestAnimationFrame(() => { try { _restoreSubchaptersFromStructure(bundle.structure); } catch(e){} });
+      }
       if(typeof buildTOC === 'function') requestAnimationFrame(() => buildTOC());
       alert('Imported ' + totalAdded + ' photo' + (totalAdded===1?'':'s') + ' from the mobile app.');
     }));
