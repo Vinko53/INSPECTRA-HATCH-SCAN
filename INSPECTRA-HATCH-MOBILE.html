@@ -717,11 +717,39 @@ function saveFile(){
   var ship=(bundle.header.shipName||'Mobile').replace(/[\/\\:*?"<>|]/g,'').replace(/\s+/g,' ').trim();
   var d=bundle.header.date ? bundle.header.date.replace(/-/g,'') : (new Date().toISOString().slice(0,10).replace(/-/g,''));
   var name=d+'_HC_Mobile_'+ship+'.json';
-  var blob=new Blob([JSON.stringify(bundle)], {type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
-  document.body.removeChild(a); setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
-  toast('Saved: '+name);
+  var json=JSON.stringify(bundle);
+  var blob=new Blob([json], {type:'application/json'});
+
+  // Preferred path: the phone's native Share sheet, so the file can go
+  // straight to WhatsApp, WeChat, Mail, Files, AirDrop, etc. This is the most
+  // reliable way to get a file OFF a phone (a plain download often stalls or
+  // is hard to find on iOS).
+  var file=null;
+  try { file=new File([blob], name, {type:'application/json'}); } catch(e){ file=null; }
+
+  if(file && navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+    navigator.share({ files:[file], title:name, text:'Hatch Scan report: '+name })
+      .then(function(){ toast('Shared: '+name); })
+      .catch(function(err){
+        // User cancelled the share sheet → do nothing. Any other error → download.
+        if(err && (err.name==='AbortError' || /cancel/i.test(err.message||''))) return;
+        _downloadFallback(blob, name);
+      });
+    return;
+  }
+  // Fallback: classic download (older browsers without file sharing).
+  _downloadFallback(blob, name);
+}
+
+function _downloadFallback(blob, name){
+  try {
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    toast('Saved: '+name);
+  } catch(e){ toast('Could not save file'); }
 }
 function openFile(){ document.getElementById('openInput').click(); }
 // Apply a bundle object to the app state (shared by file-open and autosave-restore).
