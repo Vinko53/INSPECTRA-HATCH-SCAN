@@ -13334,53 +13334,72 @@ function _applyMobileBundle(bundle) {
         const btns = [...body.querySelectorAll('.add-pair-row .add-photo-btn')];
         return btns.length ? btns[btns.length - 1] : sec.querySelector('.pair-add-btn');
       };
-      // Helper: confirm a subchapter so that — whether it already exists
-      // (e.g. typed by the user on the desktop) or is new — it ends up in the
-      // correct document order WITH its own add-pair-row right after it, so the
-      // pairs we add next chain directly under THIS subchapter and not another.
+      // Build each subchapter as a FULL unit: subchapter label + grading gauge
+      // + its own Comments textbox (exactly the structure the "Add text box"
+      // button produces), then photos go AFTER it. This yields, per subchapter:
+      //   label → gauge → Comments textbox → photo pairs
+      // matching a manually-built subchapter, with no chapter-level textbox.
       const confirmSubInOrder = (name) => {
-        let bar = [...body.querySelectorAll('.subch-label-bar[data-name]')]
+        // Already built this subchapter as a text-box unit? Reuse it.
+        let bar = [...body.querySelectorAll('.extra-text-box .subch-label-bar[data-name]')]
           .find(b => (b.dataset.name || '').trim() === name.trim());
-        let wrap = bar ? bar.closest('.subch-wrap') : null;
-        if(!wrap) {
-          // Reuse an empty reflow-made widget, else build a fresh one.
-          wrap = [...body.querySelectorAll('.subch-wrap')]
-            .find(w => { const lb = w.querySelector('.subch-label-bar'); return !(lb && lb.dataset && lb.dataset.name); });
-          if(!wrap) wrap = _buildSubchWidget(cid);
+        if(bar) {
+          const box = bar.closest('.extra-text-box');
+          if(box) body.appendChild(box);     // keep document order
+          return bar;
+        }
+        // Build a new text-box unit at the end of the body via the native
+        // addInlineFrame, anchored on the last add-pair button.
+        let anchorBtn = lastAddBtn();
+        const beforeBoxes = body.querySelectorAll('.extra-text-box').length;
+        if(anchorBtn && typeof addInlineFrame === 'function') {
+          addInlineFrame(anchorBtn);
+        }
+        // Grab the newest text-box unit.
+        const boxes = [...body.querySelectorAll('.extra-text-box')];
+        let box = boxes.length > beforeBoxes ? boxes[boxes.length - 1] : boxes[boxes.length - 1];
+        if(box) body.appendChild(box);       // move to end to keep order
+        // Set this subchapter's name on the unit's subchapter widget.
+        let wrap = box ? box.querySelector('.subch-wrap') : null;
+        // If the user already had typed this subchapter as a bare widget
+        // elsewhere, remove that stray bare widget to avoid duplicates.
+        [...body.querySelectorAll('.subch-wrap')].forEach(w => {
+          if(box && box.contains(w)) return;
+          const lb = w.querySelector('.subch-label-bar');
+          if(lb && (lb.dataset.name || '').trim() === name.trim()) {
+            // remove the stray bare widget (and a trailing empty add-pair-row)
+            const nx = w.nextElementSibling;
+            if(nx && nx.classList && nx.classList.contains('add-pair-row') && !nx.previousElementSibling) {}
+            w.remove();
+          }
+        });
+        if(wrap) {
           const lb = wrap.querySelector('.subch-label-bar');
           if(lb) lb.dataset.name = name;
         }
-        // Move this subchapter's wrap (and any add-pair-row already attached to
-        // it) to the END of the body, so subchapters line up in processing
-        // order and each one's pairs sit under it.
-        body.appendChild(wrap);
-        // If the row that immediately followed it in its old position was its
-        // own add-pair-row, move that too; otherwise create a fresh one.
-        let row = wrap.nextElementSibling;
-        if(!(row && row.classList && row.classList.contains('add-pair-row'))) {
-          if(typeof _insertButtonRowAfter === 'function') _insertButtonRowAfter(wrap, sec);
-        }
         if(typeof _wireRestoredSubchWidgets === 'function') _wireRestoredSubchWidgets(sec);
-        return wrap.querySelector('.subch-label-bar');
+        if(typeof _renumberSubchapters === 'function') _renumberSubchapters(body);
+        return wrap ? wrap.querySelector('.subch-label-bar') : null;
       };
 
-      // Helper: the add-pair button that directly follows a given subchapter
-      // wrap (so pairs go under THAT subchapter, not the chapter's main area).
+      // Helper: the add-pair button that belongs to a given subchapter — i.e.
+      // the add-pair-row right AFTER that subchapter's text-box unit (so pairs
+      // land under the subchapter's textbox, before the next subchapter).
       const addBtnAfterWrap = (bar) => {
-        const wrap = bar ? bar.closest('.subch-wrap') : null;
-        if(!wrap) return lastAddBtn();
-        let scan = wrap.nextElementSibling;
+        const box = bar ? bar.closest('.extra-text-box') : null;
+        const anchorEl = box || (bar ? bar.closest('.subch-wrap') : null);
+        if(!anchorEl) return lastAddBtn();
+        let scan = anchorEl.nextElementSibling;
         while(scan) {
-          if(scan.classList && scan.classList.contains('subch-wrap')) break;
+          if(scan.classList && (scan.classList.contains('extra-text-box') || scan.classList.contains('subch-wrap'))) break;
           if(scan.classList && scan.classList.contains('add-pair-row')) {
             const b = scan.querySelector('.add-photo-btn'); if(b) return b;
           }
           scan = scan.nextElementSibling;
         }
-        // No row found after this subchapter — create one and use it.
         if(typeof _insertButtonRowAfter === 'function') {
-          _insertButtonRowAfter(wrap, sec);
-          const r = wrap.nextElementSibling;
+          _insertButtonRowAfter(anchorEl, sec);
+          const r = anchorEl.nextElementSibling;
           if(r && r.classList && r.classList.contains('add-pair-row')) {
             const b = r.querySelector('.add-photo-btn'); if(b) return b;
           }
@@ -13393,25 +13412,24 @@ function _applyMobileBundle(bundle) {
       subs.forEach(sn => {
         const bar = confirmSubInOrder(sn);
         const group = bySub[sn];
-        if(!group.length) return;   // empty subchapter keeps just its label
+        if(!group.length) return;   // empty subchapter keeps just its textbox
         const pairsNeeded = Math.ceil(group.length / 2);
-        const createdPairs = [];
-        let btn = addBtnAfterWrap(bar);   // the add button directly under this subchapter
         for(let k = 0; k < pairsNeeded; k++) {
-          if(btn && typeof addPairAfter === 'function') {
-            addPairAfter(btn);
-            const blocks = [...body.querySelectorAll('.extra-photo-pair-block')];
-            const nb = blocks[blocks.length - 1];
-            if(nb) createdPairs.push(nb);
-            // chain: next pair goes after the row that addPairAfter just created
-            const wrap = bar ? bar.closest('.subch-wrap') : null;
-            btn = addBtnAfterWrap(bar) || btn;
-            // prefer the button right after the newest block for this subchapter
-            if(nb) { const r = nb.nextElementSibling; if(r && r.classList && r.classList.contains('add-pair-row')) { const b2=r.querySelector('.add-photo-btn'); if(b2) btn=b2; } }
+          const btn = addBtnAfterWrap(bar);   // always the row after THIS subchapter's box
+          if(btn && typeof addPairAfter === 'function') addPairAfter(btn);
+        }
+        // Collect the empty frames that belong to THIS subchapter: scan from the
+        // subchapter's text box up to (but not including) the next subchapter.
+        const box = bar ? bar.closest('.extra-text-box') : null;
+        const frames = [];
+        if(box) {
+          let scan = box.nextElementSibling;
+          while(scan) {
+            if(scan.classList && (scan.classList.contains('extra-text-box') || scan.classList.contains('subch-wrap'))) break;
+            if(scan.querySelectorAll) scan.querySelectorAll('.photo:not(.has-image)').forEach(f => frames.push(f));
+            scan = scan.nextElementSibling;
           }
         }
-        const frames = [];
-        createdPairs.forEach(blk => { blk.querySelectorAll('.photo:not(.has-image)').forEach(f => frames.push(f)); });
         group.forEach((it, i) => {
           const frame = frames[i];
           if(!frame || !it.photo) return;
@@ -13449,10 +13467,25 @@ function _applyMobileBundle(bundle) {
           added++;
         });
       }
+      // Since this chapter is subchaptered and each subchapter now has its own
+      // Comments textbox, hide the chapter-level Comments textbox + its label
+      // (kept in the DOM, just hidden, so it's reversible if subchapters are
+      // later removed). Only hide when it's empty, never discard typed text.
+      try {
+        const findings = body.querySelector(':scope > .field[data-field-role="findings"], .field[data-field-role="findings"]');
+        if(findings && !(findings.textContent || '').trim()) {
+          findings.classList.add('chapter-findings-hidden');
+          findings.style.display = 'none';
+          // Hide the "Comments:" label immediately before it.
+          let prev = findings.previousElementSibling;
+          if(prev && prev.classList && prev.classList.contains('label') && !prev.classList.contains('photo-section-label')) {
+            prev.classList.add('chapter-findings-hidden');
+            prev.style.display = 'none';
+          }
+        }
+      } catch(e) { /* non-fatal */ }
       return added;
     }
-
-    // Phase A: for NON-subchaptered chapters only, ensure enough main pairs.
     chapterIds.forEach(cid => {
       if(subOrderByCid[cid]) return;   // subchaptered → handled separately
       const list = photos[cid];
