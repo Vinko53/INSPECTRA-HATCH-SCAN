@@ -1148,9 +1148,26 @@
     flex-shrink: 0;
   }
   .subch-gauge-toggle:hover { color: var(--navy-deep); background: rgba(31,58,92,.08); }
-  /* Print: always hide gauges (they're editor UI) */
+  /* Print: SHOW the scoring gauge (it's report content), but hide the toggle
+     button (editor-only UI). Force exact colors so the coloured scale and the
+     score thumb actually render in the PDF instead of being dropped. */
   @media print {
-    .subch-gauge-wrap, .subch-gauge-toggle { display: none !important; }
+    .subch-gauge-toggle { display: none !important; }
+    /* Show gauges that HAVE a score (thumb present, i.e. not .no-score). */
+    .subch-gauge-wrap {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      break-inside: avoid; page-break-inside: avoid;
+    }
+    /* Respect the on-screen show/hide toggle: if gauges are hidden in the
+       report, keep them hidden in the PDF too. */
+    .subch-gauge-wrap.gauge-hidden { display: none !important; }
+    /* A gauge with no score set: hide it in print (nothing meaningful to show). */
+    .subch-gauge-wrap:has(.subch-gauge-thumb.no-score) { display: none !important; }
+    .subch-gauge-track, .subch-gauge-thumb {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
   }
 
 
@@ -3272,6 +3289,37 @@ function _buildSubchWidget(sid) {
     const sec = wrap.closest('.section[data-sid]');
     const body = sec ? (sec.querySelector('.section-body') || sec) : wrap.parentNode;
     _renumberSubchapters(body);
+    // Give the new subchapter one default photo pair (matching the chapter's
+    // own default), so every subchapter starts with the same photo frames.
+    // The pair must appear UNDER the subchapter's comments textbox: if this
+    // subchapter widget lives inside an .extra-text-box (the per-subchapter
+    // comments box), anchor the pair AFTER that whole box; otherwise after the
+    // subchapter wrap itself. Only when freshly created (no pair there yet).
+    try {
+      if(sec) {
+        // The element after which the pair should be inserted: the text box if
+        // the subchapter has one, else the subchapter wrap.
+        const anchorEl = wrap.closest('.extra-text-box') || wrap;
+        // Already a photo-pair right after the anchor (before the next
+        // subchapter / text box)? If so, don't add another.
+        let scan = anchorEl.nextElementSibling, hasPair = false, addRow = null;
+        while(scan) {
+          if(scan.classList && (scan.classList.contains('subch-wrap') || scan.classList.contains('extra-text-box'))) break;
+          if(scan.classList && (scan.classList.contains('extra-photo-pair-block') || (scan.querySelector && scan.querySelector('.photo-pair')))) { hasPair = true; break; }
+          if(scan.classList && scan.classList.contains('add-pair-row')) { addRow = scan; }
+          scan = scan.nextElementSibling;
+        }
+        if(!hasPair) {
+          // Use the add-pair-row right after the anchor; create one if missing.
+          let row = anchorEl.nextElementSibling;
+          if(!(row && row.classList && row.classList.contains('add-pair-row'))) {
+            if(typeof _insertButtonRowAfter === 'function') { _insertButtonRowAfter(anchorEl, sec); row = anchorEl.nextElementSibling; }
+          }
+          const btn = (row && row.querySelector) ? row.querySelector('.add-photo-btn') : (addRow && addRow.querySelector ? addRow.querySelector('.add-photo-btn') : null);
+          if(btn && typeof addPairAfter === 'function') addPairAfter(btn);
+        }
+      }
+    } catch(e) { /* non-fatal: subchapter still created, just without auto pair */ }
   }
 
   trigger.onclick = function() {
@@ -13231,14 +13279,32 @@ function _applyMobileBundle(bundle) {
       const body = sec.querySelector('.section-body');
       if(!body) return 0;
       const list = photos[cid] || [];
-      const subs = subOrderByCid[cid];
-      // Group this chapter's photos by subchapter name, preserving order.
+      let subs = subOrderByCid[cid].slice();
+      // Group this chapter's photos by subchapter name. Match tolerantly
+      // (trim + case-insensitive) so minor name differences between the photo
+      // tags and the structure list never cause photos to be misfiled. Any
+      // photo whose subchapter isn't in the structure list is appended as its
+      // own subchapter (in first-seen order) rather than dumped elsewhere.
+      const norm = s => (s || '').trim().toLowerCase();
+      const canonBySub = {};                 // normalized name -> canonical structure name
+      subs.forEach(sn => { canonBySub[norm(sn)] = sn; });
       const bySub = {};
       subs.forEach(sn => { bySub[sn] = []; });
       const noSub = [];
       list.forEach(it => {
-        if(it.sub && bySub[it.sub]) bySub[it.sub].push(it);
-        else noSub.push(it);
+        const key = norm(it.sub);
+        if(key) {
+          let canon = canonBySub[key];
+          if(!canon) {                        // photo's subchapter not in structure → add it
+            canon = it.sub.trim();
+            canonBySub[key] = canon;
+            subs.push(canon);
+            bySub[canon] = [];
+          }
+          bySub[canon].push(it);
+        } else {
+          noSub.push(it);                     // genuinely no subchapter tag
+        }
       });
       let added = 0;
 
@@ -13268,35 +13334,33 @@ function _applyMobileBundle(bundle) {
         const btns = [...body.querySelectorAll('.add-pair-row .add-photo-btn')];
         return btns.length ? btns[btns.length - 1] : sec.querySelector('.pair-add-btn');
       };
-      // Helper: confirm a subchapter into the next available empty subch widget,
-      // or build a fresh one appended at the end WITH its own add-pair-row, so
-      // pairs added next chain directly under THIS subchapter.
+      // Helper: confirm a subchapter so that — whether it already exists
+      // (e.g. typed by the user on the desktop) or is new — it ends up in the
+      // correct document order WITH its own add-pair-row right after it, so the
+      // pairs we add next chain directly under THIS subchapter and not another.
       const confirmSubInOrder = (name) => {
         let bar = [...body.querySelectorAll('.subch-label-bar[data-name]')]
-          .find(b => (b.dataset.name || '').trim() === name);
-        if(bar) return bar;
-        let wrap = [...body.querySelectorAll('.subch-wrap')]
-          .find(w => { const lb = w.querySelector('.subch-label-bar'); return !(lb && lb.dataset && lb.dataset.name); });
-        if(wrap) {
-          // The reflow-made empty widget sits near the top, before the main
-          // pairs. Move it to the end so it follows any previously-placed
-          // subchapter pairs, keeping document order correct.
-          body.appendChild(wrap);
-        } else {
-          wrap = _buildSubchWidget(cid);
-          body.appendChild(wrap);
+          .find(b => (b.dataset.name || '').trim() === name.trim());
+        let wrap = bar ? bar.closest('.subch-wrap') : null;
+        if(!wrap) {
+          // Reuse an empty reflow-made widget, else build a fresh one.
+          wrap = [...body.querySelectorAll('.subch-wrap')]
+            .find(w => { const lb = w.querySelector('.subch-label-bar'); return !(lb && lb.dataset && lb.dataset.name); });
+          if(!wrap) wrap = _buildSubchWidget(cid);
+          const lb = wrap.querySelector('.subch-label-bar');
+          if(lb) lb.dataset.name = name;
         }
-        const lb = wrap.querySelector('.subch-label-bar');
-        if(lb) lb.dataset.name = name;
+        // Move this subchapter's wrap (and any add-pair-row already attached to
+        // it) to the END of the body, so subchapters line up in processing
+        // order and each one's pairs sit under it.
+        body.appendChild(wrap);
+        // If the row that immediately followed it in its old position was its
+        // own add-pair-row, move that too; otherwise create a fresh one.
+        let row = wrap.nextElementSibling;
+        if(!(row && row.classList && row.classList.contains('add-pair-row'))) {
+          if(typeof _insertButtonRowAfter === 'function') _insertButtonRowAfter(wrap, sec);
+        }
         if(typeof _wireRestoredSubchWidgets === 'function') _wireRestoredSubchWidgets(sec);
-        // Ensure an add-pair-row immediately follows this subchapter wrap so
-        // addPairAfter inserts pairs right under it.
-        if(typeof _insertButtonRowAfter === 'function') {
-          const next = wrap.nextElementSibling;
-          if(!(next && next.classList && next.classList.contains('add-pair-row'))) {
-            _insertButtonRowAfter(wrap, sec);
-          }
-        }
         return wrap.querySelector('.subch-label-bar');
       };
 
@@ -13311,8 +13375,15 @@ function _applyMobileBundle(bundle) {
           if(scan.classList && scan.classList.contains('add-pair-row')) {
             const b = scan.querySelector('.add-photo-btn'); if(b) return b;
           }
-          // also handle a pair block followed later by its row
           scan = scan.nextElementSibling;
+        }
+        // No row found after this subchapter — create one and use it.
+        if(typeof _insertButtonRowAfter === 'function') {
+          _insertButtonRowAfter(wrap, sec);
+          const r = wrap.nextElementSibling;
+          if(r && r.classList && r.classList.contains('add-pair-row')) {
+            const b = r.querySelector('.add-photo-btn'); if(b) return b;
+          }
         }
         return lastAddBtn();
       };
