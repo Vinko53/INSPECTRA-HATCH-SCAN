@@ -1049,6 +1049,10 @@
     align-items: center;
     gap: 8px;
   }
+  /* Elements hidden because the chapter is subchaptered (chapter-level comments
+     box, leftover buttons, "+ Add subchapter" trigger, etc.). Hidden on screen
+     AND in print, and survives pagination cloning. */
+  .chapter-findings-hidden { display: none !important; }
   .subch-gauge-wrap.gauge-hidden { display: none; }
   .subch-gauge-track {
     flex: 1;
@@ -1265,6 +1269,19 @@
     .subch-trigger, .subch-sel-bar, .subch-custom-wrap, .subch-rm { display: none !important; }
     .subch-label-bar { display: flex !important; }
     .subch-label-bar:not([data-name]) { display: none !important; }
+    /* Clear separation before each subchapter unit in the PDF: a subchapter is
+       an .extra-text-box that contains a named subchapter label. Add space
+       above it so the previous subchapter's last photo isn't cramped against
+       the next subchapter's label. Keep the label + its content together. */
+    .extra-text-box:has(.subch-label-bar[data-name]) {
+      margin-top: 8mm !important;
+      break-inside: avoid; page-break-inside: avoid;
+    }
+    /* The very first subchapter (right after the chapter title) needs no extra
+       gap above it. */
+    .section-body > .extra-text-box:has(.subch-label-bar[data-name]):first-of-type {
+      margin-top: 2mm !important;
+    }
   }
 
   
@@ -1440,6 +1457,9 @@
   input[type="file"] { display: none !important; }
   /* Extra text box added via "+ Add text box" — matches built-in Comments field */
   .extra-text-box .field { min-height: 18mm; }
+  /* Subchapter comment boxes (an .extra-text-box that contains a named
+     subchapter) should be the SAME size as the main chapter Comments box. */
+  .extra-text-box:has(.subch-label-bar[data-name]) .field { min-height: 30mm; }
   /* Disclaimer chapter */
   .disclaimer-section p { font-size: 9pt; line-height: 1.55; margin: 0 0 3mm 0; color: #222; text-align: justify; }
   .disclaimer-section p strong { font-weight: 700; }
