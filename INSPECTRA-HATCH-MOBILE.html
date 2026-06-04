@@ -123,6 +123,10 @@
   .subch-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; padding: 7px 10px; border-radius: 7px; background: linear-gradient(135deg,#1f3a68,#2c5599); text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; box-shadow: 0 1px 3px rgba(10,30,70,.25); }
   .subch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 6px; border-radius: 5px; background: rgba(255,255,255,.92); color: #1f3a68; font-size: 11px; font-weight: 800; flex-shrink: 0; }
   .ch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 8px; background: linear-gradient(180deg,rgba(255,255,255,.98),rgba(225,235,250,.85)); color: #1f3a68; font-size: 13px; font-weight: 800; flex-shrink: 0; margin-right: 10px; box-shadow: inset 0 1px 1px rgba(255,255,255,.9), 0 1px 3px rgba(10,30,70,.4); }
+  /* Chapter number with a subchapter-count badge on its corner */
+  .ch-num-wrap { position: relative; display: inline-flex; flex-shrink: 0; margin-right: 10px; }
+  .ch-num-wrap .ch-num { margin-right: 0; }
+  .ch-sub-badge { position: absolute; top: -5px; right: -6px; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 999px; background: #7fb0ff; color: #11223f; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,.3); border: 1px solid #fff; box-sizing: border-box; }
   .add-btn { margin-top: 12px; width: 100%; background: #eaf1fb; color: #1f3a68; border: 1px dashed #1f3a68; border-radius: 8px; padding: 13px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   .actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; gap: 8px; padding: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #d6deea; box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
   .act { flex: 1; border: none; border-radius: 10px; padding: 13px 6px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
@@ -241,6 +245,29 @@ function _seedChapter(ch){
   }
   return _emptyPair();
 }
+// Merge an existing chapter's captured items with its (possibly new) subchapter
+// list, guaranteeing every subchapter has at least one photo pair ready while
+// preserving anything already captured. Used when structure is imported.
+function _mergeChapterWithSubchapters(ch, existing){
+  existing = existing || [];
+  if(!(ch.subchapters && ch.subchapters.length)){
+    // No subchapters: keep existing if any, else one empty pair.
+    return existing.length ? existing : _emptyPair();
+  }
+  var out=[];
+  ch.subchapters.forEach(function(sname){
+    // Keep all existing items already tagged to this subchapter.
+    var mine=existing.filter(function(it){ return (it.sub||'')===sname; });
+    if(mine.length){
+      // Ensure an even count (full pairs) so the pair grid stays intact.
+      if(mine.length % 2 !== 0) mine=mine.concat(_emptyPair(sname).slice(0,1));
+      out=out.concat(mine);
+    } else {
+      out=out.concat(_emptyPair(sname));   // new/empty subchapter → one ready pair
+    }
+  });
+  return out;
+}
 CHAPTERS.forEach(function(c){ store[c.id] = _seedChapter(c); });
 // Cover photo — a single optional vessel photo shown as chapter "0".
 var coverPhoto = { photo:null, caption:'' };
@@ -279,7 +306,7 @@ function onReportTypeChange(){
   CHAPTERS=newList;
   var newStore={};
   CHAPTERS.forEach(function(c){
-    newStore[c.id] = (oldStore[c.id] && oldStore[c.id].length) ? oldStore[c.id] : _seedChapter(c);
+    newStore[c.id] = _mergeChapterWithSubchapters(c, oldStore[c.id]);
   });
   store=newStore;
   render();
@@ -413,7 +440,11 @@ function render(){
     block.dataset.id=ch.id;
     var head=document.createElement('div');
     head.className='chapter-head';
-    head.innerHTML='<span class="ch-num">'+chNum+'</span>'+
+    var subCount = (ch.subchapters && ch.subchapters.length) ? ch.subchapters.length : 0;
+    var numHtml = subCount
+      ? '<span class="ch-num-wrap"><span class="ch-num">'+chNum+'</span><span class="ch-sub-badge" title="'+subCount+' subchapters">'+subCount+'</span></span>'
+      : '<span class="ch-num">'+chNum+'</span>';
+    head.innerHTML=numHtml+
       '<span class="title">'+esc(ch.title)+'</span>'+
       '<span class="count">'+(withPhoto?withPhoto+' photo'+(withPhoto>1?'s':''):'')+'</span>'+
       '<span class="caret">▶</span>';
@@ -665,6 +696,11 @@ function buildBundle(){
       reportType: document.getElementById('rtype').value || 'daily',
       shipyard: document.getElementById('yard').value || ''
     },
+    // Full chapter + subchapter structure (in order), so the desktop can
+    // restore subchapters — including empty ones that hold no photos yet.
+    structure: CHAPTERS.map(function(c){
+      return { id:c.id, title:c.title, subchapters:(c.subchapters||[]).slice() };
+    }),
     photos: photos,
     cover: coverPhoto.photo ? { photo: coverPhoto.photo, caption: coverPhoto.caption||'' } : null
   };
@@ -731,7 +767,7 @@ function handleChapters(inp){
       var oldStore=store;
       CHAPTERS=newChapters;
       store={};
-      CHAPTERS.forEach(function(c){ store[c.id]= (oldStore[c.id] && oldStore[c.id].length ? oldStore[c.id] : _seedChapter(c)); });
+      CHAPTERS.forEach(function(c){ store[c.id]= _mergeChapterWithSubchapters(c, oldStore[c.id]); });
       // This report's structure now comes from the desktop. If the desktop
       // included a report type, apply it; then LOCK the selector so it can't
       // be changed on the phone (the desktop defines the report).
