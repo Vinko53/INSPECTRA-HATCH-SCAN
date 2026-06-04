@@ -13242,6 +13242,27 @@ function _applyMobileBundle(bundle) {
       });
       let added = 0;
 
+      // The chapter ships with a default main pair (in pairs-${cid}). For a
+      // fully-subchaptered chapter that default pair would otherwise cling to
+      // the FIRST subchapter, giving it more frames than the others. Remove the
+      // EMPTY main pairs so every subchapter starts equal. (Pairs that somehow
+      // already hold a photo are kept, as a safety net.)
+      if(typeof pairStore !== 'undefined' && Array.isArray(pairStore[cid])) {
+        pairStore[cid] = pairStore[cid].filter(p => {
+          const hasImg = p && p.querySelector && p.querySelector('.photo.has-image');
+          if(!hasImg && p && p.remove) { p.remove(); return false; }
+          return true;
+        });
+      } else {
+        // Fallback: clear empty pairs directly from the main container.
+        const mainPairs = document.getElementById('pairs-' + cid);
+        if(mainPairs) {
+          [...mainPairs.querySelectorAll('.photo-pair')].forEach(pp => {
+            if(!pp.querySelector('.photo.has-image')) pp.remove();
+          });
+        }
+      }
+
       // Helper: the LAST add-pair button in this section (chains new blocks).
       const lastAddBtn = () => {
         const btns = [...body.querySelectorAll('.add-pair-row .add-photo-btn')];
