@@ -2974,6 +2974,43 @@ function _subchOpts(sid) {
     : [];
 }
 
+// Remove an ENTIRE subchapter and everything inside it: the label + gauge +
+// Comments textbox (the .extra-text-box unit, or a bare .subch-wrap), plus all
+// of that subchapter's photo blocks and button rows up to the next subchapter.
+// Then renumber the survivors. Used by the subchapter "Remove" button so a
+// removed subchapter takes its whole content with it and the next subchapter
+// becomes first, with nothing left in between.
+function _removeSubchapterUnit(labelBar) {
+  if(!labelBar) return;
+  const unit = labelBar.closest('.extra-text-box') || labelBar.closest('.subch-wrap');
+  if(!unit || !unit.parentNode) return;
+  const body = unit.parentNode;
+  // Collect everything from the unit up to (not including) the next subchapter.
+  const toRemove = [unit];
+  let scan = unit.nextElementSibling;
+  while(scan) {
+    if(scan.classList && (scan.classList.contains('extra-text-box') || scan.classList.contains('subch-wrap'))) {
+      // Stop at the next subchapter — but a bare unnamed subch-wrap (the "+ Add
+      // subchapter" trigger) is not a real subchapter, so keep going past it.
+      const lb = scan.querySelector ? scan.querySelector('.subch-label-bar') : null;
+      if(lb && lb.dataset && lb.dataset.name) break;
+    }
+    toRemove.push(scan);
+    scan = scan.nextElementSibling;
+  }
+  toRemove.forEach(el => el.remove());
+  // Collapse any duplicate consecutive button rows left behind.
+  let node = body.firstElementChild;
+  while(node) {
+    const next = node.nextElementSibling;
+    if(node.classList && node.classList.contains('add-pair-row') &&
+       next && next.classList && next.classList.contains('add-pair-row')) { next.remove(); continue; }
+    node = next;
+  }
+  if(typeof _renumberSubchapters === 'function') _renumberSubchapters(body);
+  if(typeof doReflow === 'function') doReflow();
+}
+
 // Get the chapter number for a given sid (for N.n numbering)
 function _chapterNumForSid(sid) {
   if(!sid) return 0;
@@ -3331,6 +3368,11 @@ function _buildSubchWidget(sid) {
   cancelBtn.onclick = showTrigger;
 
   rmBtn.onclick = function() {
+    // If this subchapter is a full unit (its own textbox + gauge + photos),
+    // remove the WHOLE unit and its content, then renumber the rest. Otherwise
+    // (a bare label widget) just clear the name and restore the trigger.
+    const unit = labelBar.closest('.extra-text-box');
+    if(unit) { _removeSubchapterUnit(labelBar); return; }
     delete labelBar.dataset.name;
     labelBar.style.display = 'none';
     labelEl.textContent = '';
@@ -3425,6 +3467,8 @@ function _wireRestoredSubchWidgets(root) {
     if (trigger) trigger.onclick = function() { trigger.style.display = 'none'; if(selBar) selBar.style.display = 'flex'; if(sel) sel.focus(); };
     if (cancelBtn) cancelBtn.onclick = showTrigger;
     if (rmBtn) rmBtn.onclick = function() {
+      const unit = labelBar.closest('.extra-text-box');
+      if(unit) { _removeSubchapterUnit(labelBar); return; }
       delete labelBar.dataset.name;
       labelBar.style.display = 'none';
       if(labelEl) labelEl.textContent = '';
@@ -7611,13 +7655,19 @@ function addInlineFrame(btn) {
   rmBtn.textContent = '✕ Remove';
   rmBtn.style.cssText = 'font-size:7.5pt;background:none;border:1px solid #c0392b;color:#c0392b;border-radius:3px;padding:1px 7px;cursor:pointer;font-family:inherit;';
   rmBtn.addEventListener('click', () => {
-    // Remove button rows immediately before and after this text box
+    // If this text box is a named subchapter unit, remove the WHOLE subchapter
+    // (textbox + gauge + its photos + button rows) and renumber the rest.
+    const lb = wrap.querySelector('.subch-label-bar[data-name]');
+    if(lb && (lb.dataset.name || '').trim() && typeof _removeSubchapterUnit === 'function') {
+      _removeSubchapterUnit(lb);
+      return;
+    }
+    // Otherwise it's a plain standalone text box — remove just it and its rows.
     const prevEl = wrap.previousElementSibling;
     const nextEl = wrap.nextElementSibling;
     if(nextEl && nextEl.classList.contains('add-pair-row')) nextEl.remove();
     if(prevEl && prevEl.classList.contains('add-pair-row')) prevEl.remove();
     wrap.remove();
-    // Renumber remaining subchapters in this section
     const secEl = sec || (btn && btn.closest('.section[data-sid]'));
     if(secEl) { const bd = secEl.querySelector('.section-body') || secEl; _renumberSubchapters(bd); }
     doReflow();
@@ -13492,8 +13542,14 @@ function _applyMobileBundle(bundle) {
         for(const el of [...body.children]) {
           if(firstSubBox && (el === firstSubBox || el.contains(firstSubBox))) break; // reached first subchapter
           if(!el.classList) continue;
-          // keep the "+ Add subchapter" trigger widget visible (bare subch-wrap with no name)
-          if(el.classList.contains('subch-wrap')) continue;
+          // Hide the bare "+ Add subchapter" trigger widget too (no named label):
+          // when the chapter is subchaptered, nothing should sit between the
+          // chapter title and the first subchapter.
+          if(el.classList.contains('subch-wrap')) {
+            const lb = el.querySelector('.subch-label-bar');
+            if(!(lb && lb.dataset && lb.dataset.name)) { el.classList.add('chapter-findings-hidden'); el.style.display = 'none'; }
+            continue;
+          }
           if(el.classList.contains('label') ||
              el.classList.contains('photo-section-label') ||
              el.classList.contains('hc-add-schematic-btn') ||
