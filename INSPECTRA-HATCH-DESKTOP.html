@@ -3812,7 +3812,18 @@ function removePair(btn) {
   const pair = btn.closest('.photo-pair'); if(!pair) return;
   const sid  = pair.closest('.section[data-sid]')?.dataset.sid; if(!sid) return;
   storePairs(sid);
-  pairStore[sid] = pairStore[sid].filter(p => p !== pair);
+  const inMainStore = Array.isArray(pairStore[sid]) && pairStore[sid].indexOf(pair) !== -1;
+  if(inMainStore) {
+    // Main chapter pair — drop it from the store and let reflow rebuild.
+    pairStore[sid] = pairStore[sid].filter(p => p !== pair);
+  } else {
+    // Subchapter / extra pair (not in the main store) — remove its DOM element
+    // directly. If that empties its .extra-photo-pair-block wrapper, remove the
+    // wrapper too so no empty container is left behind.
+    const block = pair.closest('.extra-photo-pair-block');
+    pair.remove();
+    if(block && !block.querySelector('.photo-pair')) block.remove();
+  }
   doReflow();
 }
 
@@ -13467,21 +13478,49 @@ function _applyMobileBundle(bundle) {
           added++;
         });
       }
-      // Since this chapter is subchaptered and each subchapter now has its own
-      // Comments textbox, hide the chapter-level Comments textbox + its label
-      // (kept in the DOM, just hidden, so it's reversible if subchapters are
-      // later removed). Only hide when it's empty, never discard typed text.
+      // ── Clean up the layout so a subchaptered chapter reads cleanly ──
+      // When a chapter has subchapters, the rule is: nothing between the main
+      // chapter title and the first subchapter, each subchapter is
+      // label→gauge→textbox→photos, and only ONE button row between sections.
       try {
-        const findings = body.querySelector(':scope > .field[data-field-role="findings"], .field[data-field-role="findings"]');
-        if(findings && !(findings.textContent || '').trim()) {
-          findings.classList.add('chapter-findings-hidden');
-          findings.style.display = 'none';
-          // Hide the "Comments:" label immediately before it.
-          let prev = findings.previousElementSibling;
-          if(prev && prev.classList && prev.classList.contains('label') && !prev.classList.contains('photo-section-label')) {
-            prev.classList.add('chapter-findings-hidden');
-            prev.style.display = 'none';
+        const firstSubBox = body.querySelector('.extra-text-box');
+        // 1) Hide chapter-level content that sits BEFORE the first subchapter:
+        //    the Comments textbox + its label, the schematic/stats buttons, the
+        //    "Work progress:"/"Observation photos:" label, the main photo-pairs
+        //    container, and the original chapter add-pair-row. (Hidden, not
+        //    deleted — reversible. Only hide empty textboxes / empty pairs.)
+        for(const el of [...body.children]) {
+          if(firstSubBox && (el === firstSubBox || el.contains(firstSubBox))) break; // reached first subchapter
+          if(!el.classList) continue;
+          // keep the "+ Add subchapter" trigger widget visible (bare subch-wrap with no name)
+          if(el.classList.contains('subch-wrap')) continue;
+          if(el.classList.contains('label') ||
+             el.classList.contains('photo-section-label') ||
+             el.classList.contains('hc-add-schematic-btn') ||
+             el.classList.contains('stat-add-block-btn') ||
+             el.classList.contains('add-pair-row') ||
+             el.classList.contains('photo-pairs')) {
+            // never hide a field/pairs that contains real content
+            const hasImg = el.querySelector && el.querySelector('.photo.has-image');
+            const hasText = el.classList.contains('field') && (el.textContent||'').trim();
+            if(!hasImg && !hasText) { el.classList.add('chapter-findings-hidden'); el.style.display = 'none'; }
           }
+          if(el.classList.contains('field') && el.dataset && el.dataset.fieldRole === 'findings') {
+            if(!(el.textContent||'').trim()) { el.classList.add('chapter-findings-hidden'); el.style.display = 'none'; }
+          }
+        }
+        // 2) De-duplicate: collapse any run of consecutive add-pair-rows into a
+        //    single row (addInlineFrame adds rows before+after, which can double
+        //    up against an existing row between two sections).
+        let node = body.firstElementChild;
+        while(node) {
+          const next = node.nextElementSibling;
+          if(node.classList && node.classList.contains('add-pair-row') &&
+             next && next.classList && next.classList.contains('add-pair-row')) {
+            next.remove();   // drop the duplicate; keep scanning from same node
+            continue;
+          }
+          node = next;
         }
       } catch(e) { /* non-fatal */ }
       return added;
