@@ -13197,14 +13197,172 @@ function _applyMobileBundle(bundle) {
 
   // Defer the actual photo placement until sections exist after reflow.
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    // Restore subchapters FIRST (including empty ones) so photos tagged with a
-    // subchapter land under the right label, and empty subchapters survive.
-    if(bundle.structure) {
-      try { _restoreSubchaptersFromStructure(bundle.structure); } catch(e){}
+    // Which chapters have subchapters (from the bundle structure)?
+    const subOrderByCid = {};
+    if(Array.isArray(bundle.structure)) {
+      bundle.structure.forEach(sc => {
+        if(sc && sc.id && Array.isArray(sc.subchapters) && sc.subchapters.length) {
+          subOrderByCid[sc.id] = sc.subchapters.slice();
+        }
+      });
     }
-    // Phase A: ensure each chapter has enough photo pairs (add them all first,
-    // BEFORE placing anything, so reflow churn doesn't invalidate our work).
+
+    // Restore subchapters for chapters that have NO returning photos (so their
+    // empty subchapters still survive). Chapters that DO have photos are built
+    // fully — label + interleaved pairs — by placeSubchapteredChapter below,
+    // so we skip them here to avoid clustering their labels at the top.
+    if(bundle.structure) {
+      const emptyOnly = bundle.structure.filter(sc => {
+        const ph = (photos[sc.id] || []);
+        return !ph.length;   // only chapters with no photos returning
+      });
+      try { _restoreSubchaptersFromStructure(emptyOnly); } catch(e){}
+    }
+
+    // ── Subchaptered chapters: build the native interleaved structure ──
+    // For each subchapter (in order): place its label bar, then add photo
+    // pairs AFTER it via the desktop's own add-pair mechanism, then fill them.
+    // This mirrors how a user builds subchaptered photos and how the report
+    // loader reconstructs them, so photos appear UNDER their own subchapter
+    // instead of all grouped together.
+    function placeSubchapteredChapter(cid) {
+      const sec = document.querySelector('.section[data-sid="' + cid + '"]');
+      if(!sec) return 0;
+      const body = sec.querySelector('.section-body');
+      if(!body) return 0;
+      const list = photos[cid] || [];
+      const subs = subOrderByCid[cid];
+      // Group this chapter's photos by subchapter name, preserving order.
+      const bySub = {};
+      subs.forEach(sn => { bySub[sn] = []; });
+      const noSub = [];
+      list.forEach(it => {
+        if(it.sub && bySub[it.sub]) bySub[it.sub].push(it);
+        else noSub.push(it);
+      });
+      let added = 0;
+
+      // Helper: the LAST add-pair button in this section (chains new blocks).
+      const lastAddBtn = () => {
+        const btns = [...body.querySelectorAll('.add-pair-row .add-photo-btn')];
+        return btns.length ? btns[btns.length - 1] : sec.querySelector('.pair-add-btn');
+      };
+      // Helper: confirm a subchapter into the next available empty subch widget,
+      // or build a fresh one appended at the end WITH its own add-pair-row, so
+      // pairs added next chain directly under THIS subchapter.
+      const confirmSubInOrder = (name) => {
+        let bar = [...body.querySelectorAll('.subch-label-bar[data-name]')]
+          .find(b => (b.dataset.name || '').trim() === name);
+        if(bar) return bar;
+        let wrap = [...body.querySelectorAll('.subch-wrap')]
+          .find(w => { const lb = w.querySelector('.subch-label-bar'); return !(lb && lb.dataset && lb.dataset.name); });
+        if(wrap) {
+          // The reflow-made empty widget sits near the top, before the main
+          // pairs. Move it to the end so it follows any previously-placed
+          // subchapter pairs, keeping document order correct.
+          body.appendChild(wrap);
+        } else {
+          wrap = _buildSubchWidget(cid);
+          body.appendChild(wrap);
+        }
+        const lb = wrap.querySelector('.subch-label-bar');
+        if(lb) lb.dataset.name = name;
+        if(typeof _wireRestoredSubchWidgets === 'function') _wireRestoredSubchWidgets(sec);
+        // Ensure an add-pair-row immediately follows this subchapter wrap so
+        // addPairAfter inserts pairs right under it.
+        if(typeof _insertButtonRowAfter === 'function') {
+          const next = wrap.nextElementSibling;
+          if(!(next && next.classList && next.classList.contains('add-pair-row'))) {
+            _insertButtonRowAfter(wrap, sec);
+          }
+        }
+        return wrap.querySelector('.subch-label-bar');
+      };
+
+      // Helper: the add-pair button that directly follows a given subchapter
+      // wrap (so pairs go under THAT subchapter, not the chapter's main area).
+      const addBtnAfterWrap = (bar) => {
+        const wrap = bar ? bar.closest('.subch-wrap') : null;
+        if(!wrap) return lastAddBtn();
+        let scan = wrap.nextElementSibling;
+        while(scan) {
+          if(scan.classList && scan.classList.contains('subch-wrap')) break;
+          if(scan.classList && scan.classList.contains('add-pair-row')) {
+            const b = scan.querySelector('.add-photo-btn'); if(b) return b;
+          }
+          // also handle a pair block followed later by its row
+          scan = scan.nextElementSibling;
+        }
+        return lastAddBtn();
+      };
+
+      // Process each subchapter IN ORDER: confirm its label, then add its pairs
+      // right after it (chaining off the latest add button), then fill them.
+      subs.forEach(sn => {
+        const bar = confirmSubInOrder(sn);
+        const group = bySub[sn];
+        if(!group.length) return;   // empty subchapter keeps just its label
+        const pairsNeeded = Math.ceil(group.length / 2);
+        const createdPairs = [];
+        let btn = addBtnAfterWrap(bar);   // the add button directly under this subchapter
+        for(let k = 0; k < pairsNeeded; k++) {
+          if(btn && typeof addPairAfter === 'function') {
+            addPairAfter(btn);
+            const blocks = [...body.querySelectorAll('.extra-photo-pair-block')];
+            const nb = blocks[blocks.length - 1];
+            if(nb) createdPairs.push(nb);
+            // chain: next pair goes after the row that addPairAfter just created
+            const wrap = bar ? bar.closest('.subch-wrap') : null;
+            btn = addBtnAfterWrap(bar) || btn;
+            // prefer the button right after the newest block for this subchapter
+            if(nb) { const r = nb.nextElementSibling; if(r && r.classList && r.classList.contains('add-pair-row')) { const b2=r.querySelector('.add-photo-btn'); if(b2) btn=b2; } }
+          }
+        }
+        const frames = [];
+        createdPairs.forEach(blk => { blk.querySelectorAll('.photo:not(.has-image)').forEach(f => frames.push(f)); });
+        group.forEach((it, i) => {
+          const frame = frames[i];
+          if(!frame || !it.photo) return;
+          _setPhotoFrameFromDataURL(frame, it.photo);
+          const pair = frame.closest('.photo-pair');
+          if(it.joined && pair) {
+            pair.classList.add('joined');
+            const jc = pair.querySelector('.joined-caption');
+            if(jc && it.pairStart !== false) { jc.textContent = (it.joinedCaption || it.caption || ''); jc.dispatchEvent(new Event('input', { bubbles: true })); }
+          } else if(it.caption) {
+            const caps = pair ? [...pair.querySelectorAll('.caption')] : [];
+            const idxInPair = [...(pair ? pair.querySelectorAll('.photo') : [])].indexOf(frame);
+            const capEl = caps[idxInPair] || caps[0];
+            if(capEl) { capEl.textContent = it.caption; capEl.dispatchEvent(new Event('input', { bubbles: true })); }
+          }
+          added++;
+        });
+      });
+
+      // Any photos with no subchapter tag → main pairs at the top (fallback).
+      if(noSub.length) {
+        const realBtn = sec.querySelector('.pair-add-btn');
+        const need = Math.ceil(noSub.length / 2);
+        for(let k = 0; k < need; k++) {
+          if(realBtn && typeof addPairs === 'function') { const sc2=realBtn.querySelector('.pair-count-sel'); const pv=sc2?sc2.value:null; if(sc2) sc2.value='1'; addPairs(cid, realBtn); if(sc2&&pv!=null) sc2.value=pv; }
+        }
+        const mainPairs = sec.querySelector('.photo-pairs');
+        const mainFrames = mainPairs ? [...mainPairs.querySelectorAll('.photo:not(.has-image)')] : [];
+        noSub.forEach((it, i) => {
+          const frame = mainFrames[i]; if(!frame || !it.photo) return;
+          _setPhotoFrameFromDataURL(frame, it.photo);
+          const pair = frame.closest('.photo-pair');
+          const caps = pair ? [...pair.querySelectorAll('.caption')] : [];
+          const capEl = caps[0]; if(capEl && it.caption) { capEl.textContent = it.caption; capEl.dispatchEvent(new Event('input',{bubbles:true})); }
+          added++;
+        });
+      }
+      return added;
+    }
+
+    // Phase A: for NON-subchaptered chapters only, ensure enough main pairs.
     chapterIds.forEach(cid => {
+      if(subOrderByCid[cid]) return;   // subchaptered → handled separately
       const list = photos[cid];
       if(!Array.isArray(list) || !list.length) return;
       const sec = document.querySelector('.section[data-sid="' + cid + '"]');
@@ -13226,12 +13384,14 @@ function _applyMobileBundle(bundle) {
       }
     });
 
-    // Phase B: after the pair-adds settle, place photos + captions.
+    // Phase B: place photos. Subchaptered chapters use the interleaved path;
+    // others fill their main frames in order (original behaviour).
     requestAnimationFrame(() => requestAnimationFrame(() => {
       let totalAdded = 0;
       chapterIds.forEach(cid => {
         const list = photos[cid];
         if(!Array.isArray(list) || !list.length) return;
+        if(subOrderByCid[cid]) { totalAdded += placeSubchapteredChapter(cid); return; }
         const sec = document.querySelector('.section[data-sid="' + cid + '"]');
         if(!sec) return;
         const frames = [...sec.querySelectorAll('.photo:not(.has-image)')];
@@ -13241,8 +13401,6 @@ function _applyMobileBundle(bundle) {
           _setPhotoFrameFromDataURL(frame, it.photo);
           const pair = frame.closest('.photo-pair');
           if(it.joined && pair) {
-            // Mirror the desktop "joined caption" state: mark the pair joined
-            // and write the joined caption (with optional subchapter tag).
             pair.classList.add('joined');
             let jc = pair.querySelector('.joined-caption');
             if(jc) {
@@ -13263,10 +13421,11 @@ function _applyMobileBundle(bundle) {
         });
       });
       if(typeof doReflow === 'function') doReflow();
-      // Re-apply subchapter structure after the final reflow, so any empty
-      // subchapters that reflow may have rebuilt are restored once more.
+      // Re-apply ONLY empty subchapters after the final reflow (chapters with
+      // photos already have their subchapters built inline by placement).
       if(bundle.structure) {
-        requestAnimationFrame(() => { try { _restoreSubchaptersFromStructure(bundle.structure); } catch(e){} });
+        const emptyOnly2 = bundle.structure.filter(sc => !((photos[sc.id]||[]).length));
+        requestAnimationFrame(() => { try { _restoreSubchaptersFromStructure(emptyOnly2); } catch(e){} });
       }
       if(typeof buildTOC === 'function') requestAnimationFrame(() => buildTOC());
       alert('Imported ' + totalAdded + ' photo' + (totalAdded===1?'':'s') + ' from the mobile app.');
