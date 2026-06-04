@@ -761,8 +761,22 @@ function _applyBundleObject(b){
     document.getElementById('rtype').value=b.header.reportType||'daily';
     document.getElementById('yard').value=b.header.shipyard||'';
   }
+  // Rebuild the chapter list (with subchapters) from the saved structure, so
+  // subchapters survive a file-open or an autosave restore — not just photos.
+  if(Array.isArray(b.structure) && b.structure.length){
+    CHAPTERS = b.structure.map(function(sc){
+      return { id: sc.id, title: sc.title || (CH_TITLES[sc.id]||sc.id), subchapters: Array.isArray(sc.subchapters)? sc.subchapters.slice() : [] };
+    });
+  } else {
+    // Older files without structure: keep the chapters for the report type.
+    var rt=(b.header && b.header.reportType) ? b.header.reportType : 'daily';
+    CHAPTERS = chaptersForType(rt);
+  }
+  store={};
   CHAPTERS.forEach(function(ch){ store[ch.id]=[]; });
   if(b.photos){ Object.keys(b.photos).forEach(function(cid){ if(store[cid]!==undefined){ store[cid]=b.photos[cid].map(function(it){ return { photo: it.photo||null, caption: it.caption||'', sub: it.sub||'', joined: !!it.joined, joinedCaption: it.joinedCaption||'' }; }); } }); }
+  // Any chapter with no saved photos still gets its ready (seeded) frames,
+  // honouring its subchapters so each subchapter shows a pair.
   CHAPTERS.forEach(function(ch){ if(!store[ch.id] || !store[ch.id].length) store[ch.id]=_seedChapter(ch); });
   coverPhoto = (b.cover && b.cover.photo) ? { photo:b.cover.photo, caption:b.cover.caption||'' } : { photo:null, caption:'' };
   render();
