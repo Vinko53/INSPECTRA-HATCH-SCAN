@@ -401,12 +401,16 @@
     .section-body {
       -webkit-box-decoration-break: clone;
       box-decoration-break: clone;
-      /* Uniform 1px frame on every side and every fragment. Setting all four
-         borders to the exact same width avoids the bottom edge rendering
-         thicker than the sides where a split fragment's cloned border meets
-         the page boundary. */
-      border: 1px solid var(--line) !important;
-      border-top: 1px solid var(--line) !important;
+      /* Uniform frame on every side and every fragment. Border defined with an
+         explicit per-side width and a hairline value Chromium renders crisply.
+         Without this, a fragment that breaks at a page boundary draws its
+         bottom edge on a sub-pixel and anti-aliases thicker than the left/right
+         edges (which run cleanly down the sheet). 0.75pt ≈ 1px at 96dpi but
+         snaps more predictably at the print boundary. */
+      border-width: 0.75pt !important;
+      border-style: solid !important;
+      border-color: var(--line) !important;
+      border-top-width: 0.75pt !important;
     }
     /* Keep heading with the first content block below it */
     .section-head + *{break-before:avoid;page-break-before:avoid;}
@@ -562,6 +566,24 @@
     .sketch-block:nth-child(2n+1):not(:first-child) {
       break-before: page;
       page-break-before: always;
+    }
+
+    /* ── Print-stability additions (additive; nothing above is overridden) ──
+       Orphans/widows: stop a single stranded line at the bottom or top of a
+       page inside multi-line text blocks (notes, remarks, disclaimer prose).
+       Applied broadly but harmlessly — these properties only affect text that
+       actually wraps across a page boundary. */
+    p, li, .remark, .note-text, .general-note, .disclaimer-section p,
+    .extra-text-box, .label {
+      orphans: 3;
+      widows: 3;
+    }
+    /* Image overflow safety net: any image can never exceed the page width or
+       force a horizontal spill. (Specific image sizing rules above still win
+       where set; this only catches anything not explicitly constrained.) */
+    img {
+      max-width: 100%;
+      height: auto;
     }
   }
 
@@ -2509,16 +2531,16 @@
         fill="none" stroke="#c0392b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
     </svg>
   </button>
-  <button onclick="newReport()" title="Start a new empty report">&#128196; New report</button>
   <button onclick="openComparePanel()" id="comparePanelBtn" title="Open a second report side-by-side for comparison and copy-paste">&#9707; Compare…</button>
-  <button onclick="openInstructions()" title="View company instructions">&#128218; Instructions</button>
-  <button onclick="openTranslateDialog()" title="Translate the entire report's content to another language">&#127760; Translate…</button>
+  <button onclick="newReport()" title="Start a new empty report">&#128196; New report</button>
   <button onclick="openReportJSON()" title="Open a report — choose a JSON file from disk (Chrome/Edge)">&#128194; Open…</button>
+  <button onclick="saveAsReportJSON()" title="Save report — choose where to save the file (Chrome/Edge)">&#128190; Save As…</button>
   <button onclick="importMobilePhotos()" title="Import photos captured with the mobile app">&#128241; Mobile import</button>
   <button onclick="exportChapterStructure()" title="Export the chapter list for the mobile app">&#128203; Mobile export</button>
   <input type="file" id="mobilePhotoInput" accept=".json,application/json" style="display:none" onchange="_handleMobilePhotoImport(this)">
-  <button onclick="saveAsReportJSON()" title="Save report — choose where to save the file (Chrome/Edge)">&#128190; Save As…</button>
+  <button onclick="openTranslateDialog()" title="Translate the entire report's content to another language">&#127760; Translate…</button>
   <button onclick="openRecompressDialog()" title="Re-compress photos to reduce file size — choose quality level"><svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;margin-right:4px"><path d="M7 1 L7 5.5 M5 4 L7 6.5 L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="7" width="12" height="2.2" rx="1" fill="currentColor"/><path d="M7 15 L7 10.5 M5 12 L7 9.5 L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Compress photos</button>
+  <button onclick="openInstructions()" title="View company instructions">&#128218; Instructions</button>
   <button onclick="exportToCustomer()" title="Export a view-only HTML report — choose where to save it (Chrome/Edge)">&#128228; Customer file</button>
   <button class="primary" onclick="window.print()" title="Print or Save as PDF">&#128424; PDF</button>
   <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;line-height:1.3;align-self:center;padding-left:4px;flex:0 0 auto;">
@@ -12966,12 +12988,27 @@ function exportChapterStructure() {
       subchapters: subs
     });
   });
+  // Gather the header details so they pre-fill on the phone.
+  const _txt = (sel) => { const el = document.querySelector(sel); return el ? el.textContent.trim() : ''; };
+  const _dd = document.getElementById('dmDD'), _mm = document.getElementById('dmMM'), _yy = document.getElementById('dmYY');
+  let _dateISO = '';
+  if(_dd && _mm && _yy && _dd.value && _mm.value && _yy.value) {
+    const y = _yy.value.padStart(4,'0'), m = _mm.value.padStart(2,'0'), d = _dd.value.padStart(2,'0');
+    _dateISO = y + '-' + m + '-' + d;
+  }
+  const header = {
+    shipName: _txt('.ship-name-input'),
+    imo:      _txt('.imo-line .editable'),
+    date:     _dateISO,
+    shipyard: _txt('.shipyard-field')
+  };
   const struct = {
     type: 'hc-chapter-structure',
     version: 1,
     createdAt: new Date().toISOString(),
     vesselType: (typeof _vesselType !== 'undefined') ? _vesselType : 'container',
     reportType: (document.getElementById('subjectType') ? document.getElementById('subjectType').value : 'daily'),
+    header: header,
     chapters: chapters
   };
   const ship = (document.querySelector('.ship-name-input')?.textContent || 'Report')
@@ -13037,16 +13074,52 @@ function _applyMobileBundle(bundle) {
   }
   const imoEl = document.querySelector('.imo-line .editable');
   if(imoEl && !imoEl.textContent.trim() && h.imo) imoEl.textContent = h.imo;
+  // Shipyard / Port (cover field). The cover value also auto-fills the Bericht
+  // "Hafen / Port" field via the existing sync listener.
+  const yardEl = document.querySelector('.shipyard-field');
+  if(yardEl && !yardEl.textContent.trim() && h.shipyard) {
+    yardEl.textContent = h.shipyard;
+    yardEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  // Date → cover date fields (dmDD/dmMM/dmYY); also push to the Bericht date.
   if(h.date && /^\d{4}-\d{2}-\d{2}$/.test(h.date)) {
-    const dd=document.getElementById('brDD'), mm=document.getElementById('brMM'), yy=document.getElementById('brYY');
-    if(dd && mm && yy && !(dd.value && mm.value && yy.value)) {
-      const p=h.date.split('-'); yy.value=p[0]; mm.value=p[1]; dd.value=p[2];
+    const p = h.date.split('-');
+    const cdd=document.getElementById('dmDD'), cmm=document.getElementById('dmMM'), cyy=document.getElementById('dmYY');
+    if(cdd && cmm && cyy && !(cdd.value && cmm.value && cyy.value)) {
+      cyy.value=p[0]; cmm.value=p[1]; cdd.value=p[2];
+      if(typeof dmCommit === 'function') { try { dmCommit(); } catch(e){} }
+    }
+    const bdd=document.getElementById('brDD'), bmm=document.getElementById('brMM'), byy=document.getElementById('brYY');
+    if(bdd && bmm && byy && !(bdd.value && bmm.value && byy.value)) {
+      byy.value=p[0]; bmm.value=p[1]; bdd.value=p[2];
       if(typeof dmSyncBericht === 'function') { try { dmSyncBericht(); } catch(e){} }
     }
   }
   if(h.reportType) {
     const sel=document.getElementById('subjectType');
     if(sel && sel.value==='daily' && h.reportType!=='daily') { sel.value=h.reportType; if(typeof updateSubject==='function'){ try{ updateSubject(); }catch(e){} } }
+  }
+
+  // 1b. Cover photo → the cover-page vessel photo (only if empty).
+  if(bundle.cover && bundle.cover.photo) {
+    const cov = document.getElementById('coverPhoto');
+    if(cov && !cov.classList.contains('has-image')) {
+      cov.style.backgroundImage = "url('" + bundle.cover.photo + "')";
+      cov.classList.add('has-image');
+      let cimg = cov.querySelector('.photo-print-img');
+      if(!cimg) {
+        cimg = document.createElement('img');
+        cimg.className = 'photo-print-img';
+        cimg.alt = '';
+        const capBar = cov.querySelector('.vessel-caption-bar');
+        if(capBar) cov.insertBefore(cimg, capBar); else cov.appendChild(cimg);
+      }
+      cimg.src = bundle.cover.photo;
+      if(bundle.cover.caption) {
+        const capBar = cov.querySelector('.vessel-caption-bar');
+        if(capBar && !capBar.textContent.trim()) capBar.textContent = bundle.cover.caption;
+      }
+    }
   }
 
   // 2. Photos per chapter
