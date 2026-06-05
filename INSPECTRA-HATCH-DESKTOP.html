@@ -2695,6 +2695,7 @@
         fill="none" stroke="#c0392b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
     </svg>
   </button>
+  <button id="saveReportBtn" onclick="saveReport()" title="Save — overwrite the file you're working on (Open or Save As a file first to set it)" style="background:#1a7a4a;color:#fff;border:1px solid #15643d;font-weight:600;">&#128190; Save</button>
   <button onclick="openComparePanel()" id="comparePanelBtn" title="Open a second report side-by-side for comparison and copy-paste">&#9707; Compare…</button>
   <button onclick="newReport()" title="Start a new empty report">&#128196; New report</button>
   <button id="dfOpenBtn" onclick="openReportJSON()" oncontextmenu="setDesignatedFolder('open'); return false;" title="Open a report — choose a JSON file from disk (right-click: set a fixed folder)">&#128194; Open…</button>
@@ -2703,9 +2704,9 @@
   <button id="dfExportBtn" onclick="exportChapterStructure()" oncontextmenu="setDesignatedFolder('mobileExport'); return false;" title="Export the chapter list for the mobile app (right-click: set a fixed folder)">&#128203; Mobile export</button>
   <input type="file" id="mobilePhotoInput" accept=".json,application/json" style="display:none" onchange="_handleMobilePhotoImport(this)">
   <button onclick="openTranslateDialog()" title="Translate the entire report's content to another language">&#127760; Translate…</button>
-  <button onclick="openRecompressDialog()" title="Re-compress photos to reduce file size — choose quality level"><svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;margin-right:4px"><path d="M7 1 L7 5.5 M5 4 L7 6.5 L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="7" width="12" height="2.2" rx="1" fill="currentColor"/><path d="M7 15 L7 10.5 M5 12 L7 9.5 L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Compress photos</button>
+  <button onclick="openRecompressDialog()" title="Re-compress photos to reduce file size — choose quality level"><svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;margin-right:4px"><path d="M7 1 L7 5.5 M5 4 L7 6.5 L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="7" width="12" height="2.2" rx="1" fill="currentColor"/><path d="M7 15 L7 10.5 M5 12 L7 9.5 L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Compress</button>
   <button onclick="openInstructions()" title="View company instructions">&#128218; Instructions</button>
-  <button id="dfCustBtn" onclick="exportToCustomer()" oncontextmenu="setDesignatedFolder('customer'); return false;" title="Export a view-only HTML report — choose where to save it (right-click: set a fixed folder)">&#128228; Customer file</button>
+  <button id="dfCustBtn" onclick="exportToCustomer()" oncontextmenu="setDesignatedFolder('customer'); return false;" title="Export a view-only HTML report — choose where to save it (right-click: set a fixed folder)">&#128228; Customer</button>
   <button class="primary" onclick="window.print()" title="Print or Save as PDF — the browser's print dialog controls where the PDF is saved">&#128424; PDF</button>
   <div id="reportStatsBadges" oncontextmenu="openReportStats(); return false;" title="Right-click for full report statistics" style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;line-height:1.3;align-self:center;padding-left:4px;flex:0 0 auto;cursor:context-menu;">
     <span id="reportSizeIndicator" title="Estimated report size" style="font-size:9.5pt;color:rgba(255,255,255,.85);white-space:nowrap;letter-spacing:.01em;text-shadow:0 1px 2px rgba(10,25,55,.4);"></span>
@@ -12933,7 +12934,52 @@ async function recompressAllPhotos(photoOpts, progressCb) {
     ? (savedKB / 1024).toFixed(1) + ' MB'
     : savedKB + ' KB';
   alert('Done! Recompressed ' + total + ' photo' + (total !== 1 ? 's' : '') +
-        '. Saved approximately ' + savedStr + '.\n\nNow click "Save As…" to save the smaller version.');
+        '. Saved approximately ' + savedStr + '.\n\nNow click the "Save" button to save the smaller version.');
+}
+
+// Handle of the report file currently being worked on (set when the user opens
+// a file or does a Save As). Lets the Save button silently overwrite it.
+let _currentFileHandle = null;
+
+// Silent Save: overwrite the file currently being worked on without a dialog.
+// If no file handle exists yet (fresh report never opened/saved), fall back to
+// Save As to establish one — after which subsequent Saves are silent.
+async function saveReport() {
+  if(_currentFileHandle && _currentFileHandle.createWritable) {
+    try {
+      // Re-confirm write permission (browser may require it ~once per session).
+      if(_currentFileHandle.queryPermission) {
+        let p = await _currentFileHandle.queryPermission({ mode: 'readwrite' });
+        if(p !== 'granted' && _currentFileHandle.requestPermission) {
+          p = await _currentFileHandle.requestPermission({ mode: 'readwrite' });
+        }
+        if(p !== 'granted') { return saveAsReportJSON(); }
+      }
+      const { data } = buildReportPayload();
+      const json = JSON.stringify(data, null, 2);
+      const w = await _currentFileHandle.createWritable();
+      await w.write(json);
+      await w.close();
+      _markSavedToFile();
+      _flashSaveButton();
+      return;
+    } catch(e) {
+      console.warn('Silent save failed, falling back to Save As:', e);
+      // Fall through to Save As.
+    }
+  }
+  // No handle yet — establish one via Save As (it will be captured there).
+  return saveAsReportJSON();
+}
+
+// Brief visual confirmation on the Save button so the user knows it worked.
+function _flashSaveButton() {
+  const btn = document.getElementById('saveReportBtn');
+  if(!btn) return;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '&#10003; Saved';
+  btn.disabled = true;
+  setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1100);
 }
 
 async function saveAsReportJSON() {
@@ -12948,6 +12994,7 @@ async function saveAsReportJSON() {
       const w = await fh.createWritable();
       await w.write(json);
       await w.close();
+      _currentFileHandle = fh;            // remember for silent Save
       _markSavedToFile();
       return;
     }
@@ -12968,6 +13015,7 @@ async function saveAsReportJSON() {
       const writable = await handle.createWritable();
       await writable.write(json);
       await writable.close();
+      _currentFileHandle = handle;        // remember for silent Save
       _markSavedToFile();
       return;
     } catch(err) {
@@ -14183,6 +14231,7 @@ async function openReportJSON() {
       const [handle] = await window.showOpenFilePicker(_openOpts);
       const file = await handle.getFile();
       text = await file.text();
+      _currentFileHandle = handle;        // remember for silent Save
     } catch(err) {
       if(err && err.name === 'AbortError') return; // user cancelled
       console.warn('Open picker failed, falling back to legacy file picker:', err);
