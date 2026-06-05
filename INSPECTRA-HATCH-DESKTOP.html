@@ -118,6 +118,10 @@
   }
   /* Pages containing bay plan expand to fit all bays */
   .page.bayplan-page{height:auto;min-height:297mm;overflow:visible;}
+  /* Meta (TOC) page: full A4 height on screen for the editor look; in print it
+     collapses to its natural height (see @media print) so the TOC doesn't leave
+     a near-blank page below it. */
+  @media screen { .page[data-pg="meta"]{ min-height:297mm; } }
 
   .page-footer{display:flex;justify-content:space-between;align-items:center;font-size:8pt;color:var(--ink-soft);border-top:1px solid var(--line-soft);padding-top:2mm;margin-top:6mm;}
   .page-footer .doc{color:var(--navy);font-weight:600;}
@@ -329,7 +333,7 @@
     *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
     @page {
       size: A4;
-      margin: 18mm 14mm 16mm 14mm;
+      margin: 12mm 14mm 12mm 14mm;
       @bottom-left   { content: "HC Daily Report"; font: 8pt 'Source Sans 3', Arial, sans-serif; color: #1f3a68; }
       @bottom-right  { content: "Page " counter(page) " of " counter(pages); font: 8pt 'Source Sans 3', Arial, sans-serif; color: #1f3a68; }
     }
@@ -359,6 +363,14 @@
     .page[data-pg="meta"] .ph{
       display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5mm;
     }
+    /* Keep the whole Bericht + Contents block on a single sheet by tightening
+       row/cell spacing in print (prevents a near-blank spillover page after
+       the TOC). */
+    .page[data-pg="meta"] .toc-item { padding: 0.9mm 0 !important; }
+    .page[data-pg="meta"] .toc-subitem { padding: 0.5mm 0 !important; }
+    .page[data-pg="meta"] .rpt-cell { padding: 0.2mm 3mm 0.5mm !important; }
+    .page[data-pg="meta"] .rpt-field { min-height: 5.5mm !important; }
+    .page[data-pg="meta"] { page-break-after: always; break-after: page; }
 
     /* CONTENT PAGES — flow continuously. The pre-paginated .page wrappers
        and per-page logo headers / footers no longer make sense once the
@@ -392,6 +404,14 @@
     .section:has(> .section-head) > .section-body {
       min-height: 20mm;
     }
+    /* The final chapter (the Disclaimer / General Considerations on the last
+       page) should have its frame reach down the page for a clean finished
+       look rather than stopping at the last line of text. We grow its body;
+       as the last element in the report this cannot push anything to a new
+       page. Scoped to the disclaimer so other chapters are unaffected. */
+    .section[data-sid="disclaimer"] > .section-body {
+      min-height: 170mm;
+    }
     .section-head{page-break-after:avoid;break-after:avoid;}
 
     /* box-decoration-break: clone repeats border, padding and background
@@ -407,10 +427,10 @@
          bottom edge on a sub-pixel and anti-aliases thicker than the left/right
          edges (which run cleanly down the sheet). 0.75pt ≈ 1px at 96dpi but
          snaps more predictably at the print boundary. */
-      border-width: 0.75pt !important;
+      border-width: 0.5pt !important;
       border-style: solid !important;
       border-color: var(--line) !important;
-      border-top-width: 0.75pt !important;
+      border-top-width: 0.5pt !important;
     }
     /* Keep heading with the first content block below it */
     .section-head + *{break-before:avoid;page-break-before:avoid;}
@@ -498,6 +518,18 @@
        fields shrink-wrap to their content (with the same 10mm floor as empty
        fields) so the larger editing height never adds white space to the PDF. */
     .field { min-height: 10mm !important; }
+    /* Comments boxes with content print at a comfortable size; EMPTY ones
+       shrink so they don't waste a third of the page when unused. */
+    .field[data-field-role="findings"],
+    .extra-text-box:has(.subch-label-bar[data-name]) .field[data-field-role="extra"] {
+      min-height: 30mm !important;
+    }
+    .field[data-field-role="findings"]:empty,
+    .field[data-field-role="findings"][data-empty="true"],
+    .extra-text-box:has(.subch-label-bar[data-name]) .field[data-field-role="extra"]:empty,
+    .extra-text-box:has(.subch-label-bar[data-name]) .field[data-field-role="extra"][data-empty="true"] {
+      min-height: 12mm !important;
+    }
     /* Hide empty photo pairs (no image loaded) */
     .photo-pair:not(:has(.photo.has-image)):not(:has(.vessel-large.has-image)) {
       display: none !important;
@@ -898,25 +930,25 @@
     /* ── Score table: solid black grid for PDF ── */
     .score-table {
       border-collapse: collapse !important;
-      border: 1pt solid #000 !important;
+      border: 0.5pt solid #000 !important;
       font-size: 7.5pt !important;
     }
     .score-table th, .score-table td {
-      border: 0.75pt solid #000 !important;
+      border: 0.3pt solid #000 !important;
       box-shadow: none !important;
       padding: 1mm 0.5mm !important;
     }
     /* Active cell: no outline, just bold black border */
     .score-table .score-cell.score-active {
       outline: none !important;
-      border: 1.5pt solid #000 !important;
+      border: 0.75pt solid #000 !important;
       font-weight: 700 !important;
     }
     /* Score block — keep together */
     .score-block { break-inside: avoid; page-break-inside: avoid; }
     /* Legend */
-    .score-legend { border: 0.75pt solid #000 !important; font-size: 7.5pt !important; }
-    .score-legend td { border: 0.5pt solid #000 !important; padding: 0.8mm 2mm !important; }
+    .score-legend { border: 0.3pt solid #000 !important; font-size: 7.5pt !important; }
+    .score-legend td { border: 0.3pt solid #000 !important; padding: 0.8mm 2mm !important; }
   }
   .score-table .score-title-cell {
     text-align: center; font-weight: 700;
@@ -993,8 +1025,8 @@
   }
   .score-legend td { border: 0.75px solid #8a96b0; padding: 1.5mm 3mm; vertical-align: middle; }
   @media print {
-    .score-legend { border: 1.5pt solid #8a96b0 !important; }
-    .score-legend td { border: 0.75pt solid #8a96b0 !important; }
+    .score-legend { border: 0.3pt solid #000 !important; }
+    .score-legend td { border: 0.3pt solid #000 !important; }
   }
   .score-legend .sl-chip {
     width: 7mm; font-weight: 700; text-align: center;
@@ -1053,6 +1085,9 @@
      box, leftover buttons, "+ Add subchapter" trigger, etc.). Hidden on screen
      AND in print, and survives pagination cloning. */
   .chapter-findings-hidden { display: none !important; }
+  /* Subchapter gauges are hidden unless a scoring table is present in the
+     chapter (screen AND print). */
+  .subch-gauge-wrap.gauge-when-no-scoretable { display: none !important; }
   .subch-gauge-wrap.gauge-hidden { display: none; }
   .subch-gauge-track {
     flex: 1;
@@ -1157,23 +1192,78 @@
      score thumb actually render in the PDF instead of being dropped. */
   @media print {
     .subch-gauge-toggle { display: none !important; }
-    /* Show gauges that HAVE a score (thumb present, i.e. not .no-score). */
+    /* Gauges print exactly as they appear on screen. Force exact colours so the
+       coloured scale and the score thumb render in the PDF (browsers otherwise
+       drop background colours). */
     .subch-gauge-wrap {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       break-inside: avoid; page-break-inside: avoid;
     }
-    /* Respect the on-screen show/hide toggle: if gauges are hidden in the
-       report, keep them hidden in the PDF too. */
+    /* Match the on-screen visibility rules: hidden if no score table exists, or
+       if the user toggled gauges off. Otherwise the gauge SHOWS in the PDF
+       (scored or not — same as on screen). */
+    .subch-gauge-wrap.gauge-when-no-scoretable { display: none !important; }
     .subch-gauge-wrap.gauge-hidden { display: none !important; }
-    /* A gauge with no score set: hide it in print (nothing meaningful to show). */
-    .subch-gauge-wrap:has(.subch-gauge-thumb.no-score) { display: none !important; }
     .subch-gauge-track, .subch-gauge-thumb {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
   }
 
+  /* ── PRINT: black lines for legibility ──────────────────────────
+     In the PDF, draw all frame/table/field/caption borders in BLACK so they
+     stay crisp and readable when printed on paper. The navy chapter header
+     bars and the coloured scoring gauge are intentionally left as-is. */
+  @media print {
+    .section-body,
+    .field,
+    .field[data-field-role="findings"],
+    .extra-text-box .field,
+    .photo-pair > .caption,
+    .joined-caption,
+    .legend i,
+    .stat-table, .stat-table th, .stat-table td,
+    .score-table, .score-table th, .score-table td,
+    .mat-table, .mat-table th, .mat-table td,
+    .hc-schematic, .hc-schematic-img-cell,
+    .sketch-block, .bp-bay-block,
+    /* Report (Bericht) cover: company-info table grid + cells. */
+    .rpt-grid, .rpt-cell,
+    /* Empty fields keep a visible border in print — make it black too. */
+    .field:empty, .field[data-empty="true"] {
+      border-color: #000 !important;
+    }
+    /* Photo frames and their caption bars → black outline. */
+    .photo-pair .photo,
+    .photo-pair > .caption {
+      border-color: #000 !important;
+    }
+    /* The report title rules (top/bottom bars of the header block). */
+    .rpt-title { border-top-color: #000 !important; border-bottom-color: #000 !important; }
+    /* The page footer divider line. */
+    .page-footer { border-top-color: #000 !important; }
+    /* Remove the shipyard / port name underline in the PDF — it sat directly
+       above the footer divider and looked like a doubled line. */
+    .shipyard-field { border-bottom: none !important; }
+    /* Table-of-contents dotted leader lines → black for legibility. */
+    .toc-dots, .toc-sub-dots { border-bottom-color: #000 !important; border-bottom-width: 0.3pt !important; }
+    /* Keep navy header bars (.section-head, .subch-label, .vessel-caption-bar,
+       the BERICHT/REPORT bar fill) and the scoring gauge untouched: they are
+       NOT overridden here, so they print in their normal colours. */
+    /* Slightly thinner lines in print so the black borders read as fine
+       hairlines rather than heavy rules. (The .section-body frame keeps its
+       tuned 0.75pt so it stays even across page breaks.) */
+    .rpt-grid, .rpt-cell,
+    .stat-table, .stat-table th, .stat-table td,
+    .score-table, .score-table th, .score-table td,
+    .mat-table, .mat-table th, .mat-table td,
+    .photo-pair .photo,
+    .photo-pair > .caption,
+    .legend i {
+      border-width: 0.3pt !important;
+    }
+  }
 
   /* ── Photo swap mode ────────────────────────────────────────── */
   .photo-swap-source {
@@ -1277,10 +1367,10 @@
       margin-top: 8mm !important;
       break-inside: avoid; page-break-inside: avoid;
     }
-    /* The very first subchapter (right after the chapter title) needs no extra
-       gap above it. */
+    /* The first subchapter sits right under the chapter title — give it a
+       clear gap too so the label isn't cramped against the chapter header. */
     .section-body > .extra-text-box:has(.subch-label-bar[data-name]):first-of-type {
-      margin-top: 2mm !important;
+      margin-top: 6mm !important;
     }
   }
 
@@ -2303,7 +2393,19 @@
     cursor: se-resize;
   }
 
-  @media print { .draw-toolbar { display: none !important; } }
+  @media print {
+    .draw-toolbar { display: none !important; }
+    /* Drawing editor UI must never print: the square/round resize handles
+       (navy dots) and any selection outline are editing aids, not content. */
+    .draw-resize-handle { display: none !important; }
+    .draw-shape.selected, .draw-shape-wrap.selected { outline: none !important; }
+    /* A draw overlay that holds no actual shape should not render at all (its
+       leftover marker defs were showing as stray coloured dots at the frame
+       edges in the PDF). */
+    .field-draw-svg:not(:has(.draw-shape-wrap)),
+    .photo-draw-svg:not(:has(.draw-shape-wrap)),
+    .inline-img-draw-svg:not(:has(.draw-shape-wrap)) { display: none !important; }
+  }
 
   /* SVG overlay on photos */
   .photo { position: relative; }
@@ -2663,7 +2765,7 @@
 </div>
 
 <!-- PAGE 2: REPORT META -->
-<div class="page" data-pg="meta" style="height:auto;min-height:297mm;overflow:visible;">
+<div class="page" data-pg="meta" style="overflow:visible;">
   <div class="ph">
     <div class="logo"><img src="data:image/png;base64,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" alt=""></div>
     <h3 class="report-title" style="margin-top:6mm">Bericht / Report</h3>
@@ -3094,6 +3196,10 @@ function _renumberSubchapters(secBodyOrSec) {
     clearTimeout(_subchScoreTimer);
     _subchScoreTimer = setTimeout(() => { try { _refreshScoreTables(); } catch(e) {} }, 200);
   }
+  // Gauges only show where a score table is present — re-apply that rule.
+  if(typeof _syncAllGaugeVisibility === 'function') {
+    try { _syncAllGaugeVisibility(); } catch(e) {}
+  }
 }
 let _subchTocTimer = null;
 let _subchScoreTimer = null;
@@ -3254,6 +3360,27 @@ function _updateGauge(gaugeWrap) {
 // Update all gauges (called after any score change or refresh)
 function _updateAllGauges() {
   document.querySelectorAll('.subch-gauge-wrap[data-gauge-key]').forEach(_updateGauge);
+}
+
+// Show subchapter scoring gauges ONLY when a scoring table is present in the
+// report. The score table is report-wide (it lists every chapter/subchapter and
+// lives in the general/disclaimer chapter), so the rule is global: if there is
+// no .score-block anywhere, all subchapter gauges (and their toggles) are
+// hidden; when a score table is added they appear. Applies on screen and PDF.
+function _syncAllGaugeVisibility() {
+  const pr = document.getElementById('pagesRoot') || document;
+  const hasScoreTable = !!pr.querySelector('.score-block');
+  document.querySelectorAll('.subch-gauge-wrap').forEach(g => {
+    g.classList.toggle('gauge-when-no-scoretable', !hasScoreTable);
+  });
+  document.querySelectorAll('.subch-gauge-toggle').forEach(t => {
+    t.style.display = hasScoreTable ? '' : 'none';
+  });
+}
+
+// Per-section call kept for convenience — just applies the global rule.
+function _syncGaugeVisibilityForSection(sec) {
+  _syncAllGaugeVisibility();
 }
 
 // Attach gauge below a label-bar element, keyed to scoreKey
@@ -5617,6 +5744,8 @@ function _syncScoreTableBtn() {
       if(btn) btn.style.display = isDisclaimer ? '' : 'none';
     });
   });
+  // Keep gauges in step with whether a score table exists.
+  if(typeof _syncAllGaugeVisibility === 'function') { try { _syncAllGaugeVisibility(); } catch(e) {} }
 }
 
 // Rebuild all subchapter <select> elements in the DOM to reflect the
@@ -7842,6 +7971,8 @@ function addScoreTable(btn) {
     if(photoLabel) photoLabel.parentNode.insertBefore(block, photoLabel);
     else body.appendChild(block);
   }
+  // A score table now exists in this chapter → reveal its subchapter gauges.
+  _syncGaugeVisibilityForSection(sec);
 }
 
 function _buildScoreBlock(block) {
@@ -7868,6 +7999,8 @@ function _buildScoreBlock(block) {
       if(btn) btn.style.display = '';
     }
     block.remove();
+    // No score table now → hide this chapter's subchapter gauges.
+    if(sec && typeof _syncGaugeVisibilityForSection === 'function') _syncGaugeVisibilityForSection(sec);
   };
   head.appendChild(refreshBtn);
   head.appendChild(removeBtn);
