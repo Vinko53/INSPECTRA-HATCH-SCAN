@@ -2681,17 +2681,17 @@
   </button>
   <button onclick="openComparePanel()" id="comparePanelBtn" title="Open a second report side-by-side for comparison and copy-paste">&#9707; Compare…</button>
   <button onclick="newReport()" title="Start a new empty report">&#128196; New report</button>
-  <button onclick="openReportJSON()" title="Open a report — choose a JSON file from disk (Chrome/Edge)">&#128194; Open…</button>
-  <button onclick="saveAsReportJSON()" title="Save report — choose where to save the file (Chrome/Edge)">&#128190; Save As…</button>
-  <button onclick="importMobilePhotos()" title="Import photos captured with the mobile app">&#128241; Mobile import</button>
-  <button onclick="exportChapterStructure()" title="Export the chapter list for the mobile app">&#128203; Mobile export</button>
+  <button id="dfOpenBtn" onclick="openReportJSON()" oncontextmenu="setDesignatedFolder('open'); return false;" title="Open a report — choose a JSON file from disk (right-click: set a fixed folder)">&#128194; Open…</button>
+  <button id="dfSaveAsBtn" onclick="saveAsReportJSON()" oncontextmenu="setDesignatedFolder('saveAs'); return false;" title="Save report — choose where to save the file (right-click: set a fixed folder)">&#128190; Save As…</button>
+  <button id="dfImportBtn" onclick="importMobilePhotos()" oncontextmenu="setDesignatedFolder('mobileImport'); return false;" title="Import photos from the mobile app (right-click: set a fixed folder)">&#128241; Mobile import</button>
+  <button id="dfExportBtn" onclick="exportChapterStructure()" oncontextmenu="setDesignatedFolder('mobileExport'); return false;" title="Export the chapter list for the mobile app (right-click: set a fixed folder)">&#128203; Mobile export</button>
   <input type="file" id="mobilePhotoInput" accept=".json,application/json" style="display:none" onchange="_handleMobilePhotoImport(this)">
   <button onclick="openTranslateDialog()" title="Translate the entire report's content to another language">&#127760; Translate…</button>
   <button onclick="openRecompressDialog()" title="Re-compress photos to reduce file size — choose quality level"><svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;margin-right:4px"><path d="M7 1 L7 5.5 M5 4 L7 6.5 L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="7" width="12" height="2.2" rx="1" fill="currentColor"/><path d="M7 15 L7 10.5 M5 12 L7 9.5 L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Compress photos</button>
   <button onclick="openInstructions()" title="View company instructions">&#128218; Instructions</button>
-  <button onclick="exportToCustomer()" title="Export a view-only HTML report — choose where to save it (Chrome/Edge)">&#128228; Customer file</button>
-  <button class="primary" onclick="window.print()" title="Print or Save as PDF">&#128424; PDF</button>
-  <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;line-height:1.3;align-self:center;padding-left:4px;flex:0 0 auto;">
+  <button id="dfCustBtn" onclick="exportToCustomer()" oncontextmenu="setDesignatedFolder('customer'); return false;" title="Export a view-only HTML report — choose where to save it (right-click: set a fixed folder)">&#128228; Customer file</button>
+  <button class="primary" onclick="window.print()" title="Print or Save as PDF — the browser's print dialog controls where the PDF is saved">&#128424; PDF</button>
+  <div id="reportStatsBadges" oncontextmenu="openReportStats(); return false;" title="Right-click for full report statistics" style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;line-height:1.3;align-self:center;padding-left:4px;flex:0 0 auto;cursor:context-menu;">
     <span id="reportSizeIndicator" title="Estimated report size" style="font-size:9.5pt;color:rgba(255,255,255,.85);white-space:nowrap;letter-spacing:.01em;text-shadow:0 1px 2px rgba(10,25,55,.4);"></span>
     <span id="reportPhotoCount" title="Photos inserted in report" style="font-size:7.5pt;color:rgba(255,255,255,.7);white-space:nowrap;letter-spacing:.01em;"></span>
     <span id="reportWordCount" title="Words typed in text fields and captions" style="font-size:7.5pt;color:rgba(255,255,255,.7);white-space:nowrap;letter-spacing:.01em;"></span>
@@ -5564,6 +5564,21 @@ function setSalutationSpan(btn, spanId, prefix) {
   if(span) span.textContent = prefix;
   const row = btn.closest('.salut-toggle');
   if(row) row.querySelectorAll('.salut-btn').forEach(b => b.classList.toggle('active', b === btn));
+  // Like the An/To field: after picking a salutation, focus the adjacent name
+  // box so the cursor lands there and its placeholder prompts for the name.
+  const cell = btn.closest('.rpt-cell');
+  const nameField = cell ? cell.querySelector('.rpt-field [contenteditable="true"]') : null;
+  if(nameField) {
+    nameField.focus();
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(nameField);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch(e) {}
+  }
 }
 
 function updateSubject() {
@@ -11659,6 +11674,7 @@ function buildReportPayload() {
       return out;
     })(),
     scoreData: (typeof _scoreData !== 'undefined') ? JSON.parse(JSON.stringify(_scoreData)) : {},
+    reportTimes: (typeof _reportTimes !== 'undefined') ? JSON.parse(JSON.stringify(_reportTimes)) : {},
     pages
   };
 
@@ -12906,6 +12922,19 @@ async function saveAsReportJSON() {
   const { data, filename } = buildReportPayload();
   const json = JSON.stringify(data, null, 2);
 
+  // If this button has a designated folder, save straight there.
+  try {
+    const dir = await _dfGet('saveAs', true);
+    if(dir) {
+      const fh = await dir.getFileHandle(filename, { create: true });
+      const w = await fh.createWritable();
+      await w.write(json);
+      await w.close();
+      _markSavedToFile();
+      return;
+    }
+  } catch(e) { console.warn('Save As designated-folder write failed, falling back:', e); }
+
   const apiAvailable = typeof window.showSaveFilePicker === 'function';
   const inIframe = window.self !== window.top;
 
@@ -13360,6 +13389,18 @@ async function exportToCustomer() {
   const apiAvailable = typeof window.showSaveFilePicker === 'function';
   const inIframe = window.self !== window.top;
 
+  // If the Customer-file button has a designated folder, save straight there.
+  try {
+    const dir = await _dfGet('customer', true);
+    if(dir) {
+      const fh = await dir.getFileHandle(filename, { create: true });
+      const w = await fh.createWritable();
+      await w.write(html);
+      await w.close();
+      return;
+    }
+  } catch(e) { console.warn('Customer designated-folder write failed, falling back:', e); }
+
   if(apiAvailable) {
     try {
       const handle = await window.showSaveFilePicker({
@@ -13427,6 +13468,91 @@ function _legacyOpenJsonPicker() {
 // Produces a small file (chapter ids, titles, order, and each chapter's
 // subchapter names — no photos) that the mobile app loads so it shows the
 // SAME chapters/subchapters you have here.
+// ══════════════════════════════════════════════════════════════
+//  DESIGNATED FOLDERS  (each button can remember its OWN folder)
+//  Chrome/Edge only (File System Access API). Handles are stored in IndexedDB
+//  so they persist across sessions; the browser still re-confirms permission
+//  about once per session — that's a browser security rule.
+//
+//  Right-click a button to set/change its folder; left-click uses it.
+//  Keys: 'open', 'saveAs', 'mobileImport', 'mobileExport', 'customer'.
+// ══════════════════════════════════════════════════════════════
+const _DF_DB = 'inspectra_hatch_desktop';
+const _DF_STORE = 'handles';
+// Friendly names + the button id each key maps to (for tooltip updates).
+const _DF_BTNS = {
+  open:         { btn: 'dfOpenBtn',   label: 'Open a report',                     base: 'Open a report \u2014 choose a JSON file from disk' },
+  saveAs:       { btn: 'dfSaveAsBtn', label: 'Save report',                        base: 'Save report \u2014 choose where to save the file' },
+  mobileImport: { btn: 'dfImportBtn', label: 'Mobile import',                      base: 'Import photos from the mobile app' },
+  mobileExport: { btn: 'dfExportBtn', label: 'Mobile export',                      base: 'Export the chapter list for the mobile app' },
+  customer:     { btn: 'dfCustBtn',   label: 'Customer file',                      base: 'Export a view-only HTML report' }
+};
+
+function _dfOpenDB() {
+  return new Promise((resolve, reject) => {
+    if(!window.indexedDB) { reject(new Error('no idb')); return; }
+    const req = indexedDB.open(_DF_DB, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(_DF_STORE); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function _dfSaveHandle(key, handle) {
+  try { const db = await _dfOpenDB(); const tx = db.transaction(_DF_STORE,'readwrite');
+    tx.objectStore(_DF_STORE).put(handle, key); return new Promise(r=>{tx.oncomplete=()=>r(true);tx.onerror=()=>r(false);});
+  } catch(e){ return false; }
+}
+async function _dfLoadHandle(key) {
+  try { const db = await _dfOpenDB(); const tx = db.transaction(_DF_STORE,'readonly');
+    return await new Promise(r=>{ const rq=tx.objectStore(_DF_STORE).get(key); rq.onsuccess=()=>r(rq.result||null); rq.onerror=()=>r(null); });
+  } catch(e){ return null; }
+}
+// Verify (and if needed re-request) read/write permission on a stored folder.
+async function _dfEnsurePermission(handle, write) {
+  if(!handle || !handle.queryPermission) return false;
+  const opts = { mode: write ? 'readwrite' : 'read' };
+  if((await handle.queryPermission(opts)) === 'granted') return true;
+  if((await handle.requestPermission(opts)) === 'granted') return true;
+  return false;
+}
+// Get a button's designated folder handle with permission, or null.
+async function _dfGet(key, write) {
+  const h = await _dfLoadHandle(key);
+  if(!h) return null;
+  return (await _dfEnsurePermission(h, write)) ? h : null;
+}
+// Let the user pick (or change) the folder for one button.
+async function setDesignatedFolder(key) {
+  if(!window.showDirectoryPicker) {
+    alert('Choosing a fixed folder isn\u2019t supported in this browser. Use Chrome or Edge for this feature.');
+    return;
+  }
+  const meta = _DF_BTNS[key];
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await _dfEnsurePermission(handle, true);
+    await _dfSaveHandle(key, handle);
+    _dfUpdateBtnLabel(key, handle.name);
+    alert('"' + (meta ? meta.label : key) + '" folder set to: ' + handle.name);
+  } catch(err) {
+    if(err && err.name === 'AbortError') return; // cancelled
+    console.warn('setDesignatedFolder failed:', err);
+  }
+}
+function _dfUpdateBtnLabel(key, name) {
+  const meta = _DF_BTNS[key]; if(!meta) return;
+  const el = document.getElementById(meta.btn); if(!el) return;
+  el.title = meta.base + (name
+    ? ' \u00b7 folder: ' + name + ' (right-click to change)'
+    : ' (right-click: set a fixed folder)');
+}
+// Reflect saved folder names in tooltips on load.
+window.addEventListener('DOMContentLoaded', () => {
+  Object.keys(_DF_BTNS).forEach(key => {
+    _dfLoadHandle(key).then(h => { if(h) _dfUpdateBtnLabel(key, h.name); });
+  });
+});
+
 function exportChapterStructure() {
   const chapters = [];
   const enabled = (typeof chapterState !== 'undefined') ? chapterState.filter(c => c.enabled) : [];
@@ -13471,12 +13597,52 @@ function exportChapterStructure() {
   };
   const ship = (document.querySelector('.ship-name-input')?.textContent || 'Report')
     .replace(/[\/\\:*?"<>|]/g,'').replace(/\s+/g,' ').trim();
-  const blob = new Blob([JSON.stringify(struct)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'HC_Chapters_' + ship + '.json';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  const fileName = 'HC_Chapters_' + ship + '.json';
+  const json = JSON.stringify(struct);
+  const blob = new Blob([json], { type: 'application/json' });
+
+  // Download fallback — always works on every browser/laptop.
+  const _download = () => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  };
+
+  // 1) If a designated folder is set (and we have permission), save straight
+  //    there — no dialog, no Downloads folder.
+  // 2) Else offer a Save As dialog (Chrome/Edge).
+  // 3) Else fall back to a normal download.
+  (async () => {
+    try {
+      const dir = await _dfGet('mobileExport', true);
+      if(dir) {
+        const fh = await dir.getFileHandle(fileName, { create: true });
+        const w = await fh.createWritable();
+        await w.write(blob);
+        await w.close();
+        return;
+      }
+    } catch(e) { console.warn('Designated-folder save failed, falling back:', e); }
+
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [{ description: 'HC mobile export', accept: { 'application/json': ['.json'] } }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;       // cancelled
+        /* otherwise fall through to download */
+      }
+    }
+    _download();
+  })();
 }
 
 // ── Import photos captured with the mobile app ────────────────────────
@@ -13484,8 +13650,31 @@ function exportChapterStructure() {
 // matching chapters using the desktop's own photo-pair machinery, so the
 // result is identical to adding the photos here by hand. Additive only.
 function importMobilePhotos() {
-  const inp = document.getElementById('mobilePhotoInput');
-  if(inp) inp.click();
+  // If a designated folder is set and the modern picker is available, open the
+  // file chooser starting in that folder so the bundle is right there. Falls
+  // back to the normal hidden-input file picker otherwise.
+  (async () => {
+    if(window.showOpenFilePicker) {
+      try {
+        const dir = await _dfGet('mobileImport', false);
+        const opts = {
+          multiple: false,
+          types: [{ description: 'HC mobile photo bundle', accept: { 'application/json': ['.json'] } }]
+        };
+        if(dir) opts.startIn = dir;
+        const [handle] = await window.showOpenFilePicker(opts);
+        const file = await handle.getFile();
+        const text = await file.text();
+        _processMobileBundleText(text);
+        return;
+      } catch(err) {
+        if(err && err.name === 'AbortError') return;       // cancelled
+        /* fall through to legacy input */
+      }
+    }
+    const inp = document.getElementById('mobilePhotoInput');
+    if(inp) inp.click();
+  })();
 }
 
 function _setPhotoFrameFromDataURL(el, src) {
@@ -13503,22 +13692,24 @@ function _setPhotoFrameFromDataURL(el, src) {
   img.src = src;
 }
 
+// Shared: parse a mobile-bundle JSON string and apply it.
+function _processMobileBundleText(text) {
+  let bundle;
+  try { bundle = JSON.parse(text); }
+  catch(err) { alert('Could not read that file.'); return; }
+  if(!bundle || bundle.type !== 'hc-mobile-photo-bundle') {
+    alert('That is not a mobile photo file. Use a file saved from the mobile capture app.');
+    return;
+  }
+  try { _applyMobileBundle(bundle); }
+  catch(err) { alert('Import failed: ' + (err && err.message)); }
+}
+
 function _handleMobilePhotoImport(input) {
   const f = input.files && input.files[0];
   if(!f) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    let bundle;
-    try { bundle = JSON.parse(e.target.result); }
-    catch(err) { alert('Could not read that file.'); input.value=''; return; }
-    if(!bundle || bundle.type !== 'hc-mobile-photo-bundle') {
-      alert('That is not a mobile photo file. Use a file saved from the mobile capture app.');
-      input.value=''; return;
-    }
-    try { _applyMobileBundle(bundle); }
-    catch(err) { alert('Import failed: ' + (err && err.message)); }
-    input.value='';
-  };
+  reader.onload = e => { _processMobileBundleText(e.target.result); input.value=''; };
   reader.readAsText(f);
 }
 
@@ -13963,13 +14154,15 @@ async function openReportJSON() {
 
   if(typeof window.showOpenFilePicker === 'function') {
     try {
-      const [handle] = await window.showOpenFilePicker({
+      const _openOpts = {
         multiple: false,
         types: [{
           description: 'HC Daily Report (JSON)',
           accept: { 'application/json': ['.json'] }
         }]
-      });
+      };
+      try { const dir = await _dfGet('open', false); if(dir) _openOpts.startIn = dir; } catch(e){}
+      const [handle] = await window.showOpenFilePicker(_openOpts);
       const file = await handle.getFile();
       text = await file.text();
     } catch(err) {
@@ -14035,6 +14228,10 @@ function applyImportedReport(data) {
   // 0. Restore vessel type first (affects _activeSections())
   if(data.vesselType === 'bulk' || data.vesselType === 'container') {
     _vesselType = data.vesselType;
+  }
+  // Restore report timing (created / started / completed timestamps).
+  if(data.reportTimes && typeof data.reportTimes === 'object') {
+    _reportTimes = Object.assign({}, _reportTimes, data.reportTimes);
   }
   // Restore the report's current language so future translations use the
   // correct source language (defaults to English for older saved files).
@@ -15813,6 +16010,178 @@ function _bindCompareDropTargets() {
       }, 50);
     }
   });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  REPORT STATISTICS  (right-click the size/word badges in the toolbar)
+//  Shows file size, photo/video count, words, chapters, subchapters, tables,
+//  plus ACTIVE WORK TIME: the report counts time only while it is open AND
+//  there is recent activity (typing, adding photos, clicking). Idle time and
+//  time while closed are NOT counted, so the total reflects real hands-on time
+//  spent creating the report. The accumulated total is saved in the report
+//  file (reportTimes.activeMs) so it adds up across every session.
+// ══════════════════════════════════════════════════════════════
+let _reportTimes = { created: null, activeMs: 0 };
+(function _initCreated() {
+  if(!_reportTimes.created) _reportTimes.created = new Date().toISOString();
+})();
+
+// Active-time tracking.
+const _ACTIVE_IDLE_MS = 60 * 1000;   // stop counting after 60s of no activity
+const _ACTIVE_TICK_MS = 5 * 1000;    // accumulate in 5s ticks while active
+let _lastActivityTs = Date.now();
+let _activeTickTimer = null;
+
+function _markActivity() { _lastActivityTs = Date.now(); }
+
+function _activeTick() {
+  const now = Date.now();
+  // Only count this tick if the user was active within the idle window AND the
+  // page is visible (not minimised / backgrounded).
+  const visible = (typeof document.hidden === 'undefined') ? true : !document.hidden;
+  if(visible && (now - _lastActivityTs) <= _ACTIVE_IDLE_MS) {
+    _reportTimes.activeMs = (_reportTimes.activeMs || 0) + _ACTIVE_TICK_MS;
+    // If the stats modal is open, refresh its live numbers.
+    if(document.getElementById('reportStatsModal')) openReportStats(true);
+  }
+}
+
+function _startActiveTracking() {
+  if(_activeTickTimer) return;
+  // Any of these interactions counts as activity.
+  ['keydown','pointerdown','input','paste','wheel','touchstart'].forEach(ev =>
+    document.addEventListener(ev, _markActivity, { passive: true, capture: true }));
+  _markActivity();
+  _activeTickTimer = setInterval(_activeTick, _ACTIVE_TICK_MS);
+}
+// Begin tracking once the page is ready.
+if(document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _startActiveTracking);
+} else {
+  _startActiveTracking();
+}
+
+function _fmtDateTime(iso) {
+  if(!iso) return '\u2014';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, { year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+  } catch(e) { return '\u2014'; }
+}
+function _fmtDuration(ms) {
+  if(ms == null || isNaN(ms) || ms < 0) return '\u2014';
+  const totalMin = Math.round(ms / 60000);
+  const d = Math.floor(totalMin / 1440);
+  const h = Math.floor((totalMin % 1440) / 60);
+  const m = totalMin % 60;
+  const parts = [];
+  if(d) parts.push(d + 'd');
+  if(h) parts.push(h + 'h');
+  parts.push(m + 'm');
+  return parts.join(' ');
+}
+
+function _gatherReportStats() {
+  const root = document.getElementById('pagesRoot') || document;
+  const bytes = new Blob([root.outerHTML]).size;
+  const mb = bytes / (1024 * 1024);
+  const sizeLabel = mb < 1 ? (bytes / 1024).toFixed(0) + ' KB' : mb.toFixed(2) + ' MB';
+
+  const photosAll = root.querySelectorAll('.photo.has-image, .vessel-large.has-image').length;
+  const videos = root.querySelectorAll('.photo-video').length;
+  const photos = Math.max(0, photosAll - videos);
+
+  let words = 0;
+  ['.field', '.caption', '.vessel-caption-bar', '.shipyard-field', '.extra-text-box .field'].forEach(sel => {
+    root.querySelectorAll(sel).forEach(el => {
+      if(el.closest('.stat-table, .mat-table, .hc-grid')) return;
+      const t = el.innerText || el.textContent || '';
+      words += t.trim().split(/\s+/).filter(w => w.length > 0).length;
+    });
+  });
+
+  const chapters = (typeof chapterState !== 'undefined')
+    ? chapterState.filter(c => c.enabled).length
+    : root.querySelectorAll('.section[data-sid] .section-head').length;
+  const subchapters = root.querySelectorAll('.subch-label-bar[data-name]').length;
+  const photoPairs = root.querySelectorAll('.photo-pair').length;
+  const statTables = root.querySelectorAll('.stat-table').length;
+  const matTables = root.querySelectorAll('.mat-table').length;
+  const scoreTables = root.querySelectorAll('.score-block').length;
+  const sketches = root.querySelectorAll('.sketch-frame.has-image, .sketch-block .photo.has-image').length;
+  const pages = root.querySelectorAll('.page').length;
+
+  // Active work time: accumulated total + the current uncommitted partial tick
+  // if the user is active right now.
+  const now = Date.now();
+  const activeNow = ((now - _lastActivityTs) <= _ACTIVE_IDLE_MS);
+  const activeMs = (_reportTimes.activeMs || 0) + (activeNow ? (now - _lastActivityTs < _ACTIVE_TICK_MS ? (now - _lastActivityTs) : 0) : 0);
+
+  return {
+    size: sizeLabel, mb, photos, videos, words, chapters, subchapters,
+    photoPairs, statTables, matTables, scoreTables, sketches, pages,
+    created: _reportTimes.created, activeMs, activeNow
+  };
+}
+
+function reportTimerReset() {
+  _reportTimes.activeMs = 0;
+  _markActivity();
+  openReportStats(true);
+}
+
+function _statRow(label, value) {
+  return '<div style="display:flex;justify-content:space-between;gap:18px;padding:4px 0;border-bottom:1px solid #eef1f6;">' +
+         '<span style="color:#5a6677;">' + label + '</span>' +
+         '<span style="font-weight:600;color:#142847;">' + value + '</span></div>';
+}
+
+function openReportStats(refresh) {
+  const s = _gatherReportStats();
+  let modal = document.getElementById('reportStatsModal');
+  if(!modal) {
+    modal = document.createElement('div');
+    modal.id = 'reportStatsModal';
+    modal.className = 'no-print';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(10,25,55,.45);display:flex;align-items:center;justify-content:center;';
+    modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML =
+    '<div style="background:#fff;border-radius:12px;max-width:460px;width:92%;max-height:88vh;overflow:auto;box-shadow:0 18px 50px rgba(10,25,55,.35);font-family:\'Source Sans 3\',Arial,sans-serif;">' +
+      '<div style="background:#142847;color:#fff;padding:14px 20px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">' +
+        '<span style="font-weight:700;letter-spacing:.04em;">REPORT STATISTICS</span>' +
+        '<button onclick="document.getElementById(\'reportStatsModal\').remove()" style="background:transparent;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;">&times;</button>' +
+      '</div>' +
+      '<div style="padding:16px 20px 20px;">' +
+        '<div style="font-size:8pt;font-weight:700;letter-spacing:.08em;color:#8a96b0;text-transform:uppercase;margin:2px 0 4px;">Time spent</div>' +
+        '<div style="display:flex;align-items:baseline;justify-content:space-between;padding:2px 0 8px;">' +
+          '<span style="color:#5a6677;">Active work time' + (s.activeNow ? ' <span style="color:#1a7a4a;font-size:8pt;">&#9679; counting</span>' : '') + '</span>' +
+          '<span style="font-weight:700;font-size:15pt;color:#142847;">' + _fmtDuration(s.activeMs) + '</span>' +
+        '</div>' +
+        _statRow('Created', _fmtDateTime(s.created)) +
+
+        '<div style="font-size:8pt;font-weight:700;letter-spacing:.08em;color:#8a96b0;text-transform:uppercase;margin:14px 0 4px;">Content</div>' +
+        _statRow('Chapters', s.chapters) +
+        _statRow('Subchapters', s.subchapters) +
+        _statRow('Photos', s.photos) +
+        (s.videos ? _statRow('Videos', s.videos) : '') +
+        _statRow('Photo pairs', s.photoPairs) +
+        _statRow('Words', s.words.toLocaleString()) +
+        ((s.statTables||s.matTables||s.scoreTables) ? _statRow('Tables', (s.statTables+s.matTables+s.scoreTables) + ' (stats ' + s.statTables + ', materials ' + s.matTables + ', score ' + s.scoreTables + ')') : '') +
+        (s.sketches ? _statRow('Sketch images', s.sketches) : '') +
+        _statRow('Pages', s.pages) +
+
+        '<div style="font-size:8pt;font-weight:700;letter-spacing:.08em;color:#8a96b0;text-transform:uppercase;margin:14px 0 4px;">File</div>' +
+        _statRow('Report size', s.size) +
+
+        '<div style="display:flex;gap:8px;margin-top:16px;">' +
+          '<button onclick="reportTimerReset()" style="background:#f0f2f6;color:#5a6677;border:none;border-radius:6px;padding:9px 14px;font:inherit;cursor:pointer;">Reset work time</button>' +
+        '</div>' +
+        '<div style="margin-top:10px;font-size:8pt;color:#9aa6ba;line-height:1.4;">Active work time counts only while the report is open and you are working in it. Idle time and time while closed are not counted. The total is saved in the report file and adds up across sessions.</div>' +
+      '</div>' +
+    '</div>';
 }
 
 // ── Live report size indicator ───────────────────────────────────────────
