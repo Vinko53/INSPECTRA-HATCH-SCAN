@@ -120,8 +120,8 @@
   @supports (aspect-ratio: 1) { .cover-tile { padding-bottom: 0 !important; aspect-ratio: 16/9; } }
   .join-btn { margin-top: 8px; width: 100%; background: #f2f5fa; color: #1f3a68; border: 1px solid #c7d0de; border-radius: 8px; padding: 8px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
   .subch-group { border: 1px solid #dbe3ef; border-radius: 10px; padding: 10px; margin-bottom: 12px; background: #fafcff; }
-  .subch-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; padding: 7px 10px; border-radius: 7px; background: linear-gradient(135deg,#1f3a68,#2c5599); text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; box-shadow: 0 1px 3px rgba(10,30,70,.25); }
-  .subch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 6px; border-radius: 5px; background: rgba(255,255,255,.92); color: #1f3a68; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+  .subch-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; padding: 7px 10px; border-radius: 7px; background: linear-gradient(135deg,#336ec0,#4a82cf); text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; box-shadow: 0 1px 3px rgba(10,30,70,.25); }
+  .subch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 6px; border-radius: 5px; background: rgba(255,255,255,.95); color: #28528f; font-size: 11px; font-weight: 800; flex-shrink: 0; }
   .ch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 8px; background: linear-gradient(180deg,rgba(255,255,255,.98),rgba(225,235,250,.85)); color: #1f3a68; font-size: 13px; font-weight: 800; flex-shrink: 0; margin-right: 10px; box-shadow: inset 0 1px 1px rgba(255,255,255,.9), 0 1px 3px rgba(10,30,70,.4); }
   /* Chapter number with a subchapter-count badge on its corner */
   .ch-num-wrap { position: relative; display: inline-flex; flex-shrink: 0; margin-right: 10px; }
@@ -163,6 +163,11 @@
       <label class="field"><span>Vessel name</span><input type="text" id="ship" placeholder="Ship name"></label>
       <label class="field"><span>IMO number</span><input type="text" id="imo" inputmode="numeric" maxlength="7" placeholder="XXXXXXX"></label>
       <label class="field"><span>Date</span><input type="date" id="date"></label>
+      <label class="field"><span>Vessel type</span>
+        <select id="vtype" onchange="switchVesselType(this.value)">
+          <option value="container">Container</option>
+          <option value="bulk">Bulk carrier</option>
+        </select></label>
       <label class="field"><span>Report type</span>
         <select id="rtype" onchange="onReportTypeChange()">
           <option value="daily">Daily Report</option>
@@ -221,17 +226,45 @@ var CH_TITLES = {
   welding:'Fixed lashing material in cargo holds',
   lashingFlatRacks:'Flat racks & gear boxes'
 };
+// Bulk-carrier titles (some shared IDs have different names on bulk carriers).
+var CH_TITLES_BULK = {
+  hatchOverview:'Hatch covers overview',
+  general:'General considerations',
+  safety:'Safety',
+  steel:'Steel works',
+  bearing:'Bearing pads and mating plates',
+  rubber:'Rubber packing',
+  coaming:'Hatch coamings',
+  stoppers:'Stoppers',
+  cleats:'Hatch cover cleats',
+  sockets:'Container sockets and lashing eyes',
+  vent:'Hatch cover ventilators',
+  hydraulic:'Hydraulic system'
+};
+// Active vessel type — 'container' or 'bulk'. Mirrors the desktop switch.
+var _vesselType = 'container';
+function _chTitle(id){
+  if(_vesselType === 'bulk' && CH_TITLES_BULK[id]) return CH_TITLES_BULK[id];
+  return CH_TITLES[id] || id;
+}
 // Per report type, the PHOTO-capable chapters in the desktop's order.
 // Non-disclaimer types (daily/initial/final) include Safety, not Interior/FlatRacks.
 // Disclaimer types (predocking/intermediate/special) drop Safety and add
 // Interior + Flat racks & gear boxes (matching the desktop updateSubject rules).
 var CH_BASE_STANDARD = ['hatchOverview','general','safety','steel','vent','bearing','coaming','rubber','stoppers','antilifting','sockets','lashing','welding'];
 var CH_BASE_DISCLAIMER = ['hatchOverview','general','steel','interior','vent','bearing','coaming','rubber','stoppers','antilifting','sockets','lashing','welding','lashingFlatRacks'];
+// Bulk carrier photo-capable chapters (same for all report types).
+var CH_BASE_BULK = ['hatchOverview','general','safety','steel','bearing','rubber','coaming','stoppers','cleats','sockets','vent','hydraulic'];
 var DISCLAIMER_TYPES = ['predocking','intermediate','special'];
 
 function chaptersForType(rtype){
-  var ids = (DISCLAIMER_TYPES.indexOf(rtype) >= 0) ? CH_BASE_DISCLAIMER : CH_BASE_STANDARD;
-  return ids.map(function(id){ return { id:id, title:CH_TITLES[id], subchapters:[] }; });
+  var ids;
+  if(_vesselType === 'bulk'){
+    ids = CH_BASE_BULK;
+  } else {
+    ids = (DISCLAIMER_TYPES.indexOf(rtype) >= 0) ? CH_BASE_DISCLAIMER : CH_BASE_STANDARD;
+  }
+  return ids.map(function(id){ return { id:id, title:_chTitle(id), subchapters:[] }; });
 }
 
 // Active chapter list — initialised for the default report type (daily).
@@ -302,6 +335,40 @@ function _applyTypeLock(){
 // import), rebuild the chapter list to that type's default set. Photos already
 // captured in chapters that still exist are preserved; chapters that drop out
 // of the new type are removed; newly-appearing chapters get default frames.
+// Switch vessel type (Container / Bulk carrier), mirroring the desktop.
+// Rebuilds the chapter list to the new vessel type's set. Photos already
+// captured in chapters that still exist are preserved. Disabled when chapters
+// were imported from the desktop (the desktop defines the structure there).
+function switchVesselType(type){
+  if(type!=='container' && type!=='bulk') return;
+  if(_vesselType===type){ _updateVesselTypeButtons(); return; }
+  if(_importedFromDesktop){
+    toast('Vessel type is set by the desktop report');
+    return;
+  }
+  _vesselType=type;
+  _updateVesselTypeButtons();
+  var rt=document.getElementById('rtype');
+  var newList=chaptersForType(rt ? rt.value : 'daily');
+  var oldStore=store;
+  var oldById={}; CHAPTERS.forEach(function(c){ oldById[c.id]=c; });
+  newList.forEach(function(c){ if(oldById[c.id] && oldById[c.id].subchapters && oldById[c.id].subchapters.length) c.subchapters=oldById[c.id].subchapters; });
+  CHAPTERS=newList;
+  var newStore={};
+  CHAPTERS.forEach(function(c){ newStore[c.id]=_mergeChapterWithSubchapters(c, oldStore[c.id]); });
+  store=newStore;
+  render();
+}
+function _updateVesselTypeButtons(){
+  var sel=document.getElementById('vtype');
+  if(sel) sel.value=_vesselType;
+  // When chapters come from the desktop, the vessel type is fixed — lock it.
+  if(sel){
+    sel.disabled = _importedFromDesktop;
+    sel.style.opacity = _importedFromDesktop ? '0.6' : '';
+  }
+}
+
 function onReportTypeChange(){
   if(_importedFromDesktop) return; // locked — desktop defines structure
   var rt=document.getElementById('rtype');
@@ -703,6 +770,7 @@ function buildBundle(){
       reportType: document.getElementById('rtype').value || 'daily',
       shipyard: document.getElementById('yard').value || ''
     },
+    vesselType: _vesselType,
     // Full chapter + subchapter structure (in order), so the desktop can
     // restore subchapters — including empty ones that hold no photos yet.
     structure: CHAPTERS.map(function(c){
@@ -754,6 +822,9 @@ function _downloadFallback(blob, name){
 function openFile(){ document.getElementById('openInput').click(); }
 // Apply a bundle object to the app state (shared by file-open and autosave-restore).
 function _applyBundleObject(b){
+  // Restore vessel type first (affects default chapter titles/sets).
+  if(b.vesselType==='bulk' || b.vesselType==='container'){ _vesselType=b.vesselType; }
+  _updateVesselTypeButtons();
   if(b.header){
     document.getElementById('ship').value=b.header.shipName||'';
     document.getElementById('imo').value=b.header.imo||'';
@@ -765,7 +836,7 @@ function _applyBundleObject(b){
   // subchapters survive a file-open or an autosave restore — not just photos.
   if(Array.isArray(b.structure) && b.structure.length){
     CHAPTERS = b.structure.map(function(sc){
-      return { id: sc.id, title: sc.title || (CH_TITLES[sc.id]||sc.id), subchapters: Array.isArray(sc.subchapters)? sc.subchapters.slice() : [] };
+      return { id: sc.id, title: sc.title || _chTitle(sc.id), subchapters: Array.isArray(sc.subchapters)? sc.subchapters.slice() : [] };
     });
   } else {
     // Older files without structure: keep the chapters for the report type.
@@ -822,6 +893,9 @@ function handleChapters(inp){
       // be changed on the phone (the desktop defines the report).
       _importedFromDesktop = true;
       if(st.reportType){ var rt=document.getElementById('rtype'); if(rt){ rt.value=st.reportType; } }
+      // If the desktop exported its vessel type, mirror it on the phone.
+      if(st.vesselType==='bulk' || st.vesselType==='container'){ _vesselType=st.vesselType; }
+      _updateVesselTypeButtons();
       // Pre-fill header details exported from the desktop (ship, IMO, date, shipyard).
       if(st.header){
         var h=st.header;
