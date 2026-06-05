@@ -402,6 +402,13 @@
        a simple footer via CSS counter (page numbers) at runtime. */
     #contentPages .page > .ph,
     #contentPages .page > .page-footer{ display:none!important; }
+    /* The static cover and meta/TOC pages also carry their own .page-footer in
+       the HTML. In print the browser already prints a footer via @page (the
+       "Page X of Y" counter), so these baked-in footers would duplicate it —
+       e.g. a stray "Page 2 of 17" line under the Contents. Hide them in print
+       so only the single @page footer shows. */
+    .page[data-pg="cover"] > .page-footer,
+    .page[data-pg="meta"] > .page-footer{ display:none!important; }
 
     /* Allow sections to flow across page breaks — avoids large blank gaps.
        Individual elements (photo pairs, schematics, stat blocks) still
@@ -878,6 +885,10 @@
     .toc-item.toc-disabled { display: none; }
     .toc-subch-toggle { display: none !important; }
     .toc-subitem.toc-subitem-hidden { display: none !important; }
+    /* Remove the faint divider line under each TOC row in the PDF — the dotted
+       leader lines already separate the items, so the solid row borders are
+       redundant and read as extra lines. */
+    .toc-item, .toc-subitem { border-bottom: none !important; }
   }
 
   /* date mask handled by .dm-seg styles */
@@ -1237,11 +1248,15 @@
     .mat-table, .mat-table th, .mat-table td,
     .hc-schematic, .hc-schematic-img-cell,
     .sketch-block, .bp-bay-block,
-    /* Report (Bericht) cover: company-info table grid + cells. */
-    .rpt-grid, .rpt-cell,
     /* Empty fields keep a visible border in print — make it black too. */
     .field:empty, .field[data-empty="true"] {
       border-color: #000 !important;
+    }
+    /* Report (Bericht) cover: company-info table grid + cells. Use a soft dark
+       grey rather than pure black so the cover table reads as fine hairlines
+       instead of a heavy dark grid. */
+    .rpt-grid, .rpt-cell {
+      border-color: #6a7488 !important;
     }
     /* Photo frames and their caption bars → black outline. */
     .photo-pair .photo,
@@ -1249,14 +1264,15 @@
       border-color: #000 !important;
     }
     /* The report title rules (top/bottom bars of the header block). */
-    .rpt-title { border-top-color: #000 !important; border-bottom-color: #000 !important; }
+    .rpt-title { border-top-color: #6a7488 !important; border-bottom-color: #6a7488 !important; border-top-width: 0.6pt !important; border-bottom-width: 0.6pt !important; }
     /* The page footer divider line. */
     .page-footer { border-top-color: #000 !important; }
     /* Remove the shipyard / port name underline in the PDF — it sat directly
        above the footer divider and looked like a doubled line. */
     .shipyard-field { border-bottom: none !important; }
-    /* Table-of-contents dotted leader lines → black for legibility. */
-    .toc-dots, .toc-sub-dots { border-bottom-color: #000 !important; border-bottom-width: 0.3pt !important; }
+    /* Table-of-contents dotted leader lines → soft grey hairline (pure black
+       dots read as heavy/dark in the PDF; a light grey dotted line is cleaner). */
+    .toc-dots, .toc-sub-dots { border-bottom-color: #aab2c0 !important; border-bottom-width: 0.2pt !important; }
     /* Keep navy header bars (.section-head, .subch-label, .vessel-caption-bar,
        the BERICHT/REPORT bar fill) and the scoring gauge untouched: they are
        NOT overridden here, so they print in their normal colours. */
@@ -1351,8 +1367,8 @@
   .subch-custom-wrap[style*="display: none"],
   .subch-label-bar[style*="display: none"] { pointer-events: none; }
   .subch-label {
-    flex: 1; font-size: 10pt; font-weight: 600; color: var(--navy-deep);
-    padding: 2mm 4mm; background: #d6e4f0;
+    flex: 1; font-size: 10pt; font-weight: 600; color: #fff;
+    padding: 2mm 4mm; background: linear-gradient(135deg,#336ec0,#4a82cf);
     letter-spacing: .03em; text-transform: uppercase;
     border-left: 3px solid var(--navy);
   }
@@ -7926,6 +7942,7 @@ function _insertButtonRowBefore(el, sec) {
     <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add stats table</button>
     <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box" style="margin-left:auto;">&#43; Add text box</button>`;
   el.parentNode.insertBefore(newRow, el);
+  if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
 }
 
 function _insertButtonRowAfter(el, sec) {
@@ -7947,6 +7964,7 @@ function _insertButtonRowAfter(el, sec) {
     <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add stats table</button>
     <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box below" style="margin-left:auto;">&#43; Add text box</button>`;
   el.parentNode.insertBefore(newRow, el.nextSibling);
+  if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
 }
 
 // ── Compact button rows: keep "Add photo pair" on the LEFT, collapse every
