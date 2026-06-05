@@ -295,6 +295,15 @@
   }
   .add-photo-btn{display:inline-flex;align-items:center;gap:4px;margin-top:1mm;background:transparent;border:1px dashed var(--navy-soft, #b9c4d6);color:#7a869a;border-radius:3px;padding:2px 8px;font-size:8pt;font-weight:500;cursor:pointer;font-family:inherit;transition:color .12s,border-color .12s,background .12s;}
   .add-photo-btn:hover{background:var(--bg-soft);border-color:var(--navy);color:var(--navy);}
+  /* Compact button-row "More options" dropdown (right side of each add-pair-row).
+     Keeps the row uncluttered: photo-pair button left, everything else here. */
+  .br-menu-wrap{position:relative;display:inline-block;}
+  .br-menu-toggle{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px dashed var(--navy-soft,#b9c4d6);color:#7a869a;border-radius:3px;padding:2px 8px;font-size:8pt;font-weight:500;cursor:pointer;font-family:inherit;transition:color .12s,border-color .12s,background .12s;}
+  .br-menu-toggle:hover{background:var(--bg-soft);border-color:var(--navy);color:var(--navy);}
+  .br-menu{position:absolute;top:100%;right:0;margin-top:3px;min-width:180px;background:#fff;border:1px solid var(--line-soft);border-radius:6px;box-shadow:0 6px 22px rgba(10,30,70,.18);padding:4px;z-index:60;display:none;flex-direction:column;gap:2px;}
+  .br-menu.open{display:flex;}
+  .br-menu-item{display:block;width:100%;text-align:left;background:transparent;border:none;border-radius:4px;padding:6px 10px;font-size:8.5pt;font-weight:500;color:var(--navy-deep);cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .br-menu-item:hover{background:var(--bg-soft);color:var(--navy);}
   /* Integrated "number of pairs" selector inside the Add photo pair button */
   .pair-add-btn{gap:6px;}
   .pair-count-sel{
@@ -5741,7 +5750,17 @@ function _syncScoreTableBtn() {
     pr.querySelectorAll('.section[data-sid="' + sid + '"]').forEach(sec => {
       const btn = [...sec.querySelectorAll('.hc-add-schematic-btn')].find(b =>
         b.getAttribute('onclick') && b.getAttribute('onclick').includes('addScoreTable'));
-      if(btn) btn.style.display = isDisclaimer ? '' : 'none';
+      if(btn) {
+        btn.style.display = isDisclaimer ? '' : 'none';
+        // If the chapter-level buttons were collapsed into a dropdown, mirror
+        // this visibility onto the matching menu item.
+        const body = sec.querySelector('.section-body');
+        if(body && body._chBtnMenu) {
+          [...body._chBtnMenu.querySelectorAll('.br-menu-item')].forEach(it => {
+            if(it._srcBtn === btn) it.style.display = isDisclaimer ? '' : 'none';
+          });
+        }
+      }
     });
   });
   // Keep gauges in step with whether a score table exists.
@@ -5816,6 +5835,7 @@ function _runAfterReflow() {
   statInit();
   _refreshScoreTables();
   _syncScoreTableBtn();
+  if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
   // buildTOC needs two extra frames to ensure the flow engine (which also
   // uses nested rAFs) has fully finished placing sections into pages
   // before we read their positions for page numbers
@@ -7914,9 +7934,141 @@ function _insertButtonRowAfter(el, sec) {
   el.parentNode.insertBefore(newRow, el.nextSibling);
 }
 
+// ── Compact button rows: keep "Add photo pair" on the LEFT, collapse every
+//    OTHER button in the row into a single "⋯ More" dropdown on the RIGHT.
+//    Runs after each reflow. Reads whatever buttons exist in each row, so it
+//    adapts per chapter (e.g. the score-table button only in General notes).
+function _collapseButtonRows() {
+  const pr = document.getElementById('pagesRoot') || document;
+  pr.querySelectorAll('.add-pair-row').forEach(row => {
+    if(row.dataset.collapsed === '1') return;          // already done
+    // The photo-pair button stays on the left.
+    const photoBtn = row.querySelector('.add-photo-btn');
+    // Every other direct-child button becomes a dropdown item.
+    const others = [...row.children].filter(c =>
+      c !== photoBtn && c.tagName === 'BUTTON');
+    if(!others.length) { row.dataset.collapsed = '1'; return; }
 
-// ══════════════════════════════════════════════════════════════
-//  ITEM SCORE TABLE
+    // Build the dropdown.
+    const menuWrap = document.createElement('div');
+    menuWrap.className = 'br-menu-wrap no-print';
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'br-menu-toggle';
+    toggle.innerHTML = '&#43; More options &#9662;';
+    const menu = document.createElement('div');
+    menu.className = 'br-menu';
+
+    others.forEach(btn => {
+      // Visible-only buttons (skip ones hidden via display:none, e.g. the
+      // score-table button when the report type doesn't use it).
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'br-menu-item';
+      // Use the button's label text (strip any nested controls).
+      item.textContent = btn.textContent.trim().replace(/\s+/g, ' ');
+      if(btn.style.display === 'none') item.style.display = 'none';
+      item.addEventListener('click', () => {
+        menu.classList.remove('open');
+        btn.click();                                   // delegate to the real button
+      });
+      menu.appendChild(item);
+      // Hide the original button (keep it in DOM so its onclick/refs still work).
+      btn.style.display = 'none';
+      btn.classList.add('br-collapsed-original');
+    });
+
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      // Close any other open menus first.
+      document.querySelectorAll('.br-menu.open').forEach(m => { if(m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    });
+    menuWrap.appendChild(toggle);
+    menuWrap.appendChild(menu);
+
+    // Layout: photo button left, menu right.
+    row.style.justifyContent = 'space-between';
+    menuWrap.style.marginLeft = 'auto';
+    row.appendChild(menuWrap);
+    row.dataset.collapsed = '1';
+  });
+
+  // ── Chapter-level buttons under the Comments box ──
+  // These (Add schematic & legend, Add stats table, Add score table, Add
+  // workscope table…) are loose siblings between the Comments field and the
+  // "Work progress:"/"Observation photos:" label. Group them into one dropdown
+  // on the right, adapting to whichever buttons each chapter actually has.
+  pr.querySelectorAll('.section[data-sid] .section-body').forEach(body => {
+    if(body.dataset.chBtnsCollapsed === '1') return;
+    // Anchor on the first text field in the body — its role may be "findings"
+    // (standard chapters) or "body" (spare parts / materials / etc.).
+    const findings = body.querySelector(':scope > .field[data-field-role="findings"]')
+                  || body.querySelector(':scope > .field[contenteditable]');
+    if(!findings) return;
+    // Collect consecutive chapter-level buttons that follow the findings field
+    // (stop at the photo-section label / photo pairs / first non-button).
+    const btns = [];
+    let node = findings.nextElementSibling;
+    while(node) {
+      if(node.tagName === 'BUTTON' &&
+         (node.classList.contains('hc-add-schematic-btn') ||
+          node.classList.contains('stat-add-block-btn'))) {
+        btns.push(node);
+        node = node.nextElementSibling;
+        continue;
+      }
+      // skip whitespace-only text handled by elementSibling; stop otherwise
+      break;
+    }
+    if(!btns.length) { body.dataset.chBtnsCollapsed = '1'; return; }
+
+    const menuWrap = document.createElement('div');
+    menuWrap.className = 'br-menu-wrap no-print';
+    menuWrap.style.cssText = 'display:flex;justify-content:flex-end;margin:1mm 0;';
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'br-menu-toggle';
+    toggle.innerHTML = '&#43; More options &#9662;';
+    const menu = document.createElement('div');
+    menu.className = 'br-menu';
+    btns.forEach(btn => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'br-menu-item';
+      item.textContent = btn.textContent.trim().replace(/\s+/g, ' ');
+      if(btn.style.display === 'none') item.style.display = 'none';
+      item.dataset.forBtn = '1';
+      item._srcBtn = btn;
+      item.addEventListener('click', () => {
+        menu.classList.remove('open');
+        btn.click();
+        // The action may have hidden/shown the source button (e.g. score table
+        // add/remove toggles it). Mirror that onto this menu item.
+        setTimeout(() => { item.style.display = (btn.style.display === 'none') ? 'none' : ''; }, 0);
+      });
+      menu.appendChild(item);
+      btn.style.display = 'none';
+      btn.classList.add('br-collapsed-original');
+    });
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      document.querySelectorAll('.br-menu.open').forEach(m => { if(m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    });
+    menuWrap.appendChild(toggle);
+    menuWrap.appendChild(menu);
+    // Insert the dropdown where the first button was (right after findings).
+    findings.parentNode.insertBefore(menuWrap, btns[0]);
+    body.dataset.chBtnsCollapsed = '1';
+    // Remember the menu so score-table visibility sync can reflect into it.
+    body._chBtnMenu = menu;
+  });
+}
+// Close dropdowns when clicking elsewhere.
+document.addEventListener('click', () => {
+  document.querySelectorAll('.br-menu.open').forEach(m => m.classList.remove('open'));
+});
 //  Inserted into the General chapter. Auto-populates from
 //  chapterState + confirmed subchapter labels.
 //  Scores 1-10 are clickable colour-coded cells; N/A also available.
