@@ -5985,6 +5985,7 @@ function buildTOC() {
     const li = document.createElement('li');
     li.className = 'toc-item';
     li.title = 'Go to: ' + title;
+    li.dataset.sid = sid;
     li.innerHTML =
       '<span class="toc-num">' + chNum + '.</span>' +
       '<span class="toc-name">' + title + '</span>' +
@@ -6010,13 +6011,15 @@ function buildTOC() {
       const sec = document.querySelector('.section[data-sid="' + sid + '"]');
       if(sec) {
         const bars = [...sec.querySelectorAll('.subch-label-bar[data-name]')];
-        bars.forEach(function(bar) {
+        bars.forEach(function(bar, _barIdx) {
           const lbl = bar.querySelector('.subch-label');
           const name = lbl ? lbl.textContent.trim() : (bar.dataset.name || '');
           if(!name) return;
           const sub = document.createElement('li');
           sub.className = 'toc-subitem';
           sub.title = 'Go to: ' + name;
+          sub.dataset.sid = sid;
+          sub.dataset.barIdx = _barIdx;
           // The label already contains the full "N.n  Name" text from _renumberSubchapters
           sub.innerHTML =
             '<span class="toc-sub-num"></span>' +
@@ -10135,6 +10138,113 @@ window.addEventListener('afterprint', () => {
     f.removeAttribute('data-empty');
   });
 });
+
+// ══════════════════════════════════════════════════════════════
+//  REAL-PDF TOC PAGE NUMBERS
+//  On screen each chapter sits on its own page (logical layout, e.g. 17 pages).
+//  In the PDF, chapters flow continuously and pack onto fewer sheets (e.g. 10).
+//  Before printing we measure where each chapter header actually lands in the
+//  flowed layout and rewrite the TOC page numbers + the "Sides incl. cover"
+//  total to the real PDF pages, then restore the on-screen values afterwards.
+//  Note: this matches the browser's pagination in the vast majority of cases;
+//  a header sitting exactly on a page boundary can occasionally differ by ±1.
+// ══════════════════════════════════════════════════════════════
+let _tocPrintBackup = null;   // saved on-screen TOC numbers + sides total
+
+function _applyPdfTocNumbers() {
+  const pr = document.getElementById('pagesRoot');
+  if(!pr) return;
+
+  // Back up current (on-screen) TOC numbers + sides total so we can restore.
+  _tocPrintBackup = { items: [], sides: null };
+  document.querySelectorAll('#tocList .toc-item, #tocList .toc-subitem').forEach(li => {
+    const pgEl = li.querySelector('.toc-pg, .toc-sub-pg');
+    _tocPrintBackup.items.push({ el: pgEl, val: pgEl ? pgEl.textContent : null });
+  });
+  const tf = document.getElementById('totalPagesField');
+  _tocPrintBackup.sides = tf ? tf.textContent : null;
+
+  // A4 printable height per sheet: 297mm − top+bottom @page margins (14mm each).
+  const MM_TO_PX = _mmToPx();
+  const pageContentPx = (297 - 28) * MM_TO_PX;
+  const coverTocPages = 2;          // cover sheet + TOC sheet
+
+  // In the PDF, the chapter sections flow one after another continuously. We
+  // reproduce that by walking the sections in order and accumulating their
+  // rendered heights. Each section starts at the current cumulative height; the
+  // page it lands on is floor(cumulativeStart / pageHeight). A section taller
+  // than the remaining space on a sheet starts the next sheet (page break before
+  // a heading), mirroring the print rules that keep a heading with its content.
+  const secEls = [...pr.querySelectorAll('.section[data-sid]')].filter(s => s.querySelector('.section-head'));
+
+  // Map sid → {startPage, subStartPages[]} computed from flow.
+  const sidToPdf = {};
+  let cumPx = 0;                    // running height of content placed so far
+  secEls.forEach(sec => {
+    const sid = sec.dataset.sid;
+    const secH = sec.getBoundingClientRect().height;
+    // If the heading would fall in the last sliver of a page, the print engine
+    // pushes the whole section to the next sheet. Approximate: if less than
+    // ~18mm remains on the current sheet, start the section on the next one.
+    const posInPage = cumPx % pageContentPx;
+    const remaining = pageContentPx - posInPage;
+    if(remaining < 18 * MM_TO_PX && posInPage > 0) {
+      cumPx += remaining;           // jump to next sheet
+    }
+    const startPage = coverTocPages + 1 + Math.floor(cumPx / pageContentPx);
+    // Subchapter bar positions within this section.
+    const subPages = {};
+    const bars = [...sec.querySelectorAll('.subch-label-bar[data-name]')];
+    bars.forEach((bar, bi) => {
+      const barTop = bar.getBoundingClientRect().top - sec.getBoundingClientRect().top;
+      const barCum = cumPx + Math.max(0, barTop);
+      subPages[bi] = coverTocPages + 1 + Math.floor(barCum / pageContentPx);
+    });
+    sidToPdf[sid] = { startPage, subPages };
+    cumPx += secH;
+  });
+
+  let maxPage = coverTocPages;
+  document.querySelectorAll('#tocList .toc-item').forEach(li => {
+    const info = sidToPdf[li.dataset.sid];
+    const pgEl = li.querySelector('.toc-pg');
+    if(info && pgEl) { pgEl.textContent = info.startPage; if(info.startPage > maxPage) maxPage = info.startPage; }
+  });
+  document.querySelectorAll('#tocList .toc-subitem').forEach(li => {
+    const info = sidToPdf[li.dataset.sid];
+    const bi = parseInt(li.dataset.barIdx, 10);
+    const pgEl = li.querySelector('.toc-sub-pg');
+    if(info && info.subPages && info.subPages[bi] != null && pgEl) {
+      pgEl.textContent = info.subPages[bi];
+      if(info.subPages[bi] > maxPage) maxPage = info.subPages[bi];
+    }
+  });
+
+  if(tf) tf.textContent = maxPage;
+}
+
+function _restoreScreenTocNumbers() {
+  if(!_tocPrintBackup) return;
+  _tocPrintBackup.items.forEach(rec => {
+    if(rec.el && rec.val != null) rec.el.textContent = rec.val;
+  });
+  const tf = document.getElementById('totalPagesField');
+  if(tf && _tocPrintBackup.sides != null) tf.textContent = _tocPrintBackup.sides;
+  _tocPrintBackup = null;
+}
+
+// Measure mm → px at the current rendering scale (robust to zoom).
+function _mmToPx() {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;visibility:hidden;height:100mm;';
+  document.body.appendChild(probe);
+  const px = probe.getBoundingClientRect().height / 100;
+  probe.remove();
+  return px || 3.7795; // fallback ~96dpi
+}
+
+window.addEventListener('beforeprint', _applyPdfTocNumbers);
+window.addEventListener('afterprint', _restoreScreenTocNumbers);
 
 
 // ══════════════════════════════════════════════════════════════
