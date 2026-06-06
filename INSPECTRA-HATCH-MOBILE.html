@@ -118,7 +118,6 @@
   /* Cover photo tile — wider aspect, it's the main vessel shot */
   .cover-tile { padding-bottom: 56% !important; }
   @supports (aspect-ratio: 1) { .cover-tile { padding-bottom: 0 !important; aspect-ratio: 16/9; } }
-  .join-btn { margin-top: 8px; width: 100%; background: #f2f5fa; color: #1f3a68; border: 1px solid #c7d0de; border-radius: 8px; padding: 8px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
   .subch-group { border: 1px solid #dbe3ef; border-radius: 10px; padding: 10px; margin-bottom: 12px; background: #fafcff; }
   .subch-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; padding: 7px 10px; border-radius: 7px; background: linear-gradient(135deg,#336ec0,#4a82cf); text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; box-shadow: 0 1px 3px rgba(10,30,70,.25); }
   .subch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 6px; border-radius: 5px; background: rgba(255,255,255,.95); color: #28528f; font-size: 11px; font-weight: 800; flex-shrink: 0; }
@@ -128,6 +127,9 @@
   .ch-num-wrap .ch-num { margin-right: 0; }
   .ch-sub-badge { position: absolute; top: -5px; right: -6px; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 999px; background: #7fb0ff; color: #11223f; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,.3); border: 1px solid #fff; box-sizing: border-box; }
   .add-btn { margin-top: 12px; width: 100%; background: #eaf1fb; color: #1f3a68; border: 1px dashed #1f3a68; border-radius: 8px; padding: 13px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .add-pair-row2 { margin-top: 12px; display: flex; gap: 8px; align-items: stretch; }
+  .add-pair-row2 .add-btn { margin-top: 0; flex: 1; }
+  .add-pair-row2 .pair-qty { flex: 0 0 auto; min-width: 64px; background: #fff; color: #1f3a68; border: 1px solid #c7d0de; border-radius: 8px; padding: 0 10px; font: inherit; font-size: 14px; font-weight: 600; text-align: center; }
   .actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; gap: 8px; padding: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #d6deea; box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
   .act { flex: 1; border: none; border-radius: 10px; padding: 13px 6px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   /* Label-wrapped file buttons (Chapters / Open): look like .act buttons and
@@ -557,15 +559,7 @@ function render(){
           var iA=idxs[p], iB=(p+1<idxs.length?idxs[p+1]:-1);
           swrap.appendChild(makePair(ch.id, iA, items[iA], (iB>=0?items[iB]:null)));
         }
-        var sadd=document.createElement('button');
-        sadd.className='add-btn'; sadd.style.marginTop='8px';
-        sadd.textContent='＋ Add photo pair';
-        sadd.onclick=(function(nm){ return function(){
-          store[ch.id].push({photo:null, caption:'', sub:nm});
-          store[ch.id].push({photo:null, caption:'', sub:nm});
-          render(); var b=document.querySelector('.chapter[data-id="'+ch.id+'"]'); if(b) b.classList.add('open');
-        }; })(sname);
-        swrap.appendChild(sadd);
+        swrap.appendChild(makeAddPairRow(ch.id, sname));
         body.appendChild(swrap);
       });
     } else {
@@ -573,11 +567,7 @@ function render(){
       for(var pi=0; pi<items.length; pi+=2){
         body.appendChild(makePair(ch.id, pi, items[pi], (pi+1<items.length?items[pi+1]:null)));
       }
-      var addBtn=document.createElement('button');
-      addBtn.className='add-btn';
-      addBtn.textContent='＋ Add photo pair';
-      addBtn.onclick=function(){ store[ch.id].push({photo:null, caption:'', sub:''}); store[ch.id].push({photo:null, caption:'', sub:''}); render(); var b=document.querySelector('.chapter[data-id="'+ch.id+'"]'); if(b) b.classList.add('open'); };
-      body.appendChild(addBtn);
+      body.appendChild(makeAddPairRow(ch.id, ''));
     }
     block.appendChild(body);
     wrap.appendChild(block);
@@ -601,6 +591,36 @@ function updateMeter(){
   if(phEl) phEl.textContent=count+(count===1?' photo':' photos');
 }
 
+// Build an "Add photo pair" row with a count selector (add several pairs at
+// once), matching the desktop behaviour. `sub` is the subchapter name ('' for
+// chapter-level). Returns the row element.
+function makeAddPairRow(cid, sub){
+  var row=document.createElement('div');
+  row.className='add-pair-row2';
+  var btn=document.createElement('button');
+  btn.className='add-btn';
+  btn.textContent='＋ Add photo pair';
+  var qty=document.createElement('select');
+  qty.className='pair-qty';
+  qty.title='Number of pairs to add';
+  [1,2,3,4,5,6,8,10].forEach(function(n){
+    var o=document.createElement('option'); o.value=String(n); o.textContent=String(n); qty.appendChild(o);
+  });
+  btn.onclick=function(){
+    var count=parseInt(qty.value,10)||1;
+    count=Math.max(1,Math.min(20,count));
+    for(var i=0;i<count;i++){
+      store[cid].push({photo:null, caption:'', sub:sub});
+      store[cid].push({photo:null, caption:'', sub:sub});
+    }
+    render();
+    var b=document.querySelector('.chapter[data-id="'+cid+'"]'); if(b) b.classList.add('open');
+  };
+  row.appendChild(btn);
+  row.appendChild(qty);
+  return row;
+}
+
 // Build a photo PAIR row: two tiles side by side, with either two separate
 // captions or one joined caption spanning both (matching the desktop report).
 function makePair(cid, baseIdx, itA, itB){
@@ -617,7 +637,7 @@ function makePair(cid, baseIdx, itA, itB){
   if(joined && itB){
     // One caption spanning both photos.
     var jc=document.createElement('textarea');
-    jc.className='cap joined-cap'; jc.placeholder='Caption (both photos)…';
+    jc.className='cap joined-cap'; jc.placeholder='Caption (both photos) — long-press a photo to split…';
     jc.value=(itA && itA.joinedCaption)||'';
     jc.oninput=function(){ store[cid][baseIdx].joinedCaption=jc.value; };
     pair.appendChild(jc);
@@ -630,23 +650,8 @@ function makePair(cid, baseIdx, itA, itB){
     pair.appendChild(caps);
   }
 
-  // Join / split toggle (only meaningful when the pair has two photos).
-  if(itB){
-    var jbtn=document.createElement('button');
-    jbtn.className='join-btn';
-    jbtn.textContent = joined ? '↔ Split caption' : '↔ Join caption';
-    jbtn.onclick=function(){
-      store[cid][baseIdx].joined = !joined;
-      // On first join, seed the joined caption from the two separate ones.
-      if(!joined){
-        var a=(itA&&itA.caption)||'', b=(itB&&itB.caption)||'';
-        if(!store[cid][baseIdx].joinedCaption) store[cid][baseIdx].joinedCaption=(a+(a&&b?' ':'')+b);
-      }
-      render();
-      var bl=document.querySelector('.chapter[data-id="'+cid+'"]'); if(bl) bl.classList.add('open');
-    };
-    pair.appendChild(jbtn);
-  }
+  // Join/split is now done by long-pressing a photo tile (no visible button),
+  // which saves vertical space between pairs.
   return pair;
 }
 
@@ -660,13 +665,50 @@ function makeTile(cid, idx, it){
   // Single tap on the frame → camera. The 🖼️ button → photo library.
   // (Both are direct-tap gestures, which iOS Safari requires to open a file picker.)
   tile.addEventListener('click', function(ev){
+    if(tile._lpFired){ tile._lpFired=false; return; }   // swallow click after a long-press
     if(ev.target.classList.contains('del')){ store[cid][idx].photo=null; render(); return; }
     if(ev.target.classList.contains('lib')){ capture(cid, idx, 'library'); return; }
     capture(cid, idx, 'camera');
   });
   tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   tile.style.webkitTouchCallout='none';
+
+  // Long-press the photo to JOIN the pair's two captions into one (long-press
+  // again to SPLIT). Avoids a visible button so it costs no space. Works only
+  // when the pair actually has two photo slots.
+  var lpTimer=null;
+  function lpStart(ev){
+    if(ev.target.classList.contains('del') || ev.target.classList.contains('lib')) return; // let buttons work
+    clearTimeout(lpTimer);
+    lpTimer=setTimeout(function(){ tile._lpFired=true; _toggleJoinForTile(cid, idx); }, 550);
+  }
+  function lpCancel(){ clearTimeout(lpTimer); }
+  tile.addEventListener('pointerdown', lpStart);
+  tile.addEventListener('pointerup', lpCancel);
+  tile.addEventListener('pointermove', lpCancel);
+  tile.addEventListener('pointercancel', lpCancel);
+  tile.addEventListener('pointerleave', lpCancel);
   return tile;
+}
+
+// Toggle joined/split captions for the pair that the given tile belongs to.
+function _toggleJoinForTile(cid, idx){
+  var arr=store[cid]; if(!arr) return;
+  var baseIdx = idx - (idx % 2);                 // even index = pair base
+  var itA=arr[baseIdx], itB=arr[baseIdx+1];
+  if(!itA || !itB || !(itB)){ toast('Need two photos to join captions'); return; }
+  var nowJoined = !itA.joined;
+  itA.joined = nowJoined;
+  if(nowJoined){
+    // Seed the joined caption from the two separate ones on first join.
+    if(!itA.joinedCaption){
+      var a=(itA.caption)||'', b=(itB.caption)||'';
+      itA.joinedCaption = a + (a&&b?' ':'') + b;
+    }
+  }
+  render();
+  var bl=document.querySelector('.chapter[data-id="'+cid+'"]'); if(bl) bl.classList.add('open');
+  toast(nowJoined ? 'Captions joined' : 'Captions split');
 }
 
 function makeCap(cid, idx, it){
