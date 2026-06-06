@@ -4589,6 +4589,28 @@ window.addEventListener('keydown', e => {
 
 let _rfPending = false;
 let _skipNextScrollRestore = false; // set by addPair to prevent scroll-jump
+// Cheap check: does any chapter's content extend past its page's printable
+// bottom? Used to skip a full reflow (and its visible "blink") when typing
+// hasn't actually pushed anything off the page yet.
+function _anyPageOverflows() {
+  const root = document.getElementById('pagesRoot');
+  if(!root) return false;
+  const a4px     = Math.round(297 * 96 / 25.4);
+  const footerPx = Math.round(34 * 96 / 25.4);
+  const pages = root.querySelectorAll('.page');
+  for(const pg of pages) {
+    if(pg.classList.contains('bayplan-page')) continue;
+    const pgRect = pg.getBoundingClientRect();
+    const cutoffY = pgRect.top + a4px - footerPx;
+    // Check the last meaningful child's bottom against the cutoff.
+    const fields = pg.querySelectorAll('.section[data-sid] .field[contenteditable="true"], .section[data-sid] .photo-pairs, .section[data-sid] .stat-block, .section[data-sid] .mat-block');
+    for(const el of fields) {
+      if(el.getBoundingClientRect().bottom > cutoffY + 6) return true;
+    }
+  }
+  return false;
+}
+
 function doReflow() {
   if(_rfPending) return; _rfPending = true;
   requestAnimationFrame(() => {
@@ -6386,7 +6408,7 @@ document.addEventListener('input', e => {
       : t.innerHTML;
     setFieldText(sid, role, fullText);
     clearTimeout(_inputTimer);
-    _inputTimer = setTimeout(doReflow, 1200);
+    _inputTimer = setTimeout(() => { if(_anyPageOverflows()) doReflow(); }, 1200);
 
   } else if(t.isContentEditable && sec) {
     // Tables / schematic cells: their own size doesn't change page flow much,
@@ -6395,12 +6417,12 @@ document.addEventListener('input', e => {
     // pagination once editing pauses.
     if(t.closest('.stat-block, .caption, .joined-caption, .hc-schematic, .hc-mat-block, .hc-cell, .mat-block, .mat-table, .ws-block, .ws-table')) {
       clearTimeout(_inputTimer);
-      _inputTimer = setTimeout(doReflow, 1800);
+      _inputTimer = setTimeout(() => { if(_anyPageOverflows()) doReflow(); }, 1800);
       return;
     }
-    // Non-field editables (ship name, etc.) — safe to reflow
+    // Non-field editables (ship name, etc.) — only reflow if something overflows
     clearTimeout(_inputTimer);
-    _inputTimer = setTimeout(doReflow, 1200);
+    _inputTimer = setTimeout(() => { if(_anyPageOverflows()) doReflow(); }, 1200);
   }
 });
 
