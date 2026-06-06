@@ -548,8 +548,19 @@ function render(){
     head.onclick=function(){
       var wasOpen = block.classList.contains('open');
       // Close every chapter, then open this one (unless it was already open).
+      // When a chapter closes, also reset its subchapters to collapsed so they
+      // start fresh next time the chapter is opened.
       var all = document.querySelectorAll('.chapter');
-      for(var i=0;i<all.length;i++) all[i].classList.remove('open');
+      for(var i=0;i<all.length;i++){
+        if(all[i].classList.contains('open')){
+          var cidClosing = all[i].dataset.id;
+          Object.keys(_openSubs).forEach(function(k){
+            if(k.indexOf(cidClosing + '::') === 0) delete _openSubs[k];
+          });
+          all[i].querySelectorAll('.subch-group.open').forEach(function(g){ g.classList.remove('open'); });
+        }
+        all[i].classList.remove('open');
+      }
       if(!wasOpen) {
         block.classList.add('open');
         block.scrollIntoView({ behavior:'smooth', block:'start' });
@@ -574,11 +585,23 @@ function render(){
         var sh=document.createElement('div');
         sh.className='subch-title';
         sh.innerHTML='<span class="subch-num">'+chNum+'.'+(subIdx+1)+'</span> '+esc(sname)+'<span class="subch-caret">▶</span>';
-        sh.onclick=(function(key, grp){ return function(){
+        sh.onclick=(function(key, grp, chId){ return function(){
           var nowOpen = !grp.classList.contains('open');
-          grp.classList.toggle('open', nowOpen);
-          if(nowOpen) _openSubs[key]=true; else delete _openSubs[key];
-        }; })(subKey, swrap);
+          if(nowOpen){
+            // Accordion: collapse every OTHER subchapter in this same chapter,
+            // so only one subchapter is expanded at a time.
+            Object.keys(_openSubs).forEach(function(k){
+              if(k.indexOf(chId + '::') === 0) delete _openSubs[k];
+            });
+            var sibs = grp.parentNode ? grp.parentNode.querySelectorAll('.subch-group.open') : [];
+            for(var i=0;i<sibs.length;i++){ if(sibs[i]!==grp) sibs[i].classList.remove('open'); }
+            grp.classList.add('open');
+            _openSubs[key]=true;
+          } else {
+            grp.classList.remove('open');
+            delete _openSubs[key];
+          }
+        }; })(subKey, swrap, ch.id);
         swrap.appendChild(sh);
         var sbody=document.createElement('div');
         sbody.className='subch-body';
