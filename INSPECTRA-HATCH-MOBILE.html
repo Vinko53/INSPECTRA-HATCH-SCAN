@@ -90,7 +90,19 @@
     background: #f5f8fc center/cover no-repeat; display: flex; align-items: center; justify-content: center;
     color: #7a869a; font-size: 13px; text-align: center; cursor: pointer; overflow: hidden;
     height: 0; padding-bottom: 75%; /* 4:3 fallback for iOS < 15 (no aspect-ratio) */
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
   }
+  .tile, .tile * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  /* Small ✕ at the top-right of a whole photo pair — removes the pair. Kept
+     compact so it doesn't dominate the small screen. */
+  .photo-item { position: relative; }
+  .pair-del { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px;
+    background: #c0392b; color: #fff; border: 1.5px solid #fff; border-radius: 50%;
+    font-size: 12px; line-height: 1; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 4; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    -webkit-tap-highlight-color: transparent; }
+  .pair-del.confirm { width: auto; border-radius: 11px; padding: 0 8px; font-size: 11px; font-weight: 600; }
   /* Center the inner content despite the padding-based ratio box */
   .tile > div, .tile > .del { position: absolute; }
   .tile > div { top: 50%; left: 0; right: 0; transform: translateY(-50%); }
@@ -652,7 +664,38 @@ function makePair(cid, baseIdx, itA, itB){
 
   // Join/split is now done by long-pressing a photo tile (no visible button),
   // which saves vertical space between pairs.
+
+  // Small ✕ at the pair's top-right corner removes the whole pair. If the pair
+  // has any photo, the first tap asks to confirm (turns into "Remove?") so you
+  // don't lose photos by accident; a second tap (within 2.5s) removes it.
+  var del=document.createElement('button');
+  del.className='pair-del'; del.textContent='✕'; del.title='Remove this photo pair';
+  var hasPhoto = (itA && itA.photo) || (itB && itB.photo);
+  var confirmT=null;
+  del.onclick=function(ev){
+    ev.stopPropagation();
+    if(hasPhoto && !del.classList.contains('confirm')){
+      del.classList.add('confirm'); del.textContent='Remove?';
+      clearTimeout(confirmT);
+      confirmT=setTimeout(function(){ del.classList.remove('confirm'); del.textContent='✕'; }, 2500);
+      return;
+    }
+    _removePair(cid, baseIdx);
+  };
+  pair.appendChild(del);
   return pair;
+}
+
+// Remove a photo pair (both slots) from a chapter's store.
+function _removePair(cid, baseIdx){
+  var arr=store[cid]; if(!arr) return;
+  // Remove the two slots of this pair. Splice the higher index first so the
+  // lower index stays valid.
+  if(baseIdx+1 < arr.length) arr.splice(baseIdx+1, 1);
+  arr.splice(baseIdx, 1);
+  render();
+  var b=document.querySelector('.chapter[data-id="'+cid+'"]'); if(b) b.classList.add('open');
+  if(typeof toast==='function') toast('Photo pair removed');
 }
 
 function makeTile(cid, idx, it){
@@ -671,7 +714,10 @@ function makeTile(cid, idx, it){
     capture(cid, idx, 'camera');
   });
   tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+  tile.addEventListener('selectstart', function(ev){ ev.preventDefault(); });
   tile.style.webkitTouchCallout='none';
+  tile.style.webkitUserSelect='none';
+  tile.style.userSelect='none';
 
   // Long-press the photo to JOIN the pair's two captions into one (long-press
   // again to SPLIT). Avoids a visible button so it costs no space. Works only
