@@ -131,7 +131,13 @@
   .cover-tile { padding-bottom: 56% !important; }
   @supports (aspect-ratio: 1) { .cover-tile { padding-bottom: 0 !important; aspect-ratio: 16/9; } }
   .subch-group { border: 1px solid #dbe3ef; border-radius: 10px; padding: 10px; margin-bottom: 12px; background: #fafcff; }
-  .subch-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; padding: 7px 10px; border-radius: 7px; background: linear-gradient(135deg,#336ec0,#4a82cf); text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; box-shadow: 0 1px 3px rgba(10,30,70,.25); }
+  .subch-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; padding: 7px 10px; border-radius: 7px; background: linear-gradient(135deg,#336ec0,#4a82cf); text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; box-shadow: 0 1px 3px rgba(10,30,70,.25); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .subch-title .subch-caret { margin-left: auto; transition: transform .15s; opacity: .9; font-size: 11px; }
+  .subch-group.open .subch-title .subch-caret { transform: rotate(90deg); }
+  .subch-body { display: none; }
+  .subch-group.open .subch-body { display: block; }
+  .subch-group:not(.open) { padding: 6px; }
+  .subch-group:not(.open) .subch-title { margin-bottom: 0; }
   .subch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 6px; border-radius: 5px; background: rgba(255,255,255,.95); color: #28528f; font-size: 11px; font-weight: 800; flex-shrink: 0; }
   .ch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 8px; background: linear-gradient(180deg,rgba(255,255,255,.98),rgba(225,235,250,.85)); color: #1f3a68; font-size: 13px; font-weight: 800; flex-shrink: 0; margin-right: 10px; box-shadow: inset 0 1px 1px rgba(255,255,255,.9), 0 1px 3px rgba(10,30,70,.4); }
   /* Chapter number with a subchapter-count badge on its corner */
@@ -325,6 +331,9 @@ function _mergeChapterWithSubchapters(ch, existing){
 CHAPTERS.forEach(function(c){ store[c.id] = _seedChapter(c); });
 // Cover photo — a single optional vessel photo shown as chapter "0".
 var coverPhoto = { photo:null, caption:'' };
+// Which subchapters are expanded (key = chapterId + "::" + subIndex). Persists
+// across re-renders so collapsing/expanding survives edits.
+var _openSubs = {};
 
 // When chapters are imported from the desktop, the report type is fixed by
 // the desktop and must not be changed on the phone.
@@ -560,18 +569,28 @@ function render(){
       subs.forEach(function(sname, subIdx){
         var swrap=document.createElement('div');
         swrap.className='subch-group';
+        var subKey = ch.id + '::' + subIdx;
+        if(_openSubs[subKey]) swrap.classList.add('open');
         var sh=document.createElement('div');
         sh.className='subch-title';
-        sh.innerHTML='<span class="subch-num">'+chNum+'.'+(subIdx+1)+'</span> '+esc(sname);
+        sh.innerHTML='<span class="subch-num">'+chNum+'.'+(subIdx+1)+'</span> '+esc(sname)+'<span class="subch-caret">▶</span>';
+        sh.onclick=(function(key, grp){ return function(){
+          var nowOpen = !grp.classList.contains('open');
+          grp.classList.toggle('open', nowOpen);
+          if(nowOpen) _openSubs[key]=true; else delete _openSubs[key];
+        }; })(subKey, swrap);
         swrap.appendChild(sh);
+        var sbody=document.createElement('div');
+        sbody.className='subch-body';
         // pairs belonging to this subchapter (preserve their absolute indices)
         var idxs=[];
         for(var k=0;k<items.length;k++){ if((items[k].sub||'')===sname) idxs.push(k); }
         for(var p=0;p<idxs.length;p+=2){
           var iA=idxs[p], iB=(p+1<idxs.length?idxs[p+1]:-1);
-          swrap.appendChild(makePair(ch.id, iA, items[iA], (iB>=0?items[iB]:null)));
+          sbody.appendChild(makePair(ch.id, iA, items[iA], (iB>=0?items[iB]:null)));
         }
-        swrap.appendChild(makeAddPairRow(ch.id, sname));
+        sbody.appendChild(makeAddPairRow(ch.id, sname));
+        swrap.appendChild(sbody);
         body.appendChild(swrap);
       });
     } else {
