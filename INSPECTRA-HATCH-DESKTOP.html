@@ -534,28 +534,39 @@
        fields shrink-wrap to their content (with the same 10mm floor as empty
        fields) so the larger editing height never adds white space to the PDF. */
     .field { min-height: 10mm !important; }
-    /* Comments boxes with content print at a comfortable size; EMPTY ones
-       shrink so they don't waste a third of the page when unused. */
+    /* Comments boxes print at the same comfortable height as on screen (30mm),
+       whether filled or empty, so the PDF matches the editor. Covers the
+       "findings" boxes (most chapters), the "body" boxes (Hatch covers
+       overview, Materials, Spare parts, etc.) and subchapter "extra" boxes. */
     .field[data-field-role="findings"],
+    .field[data-field-role="body"],
     .extra-text-box:has(.subch-label-bar[data-name]) .field[data-field-role="extra"] {
       min-height: 30mm !important;
     }
     .field[data-field-role="findings"]:empty,
     .field[data-field-role="findings"][data-empty="true"],
+    .field[data-field-role="body"]:empty,
+    .field[data-field-role="body"][data-empty="true"],
     .extra-text-box:has(.subch-label-bar[data-name]) .field[data-field-role="extra"]:empty,
     .extra-text-box:has(.subch-label-bar[data-name]) .field[data-field-role="extra"][data-empty="true"] {
-      min-height: 12mm !important;
+      min-height: 30mm !important;
     }
-    /* Hide empty photo pairs (no image loaded) */
-    .photo-pair:not(:has(.photo.has-image)):not(:has(.vessel-large.has-image)) {
-      display: none !important;
-    }
-    /* Hide photo-pairs container when all pairs are empty */
-    .photo-pairs:not(:has(.photo.has-image)):not(:has(.vessel-large.has-image)) {
-      display: none !important;
-    }
-    /* Hide empty add-pair-row button rows */
+    /* Empty photo pairs are intentionally shown in the PDF (frames stay
+       visible). The empty add-pair button rows are still hidden in print. */
     .add-pair-row { display: none !important; }
+
+    /* Empty photo frames print as visible placeholders (a height + light
+       dashed outline) so the layout is always shown. Marked in JS before
+       print via .is-empty-pair (avoids :has() which is unreliable in print). */
+    .is-empty-pair .photo {
+      outline: 0.5pt dashed #9aa6ba !important;
+      outline-offset: -1pt;
+      min-height: 45mm !important;
+      background: #f4f6fa !important;
+    }
+    .is-empty-pair .caption:empty::before {
+      content: "Caption…" !important; color: rgba(31,41,55,.4) !important; font-style: italic !important;
+    }
 
     /* ── Tight spacing in print — reduces wasted white space ── */
     .section { margin-bottom: 2mm !important; }
@@ -2707,7 +2718,7 @@
   <button onclick="openRecompressDialog()" title="Re-compress photos to reduce file size — choose quality level"><svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;margin-right:4px"><path d="M7 1 L7 5.5 M5 4 L7 6.5 L9 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="7" width="12" height="2.2" rx="1" fill="currentColor"/><path d="M7 15 L7 10.5 M5 12 L7 9.5 L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Compress</button>
   <button onclick="openInstructions()" title="View company instructions">&#128218; Instructions</button>
   <button id="dfCustBtn" onclick="exportToCustomer()" oncontextmenu="setDesignatedFolder('customer'); return false;" title="Export a view-only HTML report — choose where to save it (right-click: set a fixed folder)">&#128228; Customer</button>
-  <button class="primary" onclick="window.print()" title="Print or Save as PDF — the browser's print dialog controls where the PDF is saved">&#128424; PDF</button>
+  <button class="primary" id="pdfBtn" onclick="_markEmptyPairsForDraft(); window.print()" title="Print or Save as PDF — the browser's print dialog controls where the PDF is saved">&#128424; PDF</button>
   <div id="reportStatsBadges" oncontextmenu="openReportStats(); return false;" title="Right-click for full report statistics" style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;line-height:1.3;align-self:center;padding-left:4px;flex:0 0 auto;cursor:context-menu;">
     <span id="reportSizeIndicator" title="Estimated report size" style="font-size:9.5pt;color:rgba(255,255,255,.85);white-space:nowrap;letter-spacing:.01em;text-shadow:0 1px 2px rgba(10,25,55,.4);"></span>
     <span id="reportPhotoCount" title="Photos inserted in report" style="font-size:7.5pt;color:rgba(255,255,255,.7);white-space:nowrap;letter-spacing:.01em;"></span>
@@ -3986,15 +3997,24 @@ function addPairAfter(btn) {
   if(!row || !sec) { addPair(btn.dataset.sid || ''); return; }
   const sid = sec.dataset.sid;
 
+  // Honor the "number of pairs" selector (same as the main chapter button).
+  let count = 1;
+  const inBtn = btn.querySelector ? btn.querySelector('.pair-count-sel') : null;
+  const sel = inBtn || (btn.parentNode && btn.parentNode.querySelector ? btn.parentNode.querySelector('.pair-count-sel') : null);
+  if(sel) count = parseInt(sel.value, 10) || 1;
+  count = Math.max(1, Math.min(20, count));
+
   const wrapper = document.createElement('div');
   wrapper.className = 'extra-photo-pair-block no-print-remove';
   wrapper.style.cssText = 'margin-top:2mm;position:relative;';
 
   const pairsDiv = document.createElement('div');
   pairsDiv.className = 'photo-pairs extra-pairs';
-  const p = makePairEl();
-  bindPairEl(p);
-  pairsDiv.appendChild(p);
+  for(let i = 0; i < count; i++) {
+    const p = makePairEl();
+    bindPairEl(p);
+    pairsDiv.appendChild(p);
+  }
 
   wrapper.appendChild(pairsDiv);
 
@@ -7939,7 +7959,7 @@ function _insertButtonRowBefore(el, sec) {
   newRow.className = 'add-pair-row no-print';
   newRow.style.cssText = 'display:flex;align-items:center;margin-bottom:1mm;position:relative;';
   newRow.innerHTML = `
-    <button class="add-photo-btn" data-sid="${sid}" onclick="addPairAfter(this)">&#xFF0B; Add photo pair</button>
+    <button class="add-photo-btn pair-add-btn" data-sid="${sid}" onclick="if(!event.target.classList.contains('pair-count-sel'))addPairAfter(this)">&#xFF0B; Add photo pair<select class="pair-count-sel" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" title="Number of pairs to add"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></button>
     <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add stats table</button>
     <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box" style="margin-left:auto;">&#43; Add text box</button>`;
   el.parentNode.insertBefore(newRow, el);
@@ -7960,7 +7980,7 @@ function _insertButtonRowAfter(el, sec) {
     ? `<button class="bp-upload-btn" onclick="sparePartAddBlock(this)" style="margin-left:6px;">＋ Spare parts list</button>`
     : '';
   newRow.innerHTML = `
-    <button class="add-photo-btn" data-sid="${sid}" onclick="addPairAfter(this)">&#xFF0B; Add photo pair</button>
+    <button class="add-photo-btn pair-add-btn" data-sid="${sid}" onclick="if(!event.target.classList.contains('pair-count-sel'))addPairAfter(this)">&#xFF0B; Add photo pair<select class="pair-count-sel" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" title="Number of pairs to add"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></button>
     ${spareBtn}
     <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add stats table</button>
     <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box below" style="margin-left:auto;">&#43; Add text box</button>`;
@@ -13701,6 +13721,27 @@ window.addEventListener('DOMContentLoaded', () => {
     _dfLoadHandle(key).then(h => { if(h) _dfUpdateBtnLabel(key, h.name); });
   });
 });
+
+// Mark every empty photo pair (and its container) so the print CSS can style
+// them as visible placeholder frames. Uses a JS-applied marker class instead
+// of :has(), which is unreliable in the PDF print engine.
+function _markEmptyPairsForDraft() {
+  document.querySelectorAll('.is-empty-pair, .is-empty-pairs').forEach(el => {
+    el.classList.remove('is-empty-pair', 'is-empty-pairs');
+  });
+  document.querySelectorAll('#pagesRoot .photo-pair').forEach(pair => {
+    const hasImg = pair.querySelector('.photo.has-image, .vessel-large.has-image');
+    if(!hasImg) pair.classList.add('is-empty-pair');
+  });
+  document.querySelectorAll('#pagesRoot .photo-pairs').forEach(cont => {
+    const hasImg = cont.querySelector('.photo.has-image, .vessel-large.has-image');
+    if(!hasImg) cont.classList.add('is-empty-pairs');
+  });
+}
+
+// Before any print/PDF, refresh the empty-pair markers so the right pairs are
+// hidden (normal) or shown (draft). Runs every time, regardless of mode.
+window.addEventListener('beforeprint', _markEmptyPairsForDraft);
 
 function exportChapterStructure() {
   const chapters = [];
