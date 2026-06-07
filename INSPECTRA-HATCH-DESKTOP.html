@@ -292,6 +292,12 @@
   @media print {
     .merge-btn { display: none !important; }
     .photo-pair.joined .photo .caption { display: none !important; }
+    /* Conditions panel: hide the dropdowns, show icon + label as clean text. */
+    .cond-sel { display: none !important; }
+    .cond-remove { display: none !important; }
+    .cond-print { display: flex !important; }
+    .cond-print .cond-lbl { display: block !important; }
+    .cond-block { page-break-inside: avoid; }
   }
   .add-photo-btn{display:inline-flex;align-items:center;gap:4px;margin-top:1mm;background:transparent;border:1px dashed var(--navy-soft, #b9c4d6);color:#7a869a;border-radius:3px;padding:2px 8px;font-size:8pt;font-weight:500;cursor:pointer;font-family:inherit;transition:color .12s,border-color .12s,background .12s;}
   .add-photo-btn:hover{background:var(--bg-soft);border-color:var(--navy);color:var(--navy);}
@@ -304,6 +310,18 @@
   .br-menu.open{display:flex;}
   .br-menu-item{display:block;width:100%;text-align:left;background:transparent;border:none;border-radius:4px;padding:6px 10px;font-size:8.5pt;font-weight:500;color:var(--navy-deep);cursor:pointer;font-family:inherit;white-space:nowrap;}
   .br-menu-item:hover{background:var(--bg-soft);color:var(--navy);}
+  /* ── CSS-driven visual button grouping (br-more) ──
+     The toggle + popover sit on the right of the add-row. The popover holds the
+     REAL secondary buttons (moved in, not copied), revealed on .open. */
+  .br-more-wrap{position:relative;display:inline-flex;margin-left:auto;}
+  .br-more-toggle{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px dashed var(--navy-soft,#b9c4d6);color:#7a869a;border-radius:3px;padding:2px 8px;font-size:8pt;font-weight:500;cursor:pointer;font-family:inherit;transition:color .12s,border-color .12s,background .12s;}
+  .br-more-toggle:hover{background:var(--bg-soft);border-color:var(--navy);color:var(--navy);}
+  .br-more-pop{position:absolute;top:100%;right:0;margin-top:3px;min-width:180px;background:#fff;border:1px solid var(--line-soft);border-radius:6px;box-shadow:0 6px 22px rgba(10,30,70,.18);padding:4px;z-index:60;display:none;flex-direction:column;gap:2px;}
+  .br-more-pop.open{display:flex;}
+  /* Secondary buttons, when inside the popover, render as full-width menu items
+     but remain the SAME real buttons (their onclick fires directly). */
+  .br-more-pop .br-in-pop{display:block !important;width:100%;text-align:left;background:transparent;border:none;border-radius:4px;padding:6px 10px;font-size:8.5pt;font-weight:500;color:var(--navy-deep);cursor:pointer;font-family:inherit;white-space:nowrap;position:static !important;left:auto !important;transform:none !important;margin:0 !important;}
+  .br-more-pop .br-in-pop:hover{background:var(--bg-soft);color:var(--navy);}
   /* Integrated "number of pairs" selector inside the Add photo pair button */
   .pair-add-btn{gap:6px;}
   .pair-count-sel{
@@ -505,6 +523,8 @@
       overflow: hidden !important;
       display: inline-block !important;
       vertical-align: top !important;
+      max-width: 100% !important;          /* never wider than the text box */
+      box-sizing: border-box !important;
     }
     .inline-img-wrap.img-absolute {
       /* In print, absolute positioning doesn't render reliably in PDF.
@@ -512,6 +532,7 @@
       position: relative !important;
       display: inline-block !important;
       margin: 1mm 2mm 1mm 0 !important;
+      max-width: 100% !important;
     }
     .inline-img-wrap img {
       max-width: 100% !important;
@@ -1395,13 +1416,23 @@
     .subch-trigger, .subch-sel-bar, .subch-custom-wrap, .subch-rm { display: none !important; }
     .subch-label-bar { display: flex !important; }
     .subch-label-bar:not([data-name]) { display: none !important; }
-    /* Clear separation before each subchapter unit in the PDF: a subchapter is
-       an .extra-text-box that contains a named subchapter label. Add space
-       above it so the previous subchapter's last photo isn't cramped against
-       the next subchapter's label. Keep the label + its content together. */
+    /* Reliable gap ABOVE every subchapter bar in the PDF, independent of :has()
+       (which the print engine handles inconsistently). This separates the
+       subchapter bar from the main chapter header / previous content. */
+    .subch-label-bar[data-name] {
+      margin-top: 7mm !important;
+    }
+    /* Clear separation before each subchapter unit in the PDF. We DON'T force
+       the whole subchapter onto one page (that left big blank gaps when a tall
+       subchapter — e.g. one with a score table — couldn't fit in the remaining
+       space). Instead we just keep the LABEL BAR with the content immediately
+       after it, so a heading never sits alone at a page bottom, while the rest
+       of the subchapter flows naturally. */
     .extra-text-box:has(.subch-label-bar[data-name]) {
       margin-top: 8mm !important;
-      break-inside: avoid; page-break-inside: avoid;
+    }
+    .subch-label-bar[data-name] {
+      break-after: avoid; page-break-after: avoid;
     }
     /* The first subchapter sits right under the chapter title — give it a
        clear gap too so the label isn't cramped against the chapter header. */
@@ -2028,6 +2059,34 @@
     position: relative;
     page-break-inside: avoid;
   }
+  /* ── Conditions during inspection panel ── */
+  .cond-block { margin: 3mm 0; position: relative; page-break-inside: avoid; }
+  .cond-head { display: flex; align-items: center; gap: 6px; margin-bottom: 1mm; }
+  .cond-title {
+    flex: 0 0 auto; font-size: 9pt; font-weight: 700; color: var(--navy-deep);
+  }
+  .cond-remove {
+    margin-left: auto; font-size: 7.5pt; color: #c0392b; background: transparent;
+    border: 1px solid #c0392b; border-radius: 3px; padding: 1px 6px; cursor: pointer; font-family: inherit;
+  }
+  .cond-remove:hover { background: #c0392b; color: #fff; }
+  .cond-table { width: 100%; border-collapse: collapse; border: 1px solid #c7d0de; font-family: inherit; }
+  .cond-table td { border: 1px solid #d7dee9; padding: 4px 6px; text-align: center; vertical-align: middle; }
+  .cond-table .cond-labels td {
+    background: #e8f0f8; font-size: 8pt; color: #5a6a85; font-weight: 600; padding: 5px 6px;
+  }
+  .cond-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .cond-sel {
+    width: 100%; max-width: 150px; font-family: inherit; font-size: 8.5pt; color: var(--ink);
+    padding: 3px 4px; border: 1px solid #c7d0de; border-radius: 4px; background: #fff;
+  }
+  .cond-print { display: none; flex-direction: column; align-items: center; gap: 1px; }
+  .cond-print .cond-ico { display: inline-flex; line-height: 0; }
+  .cond-print .cond-lbl { font-size: 8.5pt; color: var(--ink); }
+  /* On screen, show a small icon preview above the dropdown too. */
+  .cond-cell .cond-print { display: flex; }
+  .cond-cell .cond-print .cond-lbl { display: none; }
+
   .stat-block-head {
     display: flex; align-items: center; gap: 6px;
     margin-bottom: 1mm;
@@ -3336,22 +3395,34 @@ function _buildGaugeWidget(scoreKey) {
   return wrap;
 }
 
-// Build or refresh the persistent toggle button inside a label-bar
-// The button lives in the label-bar (always visible) not in the gauge wrap
+// Build or refresh the per-subchapter gauge toggle button. The button lives in
+// its subchapter's label-bar and hides/shows ONLY that subchapter's gauge (the
+// gauge wrap is the label-bar's next sibling).
 function _buildGaugeToggleBtn() {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'subch-gauge-toggle no-print';
-  btn.textContent = _gaugesVisible ? 'hide gauge' : 'show gauge';
-  btn.title = 'Show or hide score gauges for all subchapters';
+  btn.textContent = 'hide gauge';
+  btn.title = 'Show or hide the score gauge for this subchapter';
+  // Reflect the actual state shortly after insertion (the gauge sibling exists
+  // by then), so the label is correct even if this gauge starts hidden.
+  setTimeout(function(){
+    const bar = btn.closest('.subch-label-bar');
+    if(!bar) return;
+    let g = bar.nextElementSibling;
+    while(g && !g.classList.contains('subch-gauge-wrap')) g = g.nextElementSibling;
+    if(g) btn.textContent = g.classList.contains('gauge-hidden') ? 'show gauge' : 'hide gauge';
+  }, 0);
   btn.onclick = function() {
-    _gaugesVisible = !_gaugesVisible;
-    document.querySelectorAll('.subch-gauge-wrap').forEach(function(g) {
-      g.classList.toggle('gauge-hidden', !_gaugesVisible);
-    });
-    document.querySelectorAll('.subch-gauge-toggle').forEach(function(b) {
-      b.textContent = _gaugesVisible ? 'hide gauge' : 'show gauge';
-    });
+    const bar = btn.closest('.subch-label-bar');
+    if(!bar) return;
+    // The gauge wrap for this subchapter is the bar's next sibling.
+    let gauge = bar.nextElementSibling;
+    while(gauge && !gauge.classList.contains('subch-gauge-wrap')) gauge = gauge.nextElementSibling;
+    if(!gauge) return;
+    const nowHidden = !gauge.classList.contains('gauge-hidden');
+    gauge.classList.toggle('gauge-hidden', nowHidden);
+    btn.textContent = nowHidden ? 'show gauge' : 'hide gauge';
   };
   return btn;
 }
@@ -3813,7 +3884,7 @@ const BULK_SECTIONS = [
      body:`<div class="label">Comments:</div>
        <div class="field" contenteditable="true" data-field-role="body" data-placeholder="Enter comments…" lang="en-US" spellcheck="false"></div>` },
   { id:'general', title:'General considerations',
-     body:`<div class="label">Comments:</div><div class="field" contenteditable="true" data-field-role="body" data-placeholder="Enter comments…" lang="en-US" spellcheck="false"></div>` },
+     body:`<div class="label">Comments:</div><div class="field" contenteditable="true" data-field-role="body" data-placeholder="Enter comments…" lang="en-US" spellcheck="false"></div><button class="hc-add-schematic-btn no-print" onclick="condAddPanel(this)" title="Add a 'Conditions during service / inspection' panel (weather, temperature, day/night, intensity)">＋ Add conditions panel</button>` },
   { id:'safety', title:'Safety', hasFindings:true },
   { id:'steel',       title:'Steel works',                          hasFindings:true },
   { id:'bearing',     title:'Bearing pads and mating plates',       hasFindings:true },
@@ -4017,11 +4088,10 @@ function addPairAfter(btn) {
 
   wrapper.appendChild(pairsDiv);
 
-  // Remove the clicked button row, insert content, add fresh buttons after only
-  const anchor = row.nextSibling;
-  const parent = row.parentNode;
-  row.remove();
-  parent.insertBefore(wrapper, anchor);
+  // Insert the new photo block AFTER the clicked button row, keeping that row in
+  // place so content above it keeps its own add controls. The new block then
+  // gets its own add-row below it.
+  row.parentNode.insertBefore(wrapper, row.nextSibling);
   _insertButtonRowAfter(wrapper, sec);
   // Scroll new pair into view without jumping
   requestAnimationFrame(() => wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
@@ -4485,9 +4555,13 @@ function buildSection(def) {
     const _wsBtn = (def.id === 'repairProposal')
       ? `<button class="hc-add-schematic-btn no-print" onclick="wsAddTable(this)" title="Add a workscope table (repair requirements for shipyard) below the text box">＋ Add workscope table</button>`
       : '';
+    const _condBtn = (def.id === 'general')
+      ? `<button class="hc-add-schematic-btn no-print" onclick="condAddPanel(this)" title="Add a 'Conditions during service / inspection' panel (weather, temperature, day/night, intensity)">＋ Add conditions panel</button>`
+      : '';
     body = `<div class="label">Comments:</div>
       <div class="field" contenteditable="true" data-field-role="findings" data-placeholder="Enter comments…" lang="en-US" spellcheck="false"></div>
       ${_wsBtn}
+      ${_condBtn}
       <button class="hc-add-schematic-btn no-print" onclick="hcAddSchematic(this)">＋ Add schematic &amp; legend</button>
       <button class="stat-add-block-btn no-print" onclick="statAddBlock(this)">＋ Add stats table</button>${_scoreBtn}
       <div class="label photo-section-label">${_photoSectionLabel}</div>
@@ -7932,12 +8006,11 @@ function addInlineFrame(btn) {
   wrap.appendChild(labelRow);
   wrap.appendChild(field);
 
-  // Remove the clicked button row, insert text box, add fresh buttons at bottom
+  // Insert the text box AFTER the clicked button row, keeping that row in place
+  // so the content above (e.g. the photo pairs) keeps its own "Add photo pair"
+  // button. The new text box then gets its own add-row below it.
   if(row && row.parentNode) {
-    const anchor = row.nextSibling;
-    const par = row.parentNode;
-    row.remove();
-    par.insertBefore(wrap, anchor);
+    row.parentNode.insertBefore(wrap, row.nextSibling);
   } else if(btn.parentNode) {
     // Button not inside an add-pair-row — insert after the button's container
     const par = btn.closest('.section-body') || sec;
@@ -7951,6 +8024,149 @@ function addInlineFrame(btn) {
   _insertButtonRowAfter(wrap, sec);
 
   field.focus();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CONDITIONS DURING INSPECTION PANEL
+//  A discrete table for the General chapter: Weather (icon dropdown),
+//  Temperature feel (icon dropdown), Day/Night, and Cargo-ops/repair
+//  intensity. Built from standard <select>s so it saves/restores with the
+//  report automatically; prints as clean icon + text (no dropdown chrome).
+// ══════════════════════════════════════════════════════════════
+
+// Inline SVG weather/temperature icons (no font dependency — works offline and
+// in the customer file). Each returns an SVG string sized to ~22px.
+const COND_ICONS = {
+  sunny:    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ba7517" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  partly:   '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#185fa5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3" stroke="#ba7517"/><path d="M8 2.5v1.5M3.2 3.2l1 1M2.5 8H4M3.2 12.8l1-1" stroke="#ba7517"/><path d="M7 18h9a3 3 0 0 0 0-6 4 4 0 0 0-7.6-1A3.2 3.2 0 0 0 7 18z"/></svg>',
+  cloudy:   '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#5f5e5a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17h11a3.2 3.2 0 0 0 0-6.4 4.3 4.3 0 0 0-8.2-1.2A3.4 3.4 0 0 0 6 17z"/></svg>',
+  overcast: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#888780" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13h10a2.8 2.8 0 0 0 0-5.6 3.8 3.8 0 0 0-7.2-1A3 3 0 0 0 5 13z"/><path d="M4 17h14M7 20h10"/></svg>',
+  lightrain:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#378add" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14h11a3.2 3.2 0 0 0 0-6.4 4.3 4.3 0 0 0-8.2-1.2A3.4 3.4 0 0 0 6 14z"/><path d="M9 18l-0.5 1.5M14 18l-0.5 1.5"/></svg>',
+  medrain:  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#185fa5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13h11a3.2 3.2 0 0 0 0-6.4 4.3 4.3 0 0 0-8.2-1.2A3.4 3.4 0 0 0 6 13z"/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3"/></svg>',
+  heavyrain:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0c447c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h11a3.2 3.2 0 0 0 0-6.4 4.3 4.3 0 0 0-8.2-1.2A3.4 3.4 0 0 0 6 12z"/><path d="M7 16l-1.5 4M11 16l-1.5 4M15 16l-1.5 4"/></svg>',
+  storm:    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#534ab7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h11a3.2 3.2 0 0 0 0-6.4 4.3 4.3 0 0 0-8.2-1.2A3.4 3.4 0 0 0 6 12z"/><path d="M13 14l-3 4h3l-3 4" stroke="#ba7517"/></svg>',
+  snow:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#378add" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M4 8l16 8M20 8L4 16"/></svg>',
+  windy:    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#5f5e5a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a2.5 2.5 0 1 0-2.5-2.5M3 12h14a2.5 2.5 0 1 1-2.5 2.5M3 16h8a2 2 0 1 1-2 2"/></svg>',
+  // temperature feel
+  cold:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#378add" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 7v6"/></svg>',
+  mild:     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#639922" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 9v4"/></svg>',
+  hot:      '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ba7517" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 6v7"/></svg>',
+  veryhot:  '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#d85a30" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2 3-1 4 0 6 1 1.5 3 1 3 3a3 3 0 0 1-6 0c0-1.5 1-2 1-3"/><path d="M9 14a4 4 0 1 0 6 0"/></svg>'
+};
+
+const COND_WEATHER_OPTS = [
+  ['sunny','Sunny / clear'], ['partly','Partly cloudy'], ['cloudy','Cloudy'],
+  ['overcast','Overcast'], ['lightrain','Light rain'], ['medrain','Medium rain'],
+  ['heavyrain','Heavy rain'], ['storm','Thunderstorm'], ['snow','Snow'], ['windy','Windy']
+];
+// Temperature: degree values from -20 °C to +50 °C, in 1° steps.
+const COND_TEMP_OPTS = (function(){
+  const arr = [];
+  for(let t = -20; t <= 50; t++) arr.push([String(t), (t > 0 ? '+' : '') + t + ' °C']);
+  return arr;
+})();
+// Thermometer icon whose colour reflects the temperature band.
+function _condTempIcon(val) {
+  const t = parseInt(val, 10);
+  let col = '#639922';                 // mild/green default
+  if(isNaN(t)) col = '#639922';
+  else if(t <= 0)  col = '#378add';    // cold → blue
+  else if(t <= 15) col = '#1d9e75';    // cool → teal-green
+  else if(t <= 27) col = '#639922';    // mild → green
+  else if(t <= 35) col = '#ba7517';    // hot → amber
+  else             col = '#d85a30';    // very hot → red
+  return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="' + col +
+    '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 8v6"/></svg>';
+}
+const COND_TEMP_FEEL_UNUSED = [
+  ['cold','Cold'], ['mild','Mild / medium'], ['hot','Hot'], ['veryhot','Very hot']
+];
+const COND_DAYNIGHT_OPTS = ['Day','Night','Dawn','Dusk'];
+const COND_INTENSITY_OPTS = ['None','Low','Medium','High'];
+
+function _condIconSvg(key) { return COND_ICONS[key] || ''; }
+
+// Build one icon-dropdown cell: a <select> (for editing) + a print-only span
+// that shows the chosen icon + label. The select carries data-cond so save works.
+function _condIconCell(kind, opts) {
+  const optHtml = opts.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
+  return `<div class="cond-cell" data-cond-kind="${kind}">
+    <div class="cond-print"></div>
+    <select class="cond-sel no-print" onchange="_condSyncCell(this)">${optHtml}</select>
+  </div>`;
+}
+
+// Reflect a select's choice into its print span (icon + label).
+function _condSyncCell(sel) {
+  const cell = sel.closest('.cond-cell');
+  if(!cell) return;
+  const kind = cell.dataset.condKind;
+  const val = sel.value;
+  const print = cell.querySelector('.cond-print');
+  if(!print) return;
+  if(kind === 'weather' || kind === 'temp') {
+    const label = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : '';
+    const ico = (kind === 'temp') ? _condTempIcon(val) : _condIconSvg(val);
+    print.innerHTML = `<span class="cond-ico">${ico}</span><span class="cond-lbl">${label}</span>`;
+  } else {
+    print.textContent = val;
+  }
+}
+
+function condAddPanel(fromBtn) {
+  if(!fromBtn) return;
+  const sec = fromBtn.closest('.section[data-sid]');
+  if(!sec) return;
+  // Only one conditions panel per chapter.
+  if(sec.querySelector('.cond-block')) {
+    const ex = sec.querySelector('.cond-block');
+    ex.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+  const block = document.createElement('div');
+  block.className = 'cond-block';
+  block.innerHTML = `
+    <div class="cond-head">
+      <span class="cond-title">Conditions during service / inspection:</span>
+      <button class="cond-remove no-print" title="Remove this panel" onclick="this.closest('.cond-block').remove();">&#10005; Remove</button>
+    </div>
+    <table class="cond-table"><tbody>
+      <tr class="cond-labels">
+        <td>Weather</td><td>Temperature</td><td>Day / Night</td><td>Cargo ops / repair intensity</td>
+      </tr>
+      <tr class="cond-values">
+        <td>${_condIconCell('weather', COND_WEATHER_OPTS)}</td>
+        <td>${_condIconCell('temp', COND_TEMP_OPTS)}</td>
+        <td>${_condIconCell('daynight', COND_DAYNIGHT_OPTS.map(x=>[x,x]))}</td>
+        <td>${_condIconCell('intensity', COND_INTENSITY_OPTS.map(x=>[x,x]))}</td>
+      </tr>
+    </tbody></table>`;
+
+  // Insert right after the Comments field (findings or body role) so it sits
+  // high in the chapter.
+  const findings = sec.querySelector('.field[data-field-role="findings"], .field[data-field-role="body"]');
+  if(findings && findings.parentNode) {
+    findings.parentNode.insertBefore(block, findings.nextSibling);
+  } else {
+    (sec.querySelector('.section-body') || sec).appendChild(block);
+  }
+  // Default the temperature to a sensible +20 °C rather than the first (-20).
+  const tempSel = block.querySelector('.cond-cell[data-cond-kind="temp"] .cond-sel');
+  if(tempSel) tempSel.value = '20';
+  // Initialise each cell's print span from its default selection.
+  block.querySelectorAll('.cond-sel').forEach(_condSyncCell);
+  if(typeof doReflow === 'function') setTimeout(doReflow, 30);
+}
+
+// After loading a saved report, rebuild each conditions cell's print span from
+// the restored <select> value (selects round-trip via their `value` attr).
+function _condRestoreAll() {
+  document.querySelectorAll('.cond-block .cond-sel').forEach(sel => {
+    // The saved value is on the option[selected] or the select's value attr.
+    const v = sel.getAttribute('value');
+    if(v != null) sel.value = v;
+    _condSyncCell(sel);
+  });
 }
 
 function statAddBlock(fromBtn) {
@@ -8013,153 +8229,77 @@ function _insertButtonRowAfter(el, sec) {
   if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
 }
 
-// ── Compact button rows: keep "Add photo pair" on the LEFT, collapse every
-//    OTHER button in the row into a single "⋯ More" dropdown on the RIGHT.
-//    Runs after each reflow. Reads whatever buttons exist in each row, so it
-//    adapts per chapter (e.g. the score-table button only in General notes).
+// ── CSS-driven visual button grouping (safe rebuild) ──
+//    Goal: tidy each add-row to show "Add photo pair" on the left and a
+//    "+ More ▾" affordance on the right, WITHOUT hiding the photo button or
+//    breaking the per-subchapter photo-insert logic.
+//
+//    Safety design (why this won't repeat the old regression):
+//    • The photo button (.add-photo-btn) is NEVER moved or hidden — the insert
+//      logic always finds it via row.querySelector('.add-photo-btn').
+//    • The REAL secondary buttons (stats table / text box / schematic) are moved
+//      into a popover that still lives INSIDE the same row, so section/row
+//      querySelector calls still find them. They are clicked directly (no fake
+//      proxy buttons, no .click() delegation).
+//    • Idempotent: a row already grouped is skipped; nothing is rebuilt on
+//      reflow, so a row the insert logic just created is never consumed.
+//    • Screen-only (no-print); never affects the PDF.
 function _collapseButtonRows() {
   const pr = document.getElementById('pagesRoot') || document;
   pr.querySelectorAll('.add-pair-row').forEach(row => {
-    if(row.dataset.collapsed === '1') return;          // already done
-    // The photo-pair button stays on the left.
+    if(row.dataset.grouped === '1') return;                 // already grouped
     const photoBtn = row.querySelector('.add-photo-btn');
-    // Every other direct-child button becomes a dropdown item.
+    // Secondary buttons = direct-child buttons that are NOT the photo button.
     const others = [...row.children].filter(c =>
-      c !== photoBtn && c.tagName === 'BUTTON');
-    if(!others.length) { row.dataset.collapsed = '1'; return; }
+      c.tagName === 'BUTTON' && c !== photoBtn && !c.classList.contains('br-more-toggle'));
+    if(!others.length) { row.dataset.grouped = '1'; return; }
 
-    // Build the dropdown.
-    const menuWrap = document.createElement('div');
-    menuWrap.className = 'br-menu-wrap no-print';
-    const toggle = document.createElement('button');
-    toggle.type = 'button';
-    toggle.className = 'br-menu-toggle';
-    toggle.innerHTML = '&#43; More options &#9662;';
-    const menu = document.createElement('div');
-    menu.className = 'br-menu';
-
+    // Build the popover container (stays inside the row).
+    const pop = document.createElement('div');
+    pop.className = 'br-more-pop no-print';
+    // Move the REAL secondary buttons into the popover (still in the row subtree).
     others.forEach(btn => {
-      // Visible-only buttons (skip ones hidden via display:none, e.g. the
-      // score-table button when the report type doesn't use it).
-      const item = document.createElement('button');
-      item.type = 'button';
-      item.className = 'br-menu-item';
-      // Use the button's label text (strip any nested controls).
-      item.textContent = btn.textContent.trim().replace(/\s+/g, ' ');
-      if(btn.style.display === 'none') item.style.display = 'none';
-      item.addEventListener('click', () => {
-        menu.classList.remove('open');
-        btn.click();                                   // delegate to the real button
-      });
-      menu.appendChild(item);
-      // Hide the original button (keep it in DOM so its onclick/refs still work).
-      btn.style.display = 'none';
-      btn.classList.add('br-collapsed-original');
+      btn.classList.add('br-in-pop');
+      btn.style.position = '';                 // clear any inline absolute positioning
+      btn.style.left = ''; btn.style.transform = '';
+      pop.appendChild(btn);
     });
 
-    toggle.addEventListener('click', e => {
-      e.stopPropagation();
-      // Close any other open menus first.
-      document.querySelectorAll('.br-menu.open').forEach(m => { if(m !== menu) m.classList.remove('open'); });
-      menu.classList.toggle('open');
-    });
-    menuWrap.appendChild(toggle);
-    menuWrap.appendChild(menu);
-
-    // Layout: photo button left, menu right.
-    row.style.justifyContent = 'space-between';
-    menuWrap.style.marginLeft = 'auto';
-    row.appendChild(menuWrap);
-    row.dataset.collapsed = '1';
-  });
-
-  // ── Chapter-level buttons under the Comments box ──
-  // These (Add schematic & legend, Add stats table, Add score table, Add
-  // workscope table…) are loose siblings between the Comments field and the
-  // "Work progress:"/"Observation photos:" label. Group them into one dropdown
-  // on the right, adapting to whichever buttons each chapter actually has.
-  pr.querySelectorAll('.section[data-sid] .section-body').forEach(body => {
-    if(body.dataset.chBtnsCollapsed === '1') return;
-    // Anchor on the first text field in the body — its role may be "findings"
-    // (standard chapters) or "body" (spare parts / materials / etc.).
-    const findings = body.querySelector(':scope > .field[data-field-role="findings"]')
-                  || body.querySelector(':scope > .field[contenteditable]');
-    if(!findings) return;
-    // Collect consecutive chapter-level buttons that follow the findings field
-    // (stop at the photo-section label / photo pairs / first non-button).
-    const btns = [];
-    let node = findings.nextElementSibling;
-    while(node) {
-      if(node.tagName === 'BUTTON' &&
-         (node.classList.contains('hc-add-schematic-btn') ||
-          node.classList.contains('stat-add-block-btn'))) {
-        btns.push(node);
-        node = node.nextElementSibling;
-        continue;
-      }
-      // skip whitespace-only text handled by elementSibling; stop otherwise
-      break;
-    }
-    if(!btns.length) { body.dataset.chBtnsCollapsed = '1'; return; }
-
-    const menuWrap = document.createElement('div');
-    menuWrap.className = 'br-menu-wrap no-print';
-    menuWrap.style.cssText = 'display:block;width:100%;text-align:right;margin:1mm 0;';
+    // The toggle that opens/closes the popover.
     const toggle = document.createElement('button');
     toggle.type = 'button';
-    toggle.className = 'br-menu-toggle';
-    toggle.innerHTML = '&#43; More options &#9662;';
-    const menu = document.createElement('div');
-    menu.className = 'br-menu';
-    btns.forEach(btn => {
-      const item = document.createElement('button');
-      item.type = 'button';
-      item.className = 'br-menu-item';
-      item.textContent = btn.textContent.trim().replace(/\s+/g, ' ');
-      if(btn.style.display === 'none') item.style.display = 'none';
-      item.dataset.forBtn = '1';
-      item._srcBtn = btn;
-      item.addEventListener('click', () => {
-        menu.classList.remove('open');
-        btn.click();
-        // The action may have hidden/shown the source button (e.g. score table
-        // add/remove toggles it). Mirror that onto this menu item.
-        setTimeout(() => { item.style.display = (btn.style.display === 'none') ? 'none' : ''; }, 0);
-      });
-      menu.appendChild(item);
-      btn.style.display = 'none';
-      btn.classList.add('br-collapsed-original');
-    });
+    toggle.className = 'br-more-toggle no-print';
+    toggle.innerHTML = '&#43; More &#9662;';
     toggle.addEventListener('click', e => {
       e.stopPropagation();
-      document.querySelectorAll('.br-menu.open').forEach(m => { if(m !== menu) m.classList.remove('open'); });
-      menu.classList.toggle('open');
+      pr.querySelectorAll('.br-more-pop.open').forEach(p => { if(p !== pop) p.classList.remove('open'); });
+      pop.classList.toggle('open');
     });
-    menuWrap.appendChild(toggle);
-    menuWrap.appendChild(menu);
-    // Insert the dropdown where the first button was (right after findings).
-    findings.parentNode.insertBefore(menuWrap, btns[0]);
-    body.dataset.chBtnsCollapsed = '1';
-    // Remember the menu so score-table visibility sync can reflect into it.
-    body._chBtnMenu = menu;
-  });
 
-  // Per the rule "you can add any of the three items (text box, stats table,
-  // photo pair) at every position", we do NOT de-duplicate add options anymore.
-  // Restore any items that an earlier version had hidden, so every dropdown
-  // shows its full set and stays visible.
-  pr.querySelectorAll('.section[data-sid] .br-menu-wrap').forEach(wrap => {
-    const menu = wrap.querySelector('.br-menu');
-    if(!menu) return;
-    menu.querySelectorAll('.br-menu-item').forEach(item => {
-      if(item.dataset.dupHidden === '1') { item.style.display = ''; delete item.dataset.dupHidden; }
-    });
-    if(wrap.dataset.dupHidden === '1') { wrap.style.display = ''; delete wrap.dataset.dupHidden; }
+    // Wrap toggle + popover so they position together on the right.
+    const wrap = document.createElement('div');
+    wrap.className = 'br-more-wrap no-print';
+    wrap.appendChild(toggle);
+    wrap.appendChild(pop);
+
+    row.style.justifyContent = 'space-between';
+    // Belt-and-braces: guarantee the photo button is visible and anchored left,
+    // regardless of any stale inline styles from templates/reflow.
+    if(photoBtn) {
+      photoBtn.style.display = 'inline-flex';
+      photoBtn.style.position = 'static';
+      photoBtn.style.left = '';
+      photoBtn.style.transform = '';
+      photoBtn.style.marginLeft = '0';
+    }
+    row.appendChild(wrap);
+    row.dataset.grouped = '1';
   });
 }
 // Close dropdowns when clicking elsewhere.
 document.addEventListener('click', () => {
   document.querySelectorAll('.br-menu.open').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.br-more-pop.open').forEach(p => p.classList.remove('open'));
 });
 //  Inserted into the General chapter. Auto-populates from
 //  chapterState + confirmed subchapter labels.
@@ -11829,6 +11969,15 @@ function buildReportPayload() {
     }
   });
   document.querySelectorAll('.pages textarea').forEach(t => { t.textContent = t.value || ''; });
+  // Persist <select> choices: write `selected` onto the chosen <option> so the
+  // selection round-trips via outerHTML (needed for the conditions panel etc.).
+  document.querySelectorAll('.pages select').forEach(sel => {
+    [...sel.options].forEach(o => {
+      if(o.selected) o.setAttribute('selected', '');
+      else o.removeAttribute('selected');
+    });
+    sel.setAttribute('value', sel.value || '');
+  });
 
   const pages = [...document.querySelectorAll('.pages .page')]
     .map(p => p.outerHTML);
@@ -14761,6 +14910,9 @@ function applyImportedReport(data) {
     if(typeof _refreshScoreTables === 'function') _refreshScoreTables();
     if(typeof _updateAllGauges === 'function') setTimeout(_updateAllGauges, 400);
   }
+
+  // Rebuild conditions-panel cells (icon + label) from restored select values.
+  if(typeof _condRestoreAll === 'function') { try { _condRestoreAll(); } catch(e) {} }
 
   // 6b. Populate fieldStore from the imported DOM so that field content
   //     survives reflow when chapters are later re-enabled (reflow restores
