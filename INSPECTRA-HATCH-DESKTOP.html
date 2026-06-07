@@ -3070,7 +3070,6 @@ function buildSchematicBlockHTML() {
            <button type="button" class="hc-tool-btn" onclick="hcAddRow(this, 'full')">＋ Row: Full width</button>
            <button type="button" class="hc-tool-btn" onclick="hcOpenLayoutWizard(this,'container')" style="border-style:dashed;border-color:#1f3a68;color:#1f3a68;" title="Generate schematic from predefined container vessel layout">&#9783; Container</button>
            <button type="button" class="hc-tool-btn" onclick="hcOpenLayoutWizard(this,'bulk')" style="border-style:dashed;border-color:#1f3a68;color:#1f3a68;" title="Generate schematic from predefined bulk carrier layout">&#9783; Bulk</button>
-           <button type="button" class="hc-tool-btn" onclick="hcOpenLayoutWizard(this,'custom')" style="border-style:dashed;border-color:#1f3a68;color:#1f3a68;" title="Define a custom row sequence">&#9783; Custom</button>
          </div>
          <div class="hc-grid"></div>
          <div class="label" style="margin-top:4mm">Legend:</div>
@@ -7947,7 +7946,8 @@ function addInlineFrame(btn) {
     sec.appendChild(wrap);
   }
 
-  _insertButtonRowBefore(wrap, sec);
+  // Only an "add below" row is created (insert-under workflow); no redundant
+  // button row above the inserted block.
   _insertButtonRowAfter(wrap, sec);
 
   field.focus();
@@ -7967,7 +7967,7 @@ function statAddBlock(fromBtn) {
   parent.insertBefore(block, anchor);
   _statWireBlock(block);
   const sec = parent.closest('.section[data-sid]') || fromBtn.closest('.section[data-sid]');
-  _insertButtonRowBefore(block, sec);
+  // Only an "add below" row (insert-under workflow); no redundant row above.
   _insertButtonRowAfter(block, sec);
 }
 
@@ -8104,7 +8104,7 @@ function _collapseButtonRows() {
 
     const menuWrap = document.createElement('div');
     menuWrap.className = 'br-menu-wrap no-print';
-    menuWrap.style.cssText = 'display:flex;justify-content:flex-end;margin:1mm 0;';
+    menuWrap.style.cssText = 'display:block;width:100%;text-align:right;margin:1mm 0;';
     const toggle = document.createElement('button');
     toggle.type = 'button';
     toggle.className = 'br-menu-toggle';
@@ -8142,6 +8142,19 @@ function _collapseButtonRows() {
     body.dataset.chBtnsCollapsed = '1';
     // Remember the menu so score-table visibility sync can reflect into it.
     body._chBtnMenu = menu;
+  });
+
+  // Per the rule "you can add any of the three items (text box, stats table,
+  // photo pair) at every position", we do NOT de-duplicate add options anymore.
+  // Restore any items that an earlier version had hidden, so every dropdown
+  // shows its full set and stays visible.
+  pr.querySelectorAll('.section[data-sid] .br-menu-wrap').forEach(wrap => {
+    const menu = wrap.querySelector('.br-menu');
+    if(!menu) return;
+    menu.querySelectorAll('.br-menu-item').forEach(item => {
+      if(item.dataset.dupHidden === '1') { item.style.display = ''; delete item.dataset.dupHidden; }
+    });
+    if(wrap.dataset.dupHidden === '1') { wrap.style.display = ''; delete wrap.dataset.dupHidden; }
   });
 }
 // Close dropdowns when clicking elsewhere.
