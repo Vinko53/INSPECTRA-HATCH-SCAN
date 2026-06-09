@@ -1,0 +1,1201 @@
+const CACHE_NAME = 'loffler-mobile-cache-v1';
+
+const FILES_TO_CACHE = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(FILES_TO_CACHE))
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+  );
+});
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Löffler Mobile App</title>
+<meta name="theme-color" content="#1f3a68">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hatch Scan">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  html { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #eef2f8; color: #1a2540;
+    min-height: 100%;
+  }
+  /* Layout: a fixed top bar and bottom action bar, with the scroll area in
+     between. Using min-height:100vh on body + normal document flow is far more
+     reliable on iOS Safari than a 100vh flex column (iOS mis-measures 100vh
+     with the dynamic address bar, which can collapse a flex child to zero
+     height and hide everything below the first card). */
+  .top {
+    position: sticky; top: 0; z-index: 10; background: #1f3a68; color: #fff;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .top .brand { font-weight: 700; font-size: 16px; letter-spacing: .02em; }
+  .top .sub { font-weight: 300; font-size: 11px; opacity: .85; }
+  /* Discreet live size / photo-count meter, top-left of the header */
+  .meter {
+    position: absolute; left: 12px; top: max(12px, env(safe-area-inset-top));
+    display: flex; flex-direction: column; align-items: flex-start;
+    line-height: 1.25; pointer-events: none;
+  }
+  .meter #meterSize { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.92); }
+  .meter #meterPhotos { font-size: 9px; font-weight: 400; color: rgba(255,255,255,.65); }
+  .scroll { padding: 12px 12px 120px; }
+  .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  h2 { font-size: 13px; font-weight: 700; color: #1f3a68; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .04em; }
+  label.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-size: 12px; color: #5a6a85; font-weight: 600; }
+  label.field input, label.field select {
+    font: inherit; font-size: 16px; color: #1a2540; padding: 10px 12px;
+    border: 1px solid #c7d0de; border-radius: 8px; background: #fff; width: 100%; font-weight: 400;
+    -webkit-appearance: none; appearance: none; box-sizing: border-box;
+  }
+  /* iOS Safari gives <input type="date"> its own intrinsic width and centered
+     text, which made it overflow the card. Force it to behave like the others. */
+  label.field input[type="date"] {
+    -webkit-appearance: none; appearance: none;
+    min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box;
+    text-align: left; display: block;
+  }
+  label.field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+  /* Custom dropdown arrow for the select (native one removed by appearance:none) */
+  label.field select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%231f3a68' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px;
+  }
+  label.field input:focus, label.field select:focus { outline: none; border-color: #1f3a68; }
+  .chapter { background: #fff; border-radius: 12px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow: hidden; }
+  .chapter-head {
+    display: flex; align-items: center; padding: 14px; cursor: pointer;
+    color: #fff; position: relative; overflow: hidden;
+    background: linear-gradient(135deg,#274a82,#2c5599 55%,#1f3f74);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -2px 8px rgba(10,25,55,.35);
+  }
+  .chapter-head::after {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,.14), transparent); pointer-events: none;
+  }
+  .chapter-head > * { position: relative; z-index: 1; }
+  .chapter-head .title { font-weight: 700; font-size: 14px; flex: 1; text-shadow: 0 1px 2px rgba(10,25,55,.4); }
+  .chapter-head .count { font-size: 12px; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 3px 10px; margin: 0 8px; }
+  .chapter-head .caret { transition: transform .15s; opacity: .9; }
+  .chapter.open .caret { transform: rotate(90deg); }
+  .chapter-body { padding: 12px; display: none; }
+  .chapter.open .chapter-body { display: block; }
+  .photo-item { border-top: 1px solid #eef2f8; padding-top: 12px; margin-top: 12px; }
+  .photo-item:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+  /* Two-up photo pair layout (matches the report). display:flex is used rather
+     than CSS grid for maximum iOS Safari reliability. */
+  .pair-grid { display: flex; gap: 10px; }
+  .pair-grid > * { flex: 1 1 0; min-width: 0; }
+  .pair-grid + .pair-grid { margin-top: 8px; }
+  .tile {
+    position: relative; width: 100%; border: 2px dashed #b9c4d6; border-radius: 10px;
+    background: #f5f8fc center/cover no-repeat; display: flex; align-items: center; justify-content: center;
+    color: #7a869a; font-size: 13px; text-align: center; cursor: pointer; overflow: hidden;
+    height: 0; padding-bottom: 75%; /* 4:3 fallback for iOS < 15 (no aspect-ratio) */
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  .tile, .tile * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  /* Small ✕ at the top-right of a whole photo pair — removes the pair. Kept
+     compact so it doesn't dominate the small screen. */
+  .photo-item { position: relative; }
+  .pair-del { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px;
+    background: #c0392b; color: #fff; border: 1.5px solid #fff; border-radius: 50%;
+    font-size: 12px; line-height: 1; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 4; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    -webkit-tap-highlight-color: transparent; }
+  .pair-del.confirm { width: auto; border-radius: 11px; padding: 0 8px; font-size: 11px; font-weight: 600; }
+  /* Center the inner content despite the padding-based ratio box */
+  .tile > div, .tile > .del { position: absolute; }
+  .tile > div { top: 50%; left: 0; right: 0; transform: translateY(-50%); }
+  @supports (aspect-ratio: 1) {
+    .tile { height: auto; padding-bottom: 0; aspect-ratio: 4/3; }
+    .tile > div { position: static; transform: none; }
+  }
+  .tile.has { border-style: solid; border-color: #1f3a68; color: transparent; }
+  .tile .cam { font-size: 30px; display: block; margin-bottom: 6px; }
+  .tile .del {
+    position: absolute; top: 6px; right: 6px; background: rgba(192,57,43,.92); color: #fff;
+    border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer;
+    display: none; align-items: center; justify-content: center; line-height: 1;
+  }
+  .tile.has .del { display: flex; }
+  /* Library (gallery) button — always available, bottom-right corner of the frame */
+  .tile .lib {
+    position: absolute; bottom: 6px; right: 6px; background: rgba(31,58,104,.92); color: #fff;
+    border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1; z-index: 2;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+  .cap { width: 100%; font: inherit; font-size: 13px; color: #1a2540; margin-top: 0; padding: 8px 10px; border: 1px solid #c7d0de; border-radius: 8px; resize: vertical; min-height: 40px; }
+  .joined-cap { text-align: center; }
+  /* Cover photo tile — wider aspect, it's the main vessel shot */
+  .cover-tile { padding-bottom: 56% !important; }
+  @supports (aspect-ratio: 1) { .cover-tile { padding-bottom: 0 !important; aspect-ratio: 16/9; } }
+  .subch-group { border: 1px solid #dbe3ef; border-radius: 10px; padding: 10px; margin-bottom: 12px; background: #fafcff; }
+  .subch-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; padding: 7px 10px; border-radius: 7px; background: linear-gradient(135deg,#336ec0,#4a82cf); text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; box-shadow: 0 1px 3px rgba(10,30,70,.25); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .subch-title .subch-caret { margin-left: auto; transition: transform .15s; opacity: .9; font-size: 11px; }
+  .subch-group.open .subch-title .subch-caret { transform: rotate(90deg); }
+  .subch-body { display: none; }
+  .subch-group.open .subch-body { display: block; }
+  .subch-group:not(.open) { padding: 6px; }
+  .subch-group:not(.open) .subch-title { margin-bottom: 0; }
+  .subch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 6px; border-radius: 5px; background: rgba(255,255,255,.95); color: #28528f; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+  .ch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 8px; background: linear-gradient(180deg,rgba(255,255,255,.98),rgba(225,235,250,.85)); color: #1f3a68; font-size: 13px; font-weight: 800; flex-shrink: 0; margin-right: 10px; box-shadow: inset 0 1px 1px rgba(255,255,255,.9), 0 1px 3px rgba(10,30,70,.4); }
+  /* Chapter number with a subchapter-count badge on its corner */
+  .ch-num-wrap { position: relative; display: inline-flex; flex-shrink: 0; margin-right: 10px; }
+  .ch-num-wrap .ch-num { margin-right: 0; }
+  .ch-sub-badge { position: absolute; top: -5px; right: -6px; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 999px; background: #7fb0ff; color: #11223f; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,.3); border: 1px solid #fff; box-sizing: border-box; }
+  .add-btn { margin-top: 12px; width: 100%; background: #eaf1fb; color: #1f3a68; border: 1px dashed #1f3a68; border-radius: 8px; padding: 13px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .add-pair-row2 { margin-top: 12px; display: flex; gap: 8px; align-items: stretch; }
+  .add-pair-row2 .add-btn { margin-top: 0; flex: 1; }
+  .add-pair-row2 .pair-qty { flex: 0 0 auto; min-width: 64px; background: #fff; color: #1f3a68; border: 1px solid #c7d0de; border-radius: 8px; padding: 0 10px; font: inherit; font-size: 14px; font-weight: 600; text-align: center; }
+  .actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; gap: 8px; padding: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #d6deea; box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
+  .act { flex: 1; border: none; border-radius: 10px; padding: 13px 6px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  /* Label-wrapped file buttons (Chapters / Open): look like .act buttons and
+     center their text; the file input inside is hidden but natively tappable
+     (the most reliable way to open a file picker on iOS Safari). */
+  label.act { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  label.act input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); pointer-events: none; }
+  .act.new { background: #eef2f8; color: #1f3a68; border: 1px solid #c7d0de; }
+  .open { background: #eef2f8; color: #1f3a68; border: 1px solid #c7d0de; }
+  .save { background: #1f3a68; color: #fff; }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 100; background: #1a2540; color: #fff; padding: 11px 20px; border-radius: 20px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,.3); opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .dlg-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(10,16,30,.5); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .dlg { background: #fff; border-radius: 14px; padding: 20px; width: 100%; max-width: 360px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+  .dlg-title { font-size: 17px; font-weight: 700; color: #1f3a68; margin-bottom: 8px; }
+  .dlg-msg { font-size: 13px; color: #c0392b; font-weight: 600; margin-bottom: 14px; line-height: 1.4; }
+  .dlg-sub { font-size: 13px; color: #5a6a85; font-weight: 600; margin-bottom: 12px; }
+  .dlg-btn { display: block; width: 100%; text-align: left; border: 1px solid #c7d0de; background: #fff; color: #1a2540; border-radius: 10px; padding: 13px 14px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+  .dlg-btn.primary { background: #1f3a68; color: #fff; border-color: #1f3a68; }
+  .dlg-btn.ghost { text-align: center; border: none; color: #7a869a; margin-bottom: 0; }
+  .toast.show { opacity: 1; }
+  .hint { font-size: 11px; color: #7a869a; padding: 4px 2px 0; }
+</style>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <div class="top">
+    <div class="meter" id="meter"><span id="meterSize">0.0 MB</span><span id="meterPhotos">0 photos</span></div>
+    <div><div class="brand">Löffler International</div><div class="sub">reporting experts</div></div>
+  </div>
+
+  <div class="scroll">
+    <div class="card">
+      <h2>Report details</h2>
+      <label class="field"><span>Vessel name</span><input type="text" id="ship" placeholder="Ship name"></label>
+      <label class="field"><span>IMO number</span><input type="text" id="imo" inputmode="numeric" maxlength="7" placeholder="XXXXXXX"></label>
+      <label class="field"><span>Date</span><input type="date" id="date"></label>
+      <label class="field"><span>Vessel type</span>
+        <select id="vtype" onchange="switchVesselType(this.value)">
+          <option value="container">Container</option>
+          <option value="bulk">Bulk carrier</option>
+        </select></label>
+      <label class="field"><span>Report type</span>
+        <select id="rtype" onchange="onReportTypeChange()">
+          <option value="daily">Daily Report</option>
+          <option value="initial">Initial Service Report</option>
+          <option value="final">Final Report</option>
+          <option value="predocking">Pre-docking Inspection</option>
+          <option value="intermediate">HC Control Inspection</option>
+          <option value="special">Special Occasion Inspection</option>
+        </select></label>
+      <label class="field"><span>Shipyard / Port</span><input type="text" id="yard" placeholder="Shipyard name"></label>
+      <div class="hint">Captured photos are resized on your phone, then saved to a file you open on the desktop app (Import mobile photos).</div>
+    </div>
+    <div id="chapters"></div>
+  </div>
+
+  <div class="actionbar">
+    <button class="act new" onclick="newReport()">📄 New</button>
+    <label class="act open" role="button"><span>📋 Chapters</span>
+      <input type="file" id="chaptersInput" accept=".json,application/json" onchange="handleChapters(this)">
+    </label>
+    <label class="act open" role="button"><span>📂 Open</span>
+      <input type="file" id="openInput" accept=".json,application/json" onchange="handleOpen(this)">
+    </label>
+    <button class="act save" onclick="saveFile()">💾 Save</button>
+  </div>
+
+  <!-- New report dialog -->
+  <div id="newDlg" class="dlg-overlay" style="display:none;">
+    <div class="dlg">
+      <div class="dlg-title">Start a new report?</div>
+      <div class="dlg-msg" id="newDlgMsg">Any photos or details not saved to a file will be lost.</div>
+      <div class="dlg-sub">Which chapters should the new report use?</div>
+      <button class="dlg-btn primary" onclick="doNewReport('default')">Default chapters (for selected report type)</button>
+      <button class="dlg-btn" onclick="doNewReport('keep')">Keep current chapters &amp; subchapters</button>
+      <button class="dlg-btn ghost" onclick="closeNewDlg()">Cancel</button>
+    </div>
+  </div>
+
+<script>
+"use strict";
+// ── Chapter catalogue (titles match the desktop) ──────────────────────
+var CH_TITLES = {
+  hatchOverview:'Hatch covers overview',
+  general:'General notes & remarks',
+  safety:'Safety',
+  steel:'Hatch cover top & side plates',
+  interior:'Hatch cover interior & other steel structures',
+  vent:'Hatch cover ventilation',
+  bearing:'Hatch cover bearing system',
+  coaming:'Hatch coamings',
+  rubber:'Hatch cover rubber seals',
+  stoppers:'Hatch cover stoppers & guides',
+  antilifting:'Hold down devices',
+  sockets:'Container foundations / sockets',
+  lashing:'Lashing plates',
+  welding:'Fixed lashing material in cargo holds',
+  lashingFlatRacks:'Flat racks & gear boxes'
+};
+// Bulk-carrier titles (some shared IDs have different names on bulk carriers).
+var CH_TITLES_BULK = {
+  hatchOverview:'Hatch covers overview',
+  general:'General considerations',
+  safety:'Safety',
+  steel:'Steel works',
+  bearing:'Bearing pads and mating plates',
+  rubber:'Rubber packing',
+  coaming:'Hatch coamings',
+  stoppers:'Stoppers',
+  cleats:'Hatch cover cleats',
+  sockets:'Container sockets and lashing eyes',
+  vent:'Hatch cover ventilators',
+  hydraulic:'Hydraulic system'
+};
+// Active vessel type — 'container' or 'bulk'. Mirrors the desktop switch.
+var _vesselType = 'container';
+function _chTitle(id){
+  if(_vesselType === 'bulk' && CH_TITLES_BULK[id]) return CH_TITLES_BULK[id];
+  return CH_TITLES[id] || id;
+}
+// Per report type, the PHOTO-capable chapters in the desktop's order.
+// Non-disclaimer types (daily/initial/final) include Safety, not Interior/FlatRacks.
+// Disclaimer types (predocking/intermediate/special) drop Safety and add
+// Interior + Flat racks & gear boxes (matching the desktop updateSubject rules).
+var CH_BASE_STANDARD = ['hatchOverview','general','safety','steel','vent','bearing','coaming','rubber','stoppers','antilifting','sockets','lashing','welding'];
+var CH_BASE_DISCLAIMER = ['hatchOverview','general','steel','interior','vent','bearing','coaming','rubber','stoppers','antilifting','sockets','lashing','welding','lashingFlatRacks'];
+// Bulk carrier photo-capable chapters (same for all report types).
+var CH_BASE_BULK = ['hatchOverview','general','safety','steel','bearing','rubber','coaming','stoppers','cleats','sockets','vent','hydraulic'];
+var DISCLAIMER_TYPES = ['predocking','intermediate','special'];
+
+function chaptersForType(rtype){
+  var ids;
+  if(_vesselType === 'bulk'){
+    ids = CH_BASE_BULK;
+  } else {
+    ids = (DISCLAIMER_TYPES.indexOf(rtype) >= 0) ? CH_BASE_DISCLAIMER : CH_BASE_STANDARD;
+  }
+  return ids.map(function(id){ return { id:id, title:_chTitle(id), subchapters:[] }; });
+}
+
+// Active chapter list — initialised for the default report type (daily).
+var CHAPTERS = chaptersForType('daily');
+
+// ── In-memory data model ──────────────────────────────────────────────
+// store[chapterId] = [ { photo:dataURL|null, caption:'', sub:'' }, ... ]
+// Each chapter starts with one empty PAIR (two photo frames) ready to use.
+var store = {};
+function _emptyPair(sub){ return [ {photo:null, caption:'', sub:sub||''}, {photo:null, caption:'', sub:sub||''} ]; }
+// Seed a chapter's default empty frames: if it has subchapters, one empty pair
+// PER subchapter (no chapter-level frames); otherwise one chapter-level pair.
+function _seedChapter(ch){
+  if(ch.subchapters && ch.subchapters.length){
+    var arr=[];
+    ch.subchapters.forEach(function(sname){ arr=arr.concat(_emptyPair(sname)); });
+    return arr;
+  }
+  return _emptyPair();
+}
+// Merge an existing chapter's captured items with its (possibly new) subchapter
+// list, guaranteeing every subchapter has at least one photo pair ready while
+// preserving anything already captured. Used when structure is imported.
+function _mergeChapterWithSubchapters(ch, existing){
+  existing = existing || [];
+  if(!(ch.subchapters && ch.subchapters.length)){
+    // No subchapters: keep existing if any, else one empty pair.
+    return existing.length ? existing : _emptyPair();
+  }
+  var out=[];
+  ch.subchapters.forEach(function(sname){
+    // Keep all existing items already tagged to this subchapter.
+    var mine=existing.filter(function(it){ return (it.sub||'')===sname; });
+    if(mine.length){
+      // Ensure an even count (full pairs) so the pair grid stays intact.
+      if(mine.length % 2 !== 0) mine=mine.concat(_emptyPair(sname).slice(0,1));
+      out=out.concat(mine);
+    } else {
+      out=out.concat(_emptyPair(sname));   // new/empty subchapter → one ready pair
+    }
+  });
+  return out;
+}
+CHAPTERS.forEach(function(c){ store[c.id] = _seedChapter(c); });
+// Cover photo — a single optional vessel photo shown as chapter "0".
+var coverPhoto = { photo:null, caption:'' };
+// Which subchapters are expanded (key = chapterId + "::" + subIndex). Persists
+// across re-renders so collapsing/expanding survives edits.
+var _openSubs = {};
+
+// When chapters are imported from the desktop, the report type is fixed by
+// the desktop and must not be changed on the phone.
+var _importedFromDesktop = false;
+function _applyTypeLock(){
+  var rt=document.getElementById('rtype');
+  if(!rt) return;
+  rt.disabled = _importedFromDesktop;
+  rt.style.opacity = _importedFromDesktop ? '0.6' : '';
+  var note=document.getElementById('typeLockNote');
+  if(_importedFromDesktop){
+    if(!note){
+      note=document.createElement('div'); note.id='typeLockNote';
+      note.style.cssText='font-size:11px;color:#7a869a;margin-top:-6px;margin-bottom:12px;';
+      note.textContent='Report type is set by the desktop report (imported chapters).';
+      rt.parentNode.parentNode.insertBefore(note, rt.parentNode.nextSibling);
+    }
+  } else if(note){ note.remove(); }
+}
+
+// When the report type changes (and chapters are NOT locked by a desktop
+// import), rebuild the chapter list to that type's default set. Photos already
+// captured in chapters that still exist are preserved; chapters that drop out
+// of the new type are removed; newly-appearing chapters get default frames.
+// Switch vessel type (Container / Bulk carrier), mirroring the desktop.
+// Rebuilds the chapter list to the new vessel type's set. Photos already
+// captured in chapters that still exist are preserved. Disabled when chapters
+// were imported from the desktop (the desktop defines the structure there).
+function switchVesselType(type){
+  if(type!=='container' && type!=='bulk') return;
+  if(_vesselType===type){ _updateVesselTypeButtons(); return; }
+  if(_importedFromDesktop){
+    toast('Vessel type is set by the desktop report');
+    return;
+  }
+  _vesselType=type;
+  _updateVesselTypeButtons();
+  var rt=document.getElementById('rtype');
+  var newList=chaptersForType(rt ? rt.value : 'daily');
+  var oldStore=store;
+  var oldById={}; CHAPTERS.forEach(function(c){ oldById[c.id]=c; });
+  newList.forEach(function(c){ if(oldById[c.id] && oldById[c.id].subchapters && oldById[c.id].subchapters.length) c.subchapters=oldById[c.id].subchapters; });
+  CHAPTERS=newList;
+  var newStore={};
+  CHAPTERS.forEach(function(c){ newStore[c.id]=_mergeChapterWithSubchapters(c, oldStore[c.id]); });
+  store=newStore;
+  render();
+}
+function _updateVesselTypeButtons(){
+  var sel=document.getElementById('vtype');
+  if(sel) sel.value=_vesselType;
+  // When chapters come from the desktop, the vessel type is fixed — lock it.
+  if(sel){
+    sel.disabled = _importedFromDesktop;
+    sel.style.opacity = _importedFromDesktop ? '0.6' : '';
+  }
+}
+
+function onReportTypeChange(){
+  if(_importedFromDesktop) return; // locked — desktop defines structure
+  var rt=document.getElementById('rtype');
+  var newList=chaptersForType(rt ? rt.value : 'daily');
+  var oldStore=store;
+  // Preserve subchapters the user/desktop may have set on still-present chapters.
+  var oldById={}; CHAPTERS.forEach(function(c){ oldById[c.id]=c; });
+  newList.forEach(function(c){ if(oldById[c.id] && oldById[c.id].subchapters && oldById[c.id].subchapters.length) c.subchapters=oldById[c.id].subchapters; });
+  CHAPTERS=newList;
+  var newStore={};
+  CHAPTERS.forEach(function(c){
+    newStore[c.id] = _mergeChapterWithSubchapters(c, oldStore[c.id]);
+  });
+  store=newStore;
+  render();
+}
+
+// ── New report ────────────────────────────────────────────────────────
+function _hasAnyPhotos(){
+  if(coverPhoto && coverPhoto.photo) return true;
+  for(var cid in store){ if(!store.hasOwnProperty(cid)) continue;
+    var arr=store[cid]||[]; for(var i=0;i<arr.length;i++){ if(arr[i].photo) return true; } }
+  return false;
+}
+function newReport(){
+  var msg=document.getElementById('newDlgMsg');
+  if(msg){
+    msg.textContent = _hasAnyPhotos()
+      ? 'You have captured photos. Any photos or details not saved to a file will be permanently lost.'
+      : 'Any details not saved to a file will be lost.';
+  }
+  document.getElementById('newDlg').style.display='flex';
+}
+function closeNewDlg(){ document.getElementById('newDlg').style.display='none'; }
+function doNewReport(mode){
+  // mode 'default' → reset chapters to the selected report type's defaults
+  // mode 'keep'    → keep the current chapter & subchapter structure
+  if(mode==='default'){
+    _importedFromDesktop=false;          // unlock report type
+    _applyTypeLock();
+    var rt=document.getElementById('rtype');
+    CHAPTERS=chaptersForType(rt ? rt.value : 'daily');
+  }
+  // Clear all photos/captions; reseed empty frames for the active structure.
+  store={};
+  CHAPTERS.forEach(function(c){ store[c.id]=_seedChapter(c); });
+  coverPhoto={ photo:null, caption:'' };
+  // Clear header fields (keep date defaulting to today).
+  ['ship','imo','yard'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var d=new Date(); var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var de=document.getElementById('date'); if(de) de.value=ds;
+  closeNewDlg();
+  render();
+  toast('New report started');
+}
+
+// ── On-device photo resize (mirrors desktop defaults: ~65KB, 900px) ───
+var IMG = { targetBytes: 65*1024, targetDim: 900, startQ: 0.78, minQ: 0.40, qStep: 0.07, shrinkSteps: 2, shrinkFactor: 0.85 };
+function bytesOfDataURL(d){ var i=d.indexOf(','); var b=d.length-i-1; return Math.floor(b*3/4); }
+function optimisePhoto(file){
+  return new Promise(function(resolve){
+    if(!file || !/^image\//.test(file.type) || file.type==='image/svg+xml' || file.type==='image/gif'){
+      // fall back to raw read
+      var fr=new FileReader(); fr.onload=function(e){ resolve(e.target.result); }; fr.onerror=function(){ resolve(null); }; fr.readAsDataURL(file); return;
+    }
+    var url=URL.createObjectURL(file);
+    var img=new Image();
+    img.onload=function(){
+      try {
+        var longEdge=Math.max(img.naturalWidth, img.naturalHeight);
+        var scale=longEdge>IMG.targetDim ? (IMG.targetDim/longEdge) : 1;
+        var best=null;
+        for(var pass=0; pass<=IMG.shrinkSteps; pass++){
+          var s=scale*Math.pow(IMG.shrinkFactor, pass);
+          var w=Math.max(1, Math.round(img.naturalWidth*s));
+          var h=Math.max(1, Math.round(img.naturalHeight*s));
+          var canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+          var ctx=canvas.getContext('2d');
+          ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+          ctx.drawImage(img,0,0,w,h);
+          for(var q=IMG.startQ; q>=IMG.minQ-0.001; q-=IMG.qStep){
+            var d=canvas.toDataURL('image/jpeg', Math.max(IMG.minQ,q));
+            var bytes=bytesOfDataURL(d);
+            if(!best || bytes<best.bytes) best={src:d, bytes:bytes};
+            if(bytes<=IMG.targetBytes){ URL.revokeObjectURL(url); resolve(d); return; }
+          }
+        }
+        URL.revokeObjectURL(url);
+        resolve(best?best.src:null);
+      } catch(e){ URL.revokeObjectURL(url); resolve(null); }
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); resolve(null); };
+    img.src=url;
+  });
+}
+
+// ── Render ────────────────────────────────────────────────────────────
+function esc(s){ return (s||'').replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}); }
+
+function render(){
+  var wrap=document.getElementById('chapters');
+  wrap.innerHTML='';
+
+  // ── Cover photo block (chapter 0) ──────────────────────────────────
+  (function(){
+    var block=document.createElement('div');
+    block.className='chapter';
+    block.dataset.id='__cover__';
+    var head=document.createElement('div');
+    head.className='chapter-head';
+    head.innerHTML='<span class="ch-num">0</span>'+
+      '<span class="title">Cover photo</span>'+
+      '<span class="count">'+(coverPhoto.photo?'1 photo':'')+'</span>'+
+      '<span class="caret">▶</span>';
+    head.onclick=function(){
+      var wasOpen=block.classList.contains('open');
+      var all=document.querySelectorAll('.chapter');
+      for(var i=0;i<all.length;i++) all[i].classList.remove('open');
+      if(!wasOpen){ block.classList.add('open'); block.scrollIntoView({behavior:'smooth',block:'start'}); }
+    };
+    block.appendChild(head);
+    var body=document.createElement('div');
+    body.className='chapter-body';
+    // Single full-width cover tile (no pair, no extra frames).
+    var item=document.createElement('div');
+    item.className='photo-item';
+    item.appendChild(makeCoverTile());
+    var cap=document.createElement('textarea');
+    cap.className='cap'; cap.placeholder='Cover caption (optional)…'; cap.value=coverPhoto.caption||'';
+    cap.oninput=function(){ coverPhoto.caption=cap.value; };
+    item.appendChild(cap);
+    body.appendChild(item);
+    block.appendChild(body);
+    wrap.appendChild(block);
+  })();
+
+  CHAPTERS.forEach(function(ch, chIdx){
+    var chNum = chIdx + 1;   // chapter number (1, 2, 3 …), matching the desktop
+    var items=store[ch.id];
+    var withPhoto=items.filter(function(it){return it.photo;}).length;
+    var block=document.createElement('div');
+    block.className='chapter';
+    block.dataset.id=ch.id;
+    var head=document.createElement('div');
+    head.className='chapter-head';
+    var subCount = (ch.subchapters && ch.subchapters.length) ? ch.subchapters.length : 0;
+    var numHtml = subCount
+      ? '<span class="ch-num-wrap"><span class="ch-num">'+chNum+'</span><span class="ch-sub-badge" title="'+subCount+' subchapters">'+subCount+'</span></span>'
+      : '<span class="ch-num">'+chNum+'</span>';
+    head.innerHTML=numHtml+
+      '<span class="title">'+esc(ch.title)+'</span>'+
+      '<span class="count">'+(withPhoto?withPhoto+' photo'+(withPhoto>1?'s':''):'')+'</span>'+
+      '<span class="caret">▶</span>';
+    head.onclick=function(){
+      var wasOpen = block.classList.contains('open');
+      // Close every chapter, then open this one (unless it was already open).
+      // When a chapter closes, also reset its subchapters to collapsed so they
+      // start fresh next time the chapter is opened.
+      var all = document.querySelectorAll('.chapter');
+      for(var i=0;i<all.length;i++){
+        if(all[i].classList.contains('open')){
+          var cidClosing = all[i].dataset.id;
+          Object.keys(_openSubs).forEach(function(k){
+            if(k.indexOf(cidClosing + '::') === 0) delete _openSubs[k];
+          });
+          all[i].querySelectorAll('.subch-group.open').forEach(function(g){ g.classList.remove('open'); });
+        }
+        all[i].classList.remove('open');
+      }
+      if(!wasOpen) {
+        block.classList.add('open');
+        block.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
+    };
+    block.appendChild(head);
+    var body=document.createElement('div');
+    body.className='chapter-body';
+
+    var subs = (ch.subchapters && ch.subchapters.length) ? ch.subchapters : null;
+
+    if(subs) {
+      // CHAPTER WITH SUBCHAPTERS:
+      // Photos live INSIDE each subchapter. The main chapter has no general
+      // (no-subchapter) frames. Each subchapter shows its own pairs + its own
+      // "Add photo pair" button.
+      subs.forEach(function(sname, subIdx){
+        var swrap=document.createElement('div');
+        swrap.className='subch-group';
+        var subKey = ch.id + '::' + subIdx;
+        if(_openSubs[subKey]) swrap.classList.add('open');
+        var sh=document.createElement('div');
+        sh.className='subch-title';
+        sh.innerHTML='<span class="subch-num">'+chNum+'.'+(subIdx+1)+'</span> '+esc(sname)+'<span class="subch-caret">▶</span>';
+        sh.onclick=(function(key, grp, chId){ return function(){
+          var nowOpen = !grp.classList.contains('open');
+          if(nowOpen){
+            // Accordion: collapse every OTHER subchapter in this same chapter,
+            // so only one subchapter is expanded at a time.
+            Object.keys(_openSubs).forEach(function(k){
+              if(k.indexOf(chId + '::') === 0) delete _openSubs[k];
+            });
+            var sibs = grp.parentNode ? grp.parentNode.querySelectorAll('.subch-group.open') : [];
+            for(var i=0;i<sibs.length;i++){ if(sibs[i]!==grp) sibs[i].classList.remove('open'); }
+            grp.classList.add('open');
+            _openSubs[key]=true;
+          } else {
+            grp.classList.remove('open');
+            delete _openSubs[key];
+          }
+        }; })(subKey, swrap, ch.id);
+        swrap.appendChild(sh);
+        var sbody=document.createElement('div');
+        sbody.className='subch-body';
+        // pairs belonging to this subchapter (preserve their absolute indices)
+        var idxs=[];
+        for(var k=0;k<items.length;k++){ if((items[k].sub||'')===sname) idxs.push(k); }
+        for(var p=0;p<idxs.length;p+=2){
+          var iA=idxs[p], iB=(p+1<idxs.length?idxs[p+1]:-1);
+          sbody.appendChild(makePair(ch.id, iA, items[iA], (iB>=0?items[iB]:null)));
+        }
+        sbody.appendChild(makeAddPairRow(ch.id, sname));
+        swrap.appendChild(sbody);
+        body.appendChild(swrap);
+      });
+    } else {
+      // CHAPTER WITHOUT SUBCHAPTERS: chapter-level photo pairs.
+      for(var pi=0; pi<items.length; pi+=2){
+        body.appendChild(makePair(ch.id, pi, items[pi], (pi+1<items.length?items[pi+1]:null)));
+      }
+      body.appendChild(makeAddPairRow(ch.id, ''));
+    }
+    block.appendChild(body);
+    wrap.appendChild(block);
+  });
+  updateMeter();
+  if(typeof scheduleAutosave==='function') scheduleAutosave();
+}
+
+// Live report size (MB) and total photo count, shown top-left of the header.
+function updateMeter(){
+  var bytes=0, count=0;
+  if(coverPhoto && coverPhoto.photo){ bytes+=bytesOfDataURL(coverPhoto.photo); count++; }
+  for(var cid in store){ if(!store.hasOwnProperty(cid)) continue;
+    var arr=store[cid]||[];
+    for(var i=0;i<arr.length;i++){ if(arr[i].photo){ bytes+=bytesOfDataURL(arr[i].photo); count++; } }
+  }
+  var mb=bytes/(1024*1024);
+  var sizeEl=document.getElementById('meterSize');
+  var phEl=document.getElementById('meterPhotos');
+  if(sizeEl) sizeEl.textContent=(mb<10 ? mb.toFixed(1) : Math.round(mb))+' MB';
+  if(phEl) phEl.textContent=count+(count===1?' photo':' photos');
+}
+
+// Build an "Add photo pair" row with a count selector (add several pairs at
+// once), matching the desktop behaviour. `sub` is the subchapter name ('' for
+// chapter-level). Returns the row element.
+function makeAddPairRow(cid, sub){
+  var row=document.createElement('div');
+  row.className='add-pair-row2';
+  var btn=document.createElement('button');
+  btn.className='add-btn';
+  btn.textContent='＋ Add photo pair';
+  var qty=document.createElement('select');
+  qty.className='pair-qty';
+  qty.title='Number of pairs to add';
+  [1,2,3,4,5,6,8,10].forEach(function(n){
+    var o=document.createElement('option'); o.value=String(n); o.textContent=String(n); qty.appendChild(o);
+  });
+  btn.onclick=function(){
+    var count=parseInt(qty.value,10)||1;
+    count=Math.max(1,Math.min(20,count));
+    for(var i=0;i<count;i++){
+      store[cid].push({photo:null, caption:'', sub:sub});
+      store[cid].push({photo:null, caption:'', sub:sub});
+    }
+    render();
+    var b=document.querySelector('.chapter[data-id="'+cid+'"]'); if(b) b.classList.add('open');
+  };
+  row.appendChild(btn);
+  row.appendChild(qty);
+  return row;
+}
+
+// Build a photo PAIR row: two tiles side by side, with either two separate
+// captions or one joined caption spanning both (matching the desktop report).
+function makePair(cid, baseIdx, itA, itB){
+  var pair=document.createElement('div');
+  pair.className='photo-item';
+  var grid=document.createElement('div');
+  grid.className='pair-grid';
+  grid.appendChild(makeTile(cid, baseIdx, itA));
+  if(itB) grid.appendChild(makeTile(cid, baseIdx+1, itB));
+  else grid.appendChild(document.createElement('div'));
+  pair.appendChild(grid);
+
+  var joined = !!(itA && itA.joined);
+  if(joined && itB){
+    // One caption spanning both photos.
+    var jc=document.createElement('textarea');
+    jc.className='cap joined-cap'; jc.placeholder='Caption (both photos) — long-press a photo to split…';
+    jc.value=(itA && itA.joinedCaption)||'';
+    jc.oninput=function(){ store[cid][baseIdx].joinedCaption=jc.value; };
+    pair.appendChild(jc);
+  } else {
+    var caps=document.createElement('div');
+    caps.className='pair-grid';
+    caps.appendChild(makeCap(cid, baseIdx, itA));
+    if(itB) caps.appendChild(makeCap(cid, baseIdx+1, itB));
+    else caps.appendChild(document.createElement('div'));
+    pair.appendChild(caps);
+  }
+
+  // Join/split is now done by long-pressing a photo tile (no visible button),
+  // which saves vertical space between pairs.
+
+  // Small ✕ at the pair's top-right corner removes the whole pair. If the pair
+  // has any photo, the first tap asks to confirm (turns into "Remove?") so you
+  // don't lose photos by accident; a second tap (within 2.5s) removes it.
+  var del=document.createElement('button');
+  del.className='pair-del'; del.textContent='✕'; del.title='Remove this photo pair';
+  var hasPhoto = (itA && itA.photo) || (itB && itB.photo);
+  var confirmT=null;
+  del.onclick=function(ev){
+    ev.stopPropagation();
+    if(hasPhoto && !del.classList.contains('confirm')){
+      del.classList.add('confirm'); del.textContent='Remove?';
+      clearTimeout(confirmT);
+      confirmT=setTimeout(function(){ del.classList.remove('confirm'); del.textContent='✕'; }, 2500);
+      return;
+    }
+    _removePair(cid, baseIdx);
+  };
+  pair.appendChild(del);
+  return pair;
+}
+
+// Remove a photo pair (both slots) from a chapter's store.
+function _removePair(cid, baseIdx){
+  var arr=store[cid]; if(!arr) return;
+  // Remove the two slots of this pair. Splice the higher index first so the
+  // lower index stays valid.
+  if(baseIdx+1 < arr.length) arr.splice(baseIdx+1, 1);
+  arr.splice(baseIdx, 1);
+  render();
+  var b=document.querySelector('.chapter[data-id="'+cid+'"]'); if(b) b.classList.add('open');
+  if(typeof toast==='function') toast('Photo pair removed');
+}
+
+function makeTile(cid, idx, it){
+  var tile=document.createElement('div');
+  tile.className='tile'+(it && it.photo?' has':'');
+  if(it && it.photo) tile.style.backgroundImage="url('"+it.photo+"')";
+  tile.innerHTML=((it&&it.photo)?'':'<div><span class="cam">📷</span>Camera</div>')+
+    '<button class="lib" title="Choose from library">🖼️</button>'+
+    '<button class="del" title="Remove">✕</button>';
+  // Single tap on the frame → camera. The 🖼️ button → photo library.
+  // (Both are direct-tap gestures, which iOS Safari requires to open a file picker.)
+  tile.addEventListener('click', function(ev){
+    if(tile._lpFired){ tile._lpFired=false; return; }   // swallow click after a long-press
+    if(ev.target.classList.contains('del')){ store[cid][idx].photo=null; render(); return; }
+    if(ev.target.classList.contains('lib')){ capture(cid, idx, 'library'); return; }
+    capture(cid, idx, 'camera');
+  });
+  tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+  tile.addEventListener('selectstart', function(ev){ ev.preventDefault(); });
+  tile.style.webkitTouchCallout='none';
+  tile.style.webkitUserSelect='none';
+  tile.style.userSelect='none';
+
+  // Long-press the photo to JOIN the pair's two captions into one (long-press
+  // again to SPLIT). Avoids a visible button so it costs no space. Works only
+  // when the pair actually has two photo slots.
+  var lpTimer=null;
+  function lpStart(ev){
+    if(ev.target.classList.contains('del') || ev.target.classList.contains('lib')) return; // let buttons work
+    clearTimeout(lpTimer);
+    lpTimer=setTimeout(function(){ tile._lpFired=true; _toggleJoinForTile(cid, idx); }, 550);
+  }
+  function lpCancel(){ clearTimeout(lpTimer); }
+  tile.addEventListener('pointerdown', lpStart);
+  tile.addEventListener('pointerup', lpCancel);
+  tile.addEventListener('pointermove', lpCancel);
+  tile.addEventListener('pointercancel', lpCancel);
+  tile.addEventListener('pointerleave', lpCancel);
+  return tile;
+}
+
+// Toggle joined/split captions for the pair that the given tile belongs to.
+function _toggleJoinForTile(cid, idx){
+  var arr=store[cid]; if(!arr) return;
+  var baseIdx = idx - (idx % 2);                 // even index = pair base
+  var itA=arr[baseIdx], itB=arr[baseIdx+1];
+  if(!itA || !itB || !(itB)){ toast('Need two photos to join captions'); return; }
+  var nowJoined = !itA.joined;
+  itA.joined = nowJoined;
+  if(nowJoined){
+    // Seed the joined caption from the two separate ones on first join.
+    if(!itA.joinedCaption){
+      var a=(itA.caption)||'', b=(itB.caption)||'';
+      itA.joinedCaption = a + (a&&b?' ':'') + b;
+    }
+  }
+  render();
+  var bl=document.querySelector('.chapter[data-id="'+cid+'"]'); if(bl) bl.classList.add('open');
+  toast(nowJoined ? 'Captions joined' : 'Captions split');
+}
+
+function makeCap(cid, idx, it){
+  var cap=document.createElement('textarea');
+  cap.className='cap'; cap.placeholder='Caption…'; cap.value=(it&&it.caption)||'';
+  cap.oninput=function(){ store[cid][idx].caption=cap.value; };
+  return cap;
+}
+
+// Single cover-photo tile (writes to the coverPhoto object, not the store).
+function makeCoverTile(){
+  var tile=document.createElement('div');
+  tile.className='tile cover-tile'+(coverPhoto.photo?' has':'');
+  if(coverPhoto.photo) tile.style.backgroundImage="url('"+coverPhoto.photo+"')";
+  tile.innerHTML=((coverPhoto.photo)?'':'<div><span class="cam">📷</span>Camera</div>')+
+    '<button class="lib" title="Choose from library">🖼️</button>'+
+    '<button class="del" title="Remove">✕</button>';
+  tile.addEventListener('click', function(ev){
+    if(ev.target.classList.contains('del')){ coverPhoto.photo=null; render(); return; }
+    if(ev.target.classList.contains('lib')){ capture('__cover__',0,'library'); return; }
+    capture('__cover__',0,'camera');
+  });
+  tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+  tile.style.webkitTouchCallout='none';
+  return tile;
+}
+
+// ── Capture ───────────────────────────────────────────────────────────
+// mode 'camera'  → open the camera directly (capture attribute)
+// mode 'library' → open the photo library / file picker (no capture attribute)
+function isIOS(){
+  var ua=navigator.userAgent||'';
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
+function capture(cid, idx, mode){
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  if(mode==='camera'){
+    // Request the camera explicitly. On iOS this opens the camera directly.
+    inp.setAttribute('capture','environment');
+  } else {
+    // Library/file picker: no capture attribute, so the OS shows the gallery.
+    inp.removeAttribute('capture');
+  }
+  inp.style.cssText='position:fixed;top:-1000px;left:-1000px;width:1px;height:1px;opacity:0;';
+  document.body.appendChild(inp);
+  function cleanup(){ try{ inp.remove(); }catch(e){} }
+  inp.addEventListener('change', function(){
+    var f=inp.files && inp.files[0];
+    if(f){
+      toast('Processing photo…');
+      optimisePhoto(f).then(function(src){
+        if(src){
+          if(cid==='__cover__'){ coverPhoto.photo=src; }
+          else { store[cid][idx].photo=src; }
+          render();
+          var b=document.querySelector('.chapter[data-id="'+cid+'"]'); if(b) b.classList.add('open');
+          toast('Photo added');
+        }
+        else toast('Could not read photo');
+      });
+    }
+    cleanup();
+  });
+  inp.click();
+}
+
+// ── Toast ───────────────────────────────────────────────────────────
+var _toastEl=null, _toastT=null;
+function toast(msg){
+  if(!_toastEl){ _toastEl=document.createElement('div'); _toastEl.className='toast'; document.body.appendChild(_toastEl); }
+  _toastEl.textContent=msg; _toastEl.classList.add('show');
+  clearTimeout(_toastT); _toastT=setTimeout(function(){ _toastEl.classList.remove('show'); }, 2000);
+}
+
+// ── Save / Open (simple bundle format) ───────────────────────────────
+// Format the desktop "Import mobile photos" button understands.
+function buildBundle(){
+  var photos={};
+  CHAPTERS.forEach(function(ch){
+    var items=store[ch.id]||[];
+    var out=[];
+    for(var i=0;i<items.length;i+=2){
+      var a=items[i], b=(i+1<items.length?items[i+1]:null);
+      var joined=!!(a && a.joined) && !!b;
+      var jcap=(a && a.joinedCaption)||'';
+      // Keep only photos that actually have an image, but preserve join flags.
+      if(a && a.photo) out.push({ photo:a.photo, caption:(joined?jcap:(a.caption||'')), sub:a.sub||'', joined:joined, joinedCaption:jcap, pairStart:true });
+      if(b && b.photo) out.push({ photo:b.photo, caption:(joined?'':(b.caption||'')), sub:b.sub||'', joined:joined, joinedCaption:jcap, pairStart:false });
+    }
+    if(out.length) photos[ch.id]=out;
+  });
+  return {
+    type: 'hc-mobile-photo-bundle',
+    version: 1,
+    createdAt: new Date().toISOString(),
+    header: {
+      shipName: document.getElementById('ship').value || '',
+      imo: document.getElementById('imo').value || '',
+      date: document.getElementById('date').value || '',
+      reportType: document.getElementById('rtype').value || 'daily',
+      shipyard: document.getElementById('yard').value || ''
+    },
+    vesselType: _vesselType,
+    // Full chapter + subchapter structure (in order), so the desktop can
+    // restore subchapters — including empty ones that hold no photos yet.
+    structure: CHAPTERS.map(function(c){
+      return { id:c.id, title:c.title, subchapters:(c.subchapters||[]).slice() };
+    }),
+    photos: photos,
+    cover: coverPhoto.photo ? { photo: coverPhoto.photo, caption: coverPhoto.caption||'' } : null
+  };
+}
+function saveFile(){
+  var bundle=buildBundle();
+  var ship=(bundle.header.shipName||'Mobile').replace(/[\/\\:*?"<>|]/g,'').replace(/\s+/g,' ').trim();
+  var d=bundle.header.date ? bundle.header.date.replace(/-/g,'') : (new Date().toISOString().slice(0,10).replace(/-/g,''));
+  var name=d+'_HC_Mobile_'+ship+'.json';
+  var json=JSON.stringify(bundle);
+  var blob=new Blob([json], {type:'application/json'});
+
+  // Preferred path: the phone's native Share sheet, so the file can go
+  // straight to WhatsApp, WeChat, Mail, Files, AirDrop, etc. This is the most
+  // reliable way to get a file OFF a phone (a plain download often stalls or
+  // is hard to find on iOS).
+  var file=null;
+  try { file=new File([blob], name, {type:'application/json'}); } catch(e){ file=null; }
+
+  if(file && navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+    navigator.share({ files:[file], title:name, text:'Hatch Scan report: '+name })
+      .then(function(){ toast('Shared: '+name); })
+      .catch(function(err){
+        // User cancelled the share sheet → do nothing. Any other error → download.
+        if(err && (err.name==='AbortError' || /cancel/i.test(err.message||''))) return;
+        _downloadFallback(blob, name);
+      });
+    return;
+  }
+  // Fallback: classic download (older browsers without file sharing).
+  _downloadFallback(blob, name);
+}
+
+function _downloadFallback(blob, name){
+  try {
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    toast('Saved: '+name);
+  } catch(e){ toast('Could not save file'); }
+}
+function openFile(){ document.getElementById('openInput').click(); }
+// Apply a bundle object to the app state (shared by file-open and autosave-restore).
+function _applyBundleObject(b){
+  // Restore vessel type first (affects default chapter titles/sets).
+  if(b.vesselType==='bulk' || b.vesselType==='container'){ _vesselType=b.vesselType; }
+  _updateVesselTypeButtons();
+  if(b.header){
+    document.getElementById('ship').value=b.header.shipName||'';
+    document.getElementById('imo').value=b.header.imo||'';
+    document.getElementById('date').value=b.header.date||'';
+    document.getElementById('rtype').value=b.header.reportType||'daily';
+    document.getElementById('yard').value=b.header.shipyard||'';
+  }
+  // Rebuild the chapter list (with subchapters) from the saved structure, so
+  // subchapters survive a file-open or an autosave restore — not just photos.
+  if(Array.isArray(b.structure) && b.structure.length){
+    CHAPTERS = b.structure.map(function(sc){
+      return { id: sc.id, title: sc.title || _chTitle(sc.id), subchapters: Array.isArray(sc.subchapters)? sc.subchapters.slice() : [] };
+    });
+  } else {
+    // Older files without structure: keep the chapters for the report type.
+    var rt=(b.header && b.header.reportType) ? b.header.reportType : 'daily';
+    CHAPTERS = chaptersForType(rt);
+  }
+  store={};
+  CHAPTERS.forEach(function(ch){ store[ch.id]=[]; });
+  if(b.photos){ Object.keys(b.photos).forEach(function(cid){ if(store[cid]!==undefined){ store[cid]=b.photos[cid].map(function(it){ return { photo: it.photo||null, caption: it.caption||'', sub: it.sub||'', joined: !!it.joined, joinedCaption: it.joinedCaption||'' }; }); } }); }
+  // Any chapter with no saved photos still gets its ready (seeded) frames,
+  // honouring its subchapters so each subchapter shows a pair.
+  CHAPTERS.forEach(function(ch){ if(!store[ch.id] || !store[ch.id].length) store[ch.id]=_seedChapter(ch); });
+  coverPhoto = (b.cover && b.cover.photo) ? { photo:b.cover.photo, caption:b.cover.caption||'' } : { photo:null, caption:'' };
+  render();
+}
+function handleOpen(inp){
+  var f=inp.files && inp.files[0]; if(!f) return;
+  var fr=new FileReader();
+  fr.onload=function(e){
+    try {
+      var b=JSON.parse(e.target.result);
+      if(b.type!=='hc-mobile-photo-bundle'){ toast('Not a mobile photo file'); return; }
+      _applyBundleObject(b);
+      toast('Opened');
+    } catch(err){ toast('Could not open file'); }
+  };
+  fr.readAsText(f);
+  inp.value='';
+}
+
+// ── Load chapter structure exported from the desktop ──────────────────
+function loadChapters(){ document.getElementById('chaptersInput').click(); }
+function handleChapters(inp){
+  var f=inp.files && inp.files[0]; if(!f) return;
+  var fr=new FileReader();
+  fr.onload=function(e){
+    try {
+      var st=JSON.parse(e.target.result);
+      if(st.type!=='hc-chapter-structure' || !Array.isArray(st.chapters)){ toast('Not a chapter file'); return; }
+      // Replace the chapter list with the desktop's (only photo-capable ones).
+      var newChapters=[];
+      st.chapters.forEach(function(c){
+        if(c.canPhoto===false) return; // skip chapters that hold no photos
+        newChapters.push({ id:c.id, title:c.title||c.id, subchapters: Array.isArray(c.subchapters)?c.subchapters.slice():[] });
+      });
+      if(!newChapters.length){ toast('No photo chapters in file'); return; }
+      // Preserve any already-captured photos for chapters that still exist.
+      var oldStore=store;
+      CHAPTERS=newChapters;
+      store={};
+      CHAPTERS.forEach(function(c){ store[c.id]= _mergeChapterWithSubchapters(c, oldStore[c.id]); });
+      // This report's structure now comes from the desktop. If the desktop
+      // included a report type, apply it; then LOCK the selector so it can't
+      // be changed on the phone (the desktop defines the report).
+      _importedFromDesktop = true;
+      if(st.reportType){ var rt=document.getElementById('rtype'); if(rt){ rt.value=st.reportType; } }
+      // If the desktop exported its vessel type, mirror it on the phone.
+      if(st.vesselType==='bulk' || st.vesselType==='container'){ _vesselType=st.vesselType; }
+      _updateVesselTypeButtons();
+      // Pre-fill header details exported from the desktop (ship, IMO, date, shipyard).
+      if(st.header){
+        var h=st.header;
+        var setVal=function(id,v){ var el=document.getElementById(id); if(el && v) el.value=v; };
+        setVal('ship', h.shipName);
+        setVal('imo', h.imo);
+        setVal('date', h.date);
+        setVal('yard', h.shipyard);
+      }
+      _applyTypeLock();
+      render();
+      toast('Loaded '+CHAPTERS.length+' chapters');
+    } catch(err){ toast('Could not read chapter file'); }
+  };
+  fr.readAsText(f);
+  inp.value='';
+}
+
+// ── Autosave to the phone's local storage (IndexedDB) ─────────────────
+// Silently keeps ONE slot with the latest work, so a closed tab, reload, or
+// phone restart during the day won't lose collected photos. The evening
+// "Save" file remains the real backup the desktop imports.
+var _DB_NAME='inspectra_hatch_mobile', _DB_STORE='autosave', _DB_KEY='current';
+var _db=null, _autosaveTimer=null, _autosaveReady=false;
+
+function _openDB(cb){
+  try{
+    var req=indexedDB.open(_DB_NAME,1);
+    req.onupgradeneeded=function(e){ var db=e.target.result; if(!db.objectStoreNames.contains(_DB_STORE)) db.createObjectStore(_DB_STORE); };
+    req.onsuccess=function(e){ _db=e.target.result; _autosaveReady=true; cb && cb(true); };
+    req.onerror=function(){ _autosaveReady=false; cb && cb(false); };
+  }catch(e){ _autosaveReady=false; cb && cb(false); }
+}
+function _autosaveNow(){
+  if(!_db) return;
+  try{
+    var bundle=buildBundle();
+    bundle._savedAt=new Date().toISOString();
+    var tx=_db.transaction(_DB_STORE,'readwrite');
+    tx.objectStore(_DB_STORE).put(bundle,_DB_KEY);
+  }catch(e){}
+}
+// Debounced trigger — called from render() on every change.
+function scheduleAutosave(){
+  if(!_autosaveReady) return;
+  clearTimeout(_autosaveTimer);
+  _autosaveTimer=setTimeout(_autosaveNow,600);
+}
+function _loadAutosave(cb){
+  if(!_db){ cb(null); return; }
+  try{
+    var tx=_db.transaction(_DB_STORE,'readonly');
+    var rq=tx.objectStore(_DB_STORE).get(_DB_KEY);
+    rq.onsuccess=function(){ cb(rq.result||null); };
+    rq.onerror=function(){ cb(null); };
+  }catch(e){ cb(null); }
+}
+function _clearAutosave(){
+  if(!_db) return;
+  try{ var tx=_db.transaction(_DB_STORE,'readwrite'); tx.objectStore(_DB_STORE).delete(_DB_KEY); }catch(e){}
+}
+function _bundleHasContent(b){
+  if(!b) return false;
+  if(b.cover && b.cover.photo) return true;
+  if(b.photos){ for(var k in b.photos){ if(b.photos[k] && b.photos[k].length) return true; } }
+  if(b.header && (b.header.shipName||b.header.imo||b.header.shipyard)) return true;
+  return false;
+}
+// Offer-to-restore bar shown on open when autosaved work exists.
+function _offerRestore(b){
+  var when='';
+  try{ if(b._savedAt){ var dt=new Date(b._savedAt); when=dt.toLocaleString(); } }catch(e){}
+  var bar=document.createElement('div');
+  bar.id='restoreBar';
+  bar.style.cssText='position:fixed;left:0;right:0;bottom:74px;z-index:300;margin:0 12px;background:#1f3a68;color:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 6px 22px rgba(10,30,70,.45);display:flex;align-items:center;gap:10px;font-size:13px;';
+  bar.innerHTML='<div style="flex:1;line-height:1.3;">Unsaved work from earlier was found'+(when?(' ('+when+')'):'')+'. Restore it?</div>';
+  var yes=document.createElement('button');
+  yes.textContent='Restore';
+  yes.style.cssText='background:#fff;color:#1f3a68;border:none;border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;';
+  yes.onclick=function(){ try{ _applyBundleObject(b); }catch(e){} bar.remove(); toast('Restored'); };
+  var no=document.createElement('button');
+  no.textContent='Discard';
+  no.style.cssText='background:transparent;color:#cdd8ec;border:1px solid #4a648e;border-radius:8px;padding:9px 12px;font:inherit;cursor:pointer;';
+  no.onclick=function(){ _clearAutosave(); bar.remove(); };
+  bar.appendChild(yes); bar.appendChild(no);
+  document.body.appendChild(bar);
+}
+
+// default date = today
+try {
+  var _d=new Date(); var _s=_d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0');
+  var _de=document.getElementById('date'); if(_de) _de.value=_s;
+} catch(e){}
+try { render(); } catch(e){}
+// Re-render once more after full load in case anything was delayed on iOS.
+window.addEventListener('load', function(){ try { if(!document.querySelectorAll('.chapter').length) render(); } catch(e){} });
+
+// Open the local DB, then offer to restore any autosaved session.
+_openDB(function(ok){
+  if(!ok) return;            // storage unavailable → app still works, just no autosave
+  _loadAutosave(function(b){
+    if(_bundleHasContent(b)) _offerRestore(b);
+    // Save immediately after first paint so a fresh session is captured too.
+    scheduleAutosave();
+  });
+});
+
+// Header field edits also trigger autosave (they don't go through render()).
+['ship','imo','date','yard','rtype'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el){
+    el.addEventListener('input', function(){ if(typeof scheduleAutosave==='function') scheduleAutosave(); });
+    el.addEventListener('change', function(){ if(typeof scheduleAutosave==='function') scheduleAutosave(); });
+  }
+});
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js')
+    .then(() => console.log('Service Worker Registered'));
+}
+</script>
+
+</body>
+</html>
+
+{
+  "name": "Löffler Mobile App",
+  "short_name": "Löffler",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1f3a68",
+  "theme_color": "#1f3a68",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
