@@ -527,10 +527,18 @@
       box-sizing: border-box !important;
     }
     .inline-img-wrap.img-absolute {
-      /* In print, absolute positioning doesn't render reliably in PDF.
-         Convert to inline-block at the same size the user set. */
+      /* In print, absolute positioning doesn't render reliably in PDF, so we
+         flow the image inline instead. CRITICAL: also clear the inline
+         top/left/right/bottom the drag handler left on the element — with
+         position:relative those offsets would shift the image out of (below)
+         the text box. Zeroing them puts it back in normal flow so the box
+         grows to contain it and the image can't leak past the borders. */
       position: relative !important;
       display: inline-block !important;
+      top: auto !important;
+      left: auto !important;
+      right: auto !important;
+      bottom: auto !important;
       margin: 1mm 2mm 1mm 0 !important;
       max-width: 100% !important;
     }
@@ -597,6 +605,22 @@
     .section-head { padding: 2mm 4mm !important; font-size: 10pt !important; }
     .caption-row { padding: 1mm 2mm !important; }
 
+    /* ── Option B: reclaim wasted space around photo rows WITHOUT shrinking
+       the photos. Print-only; screen editor is untouched. Three trims:
+       (1) tighter subchapter heading margin, (2) the subchapter comments box
+       reserves less empty space when little text is present (it still grows
+       with longer findings — min-height is only a floor), (3) a smaller gap
+       between photo rows. Together these claw back ~15mm so a heading + two
+       full-size rows fit on one sheet instead of spilling the second row. */
+    .subch-label-bar { margin-bottom: 1mm !important; }
+    .extra-text-box:has(.subch-label-bar[data-name]) .field { min-height: 16mm !important; }
+    .photo-pair { margin-bottom: 1.5mm !important; }
+    /* Caption-safe: cap the PHOTO height (already 100mm above), but let the
+       PAIR flow to its natural height instead of clipping at 118mm. This way a
+       caption that wraps to 2–3 lines grows freely and is never cut off; the
+       browser paginates the pair as a unit via break-inside:avoid. */
+    .photo-pair { max-height: none !important; overflow: visible !important; }
+
     /* ── Field continuation wrapper — text can break naturally ── */
     .field-cont-wrap { break-inside: auto; page-break-inside: auto; }
     /* Disclaimer paragraphs can break across pages */
@@ -609,14 +633,14 @@
 
     /* ── Bay plan: 2 bays per A4 page ── */
     .bp-bay-block {
-      max-height: 120mm;
+      max-height: 132mm;
       overflow: hidden;
       break-inside: avoid;
       page-break-inside: avoid;
       display: block;
     }
     .bp-bay-block img {
-      max-height: 108mm;
+      max-height: 122mm;
       width: 100%;
       object-fit: contain;
       object-position: top center;
@@ -629,7 +653,7 @@
 
     /* ── Sketch images: 2 per page ── */
     .sketch-block {
-      max-height: 120mm;
+      max-height: 132mm;
       overflow: hidden;
       break-inside: avoid;
       page-break-inside: avoid;
@@ -637,7 +661,7 @@
     }
     .sketch-block:not(:has(img)) { display: none !important; }
     .sketch-block img {
-      max-height: 108mm;
+      max-height: 122mm;
       width: 100%;
       object-fit: contain;
       object-position: top center;
@@ -965,7 +989,7 @@
     font-family: inherit; margin-left: 6px;
   }
   .score-remove-btn:hover { background: #c0392b; color: #fff; }
-  .score-table-wrap { overflow-x: auto; }
+  .score-table-wrap { overflow: visible; }
   .score-table {
     width: 100%; border-collapse: collapse;
     font-size: 8.5pt; table-layout: fixed;
@@ -1071,6 +1095,51 @@
   .score-table .score-cell.sc-na,
   .score-table .score-item-row.score-sub td.score-cell.sc-na { background:#555 !important; color:#fff !important; }
   .score-table .score-cell.score-active { outline: 3px solid var(--navy-deep); outline-offset: -2px; z-index:1; }
+  /* ── Compact score column: custom colored picker + print pill + condition ── */
+  .score-table .score-set-cell { text-align:center; padding:1mm; }
+  .score-table .score-picker { position:relative; display:inline-block; }
+  .score-table .score-trigger {
+    appearance:none; -webkit-appearance:none; border:none;
+    font-family:inherit; font-weight:700; font-size:8.5pt;
+    border-radius:11px; padding:3px 12px; cursor:pointer;
+    text-align:center; color:#fff; background:#9aa6b6;
+    line-height:1.3; min-width:17mm;
+  }
+  .score-table .score-trigger.score-sel-empty { background:#eef1f6; color:#8a96b0; font-weight:600; }
+  .score-table .score-trigger:hover { filter:brightness(.92); }
+  .score-table .score-pop {
+    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    margin-top:4px; z-index:60; background:#fff; border:1px solid #c3ccda;
+    border-radius:8px; box-shadow:0 5px 16px rgba(20,40,80,.18); padding:6px;
+    width:max-content;
+  }
+  .score-table .score-pop.open { display:block; }
+  .score-table .score-pop-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+  .score-table .score-pop-foot { display:flex; gap:4px; margin-top:5px; }
+  .score-table .score-opt {
+    width:9mm; height:7mm; border:none; border-radius:5px; cursor:pointer;
+    font-family:inherit; font-weight:700; font-size:8.5pt; color:#fff;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .score-table .score-opt:hover { outline:2px solid var(--navy-deep); outline-offset:-2px; }
+  .score-table .score-opt.score-opt-wide { width:auto; flex:1; padding:0 6px; }
+  .score-table .score-opt.score-opt-clear { background:#eef1f6; color:#5b6b80; border:1px solid #c3ccda; font-weight:600; }
+  .score-table .score-pill {
+    display:none; font-weight:700; font-size:8pt; border-radius:11px;
+    padding:1px 9px; color:#fff; background:#9aa6b6;
+  }
+  .score-table .score-cond-cell { text-align:left; padding:1.5mm 3mm; font-size:8pt; color:var(--ink); white-space:normal; }
+  .score-table .score-cond-cell.score-cond-muted { color:var(--ink-soft); font-style:italic; }
+  .score-table .score-trigger.sc-1,.score-table .score-opt.sc-1,.score-table .score-pill.sc-1,.score-table .score-trigger.sc-2,.score-table .score-opt.sc-2,.score-table .score-pill.sc-2{background:#e74c3c;color:#fff;}
+  .score-table .score-trigger.sc-3,.score-table .score-opt.sc-3,.score-table .score-pill.sc-3,.score-table .score-trigger.sc-4,.score-table .score-opt.sc-4,.score-table .score-pill.sc-4{background:#e67e22;color:#fff;}
+  .score-table .score-trigger.sc-5,.score-table .score-opt.sc-5,.score-table .score-pill.sc-5,.score-table .score-trigger.sc-6,.score-table .score-opt.sc-6,.score-table .score-pill.sc-6{background:#f1c40f;color:#333;}
+  .score-table .score-trigger.sc-7,.score-table .score-opt.sc-7,.score-table .score-pill.sc-7,.score-table .score-trigger.sc-8,.score-table .score-opt.sc-8,.score-table .score-pill.sc-8{background:#7dbb4e;color:#fff;}
+  .score-table .score-trigger.sc-9,.score-table .score-opt.sc-9,.score-table .score-pill.sc-9,.score-table .score-trigger.sc-10,.score-table .score-opt.sc-10,.score-table .score-pill.sc-10{background:#27ae60;color:#fff;}
+  .score-table .score-trigger.sc-na,.score-table .score-opt.sc-na,.score-table .score-pill.sc-na{background:#555;color:#fff;}
+  @media print {
+    .score-table .score-picker { display:none !important; }
+    .score-table .score-pill { display:inline-block !important; }
+  }
   .score-legend {
     margin-top: 3mm; border: 1.5px solid #8a96b0;
     border-collapse: collapse; width: 100%; font-size: 8pt;
@@ -1302,6 +1371,14 @@
     /* Remove the shipyard / port name underline in the PDF — it sat directly
        above the footer divider and looked like a doubled line. */
     .shipyard-field { border-bottom: none !important; }
+    /* Push the Shipyard / Port block down so it isn't crowded against the
+       vessel photo, and finish the value with a short, centred rule (a
+       full-width underline doubled up with the footer divider — see above). */
+    .shipyard-field-wrap { padding-top: 9mm !important; }
+    .shipyard-field-wrap::after {
+      content: ""; display: block; width: 46mm; height: 0.6pt;
+      background: #6a7488; margin: 2.5mm auto 0;
+    }
     /* Table-of-contents dotted leader lines → soft grey hairline (pure black
        dots read as heavy/dark in the PDF; a light grey dotted line is cleaner). */
     .toc-dots, .toc-sub-dots { border-bottom-color: #aab2c0 !important; border-bottom-width: 0.2pt !important; }
@@ -1734,6 +1811,57 @@
   .rc-preset-label { font-size: 10pt; font-weight: 700; color: var(--navy); }
   .rc-preset-sub { font-size: 8pt; color: #666; }
   @media print { .tr-overlay { display: none !important; } }
+
+  /* ── Secondary text-formatting bar (light band under the main ribbon) ── */
+  .fmt-bar{
+    position:sticky; top:0; z-index:49;
+    background:#eef2f8; border-bottom:1px solid #cdd8ea;
+    display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+    padding:5px 14px; font-size:13px; color:#1f3a68;
+  }
+  .fmt-bar-label{ font-size:11px; color:#5b6b80; letter-spacing:.02em; }
+  .fmt-group{ display:flex; gap:3px; }
+  .fmt-div{ width:1px; height:20px; background:#c3ccda; }
+  .fmt-btn{
+    border:1px solid #c3ccda; background:#fff; color:#1f3a68;
+    border-radius:5px; min-width:28px; height:26px; padding:0 8px;
+    font:inherit; font-size:13px; cursor:pointer; line-height:1;
+    display:inline-flex; align-items:center; justify-content:center; gap:3px;
+  }
+  .fmt-btn:hover{ background:#dfe7f3; }
+  .fmt-btn.active{ background:#cfe0f5; border-color:#7ba3d8; }
+  .fmt-hl{ display:flex; align-items:center; gap:5px; }
+  .fmt-hl-ico{ display:inline-flex; align-items:center; }
+  .fmt-sw{
+    width:17px; height:17px; border-radius:4px; border:1px solid #b9c2d2;
+    cursor:pointer; display:inline-block; vertical-align:middle;
+  }
+  .fmt-sw:hover{ outline:2px solid #1f3a68; outline-offset:1px; }
+  .fmt-sw-clear{
+    background:#fff;
+    background-image:repeating-linear-gradient(45deg,#ccc 0,#ccc 1px,transparent 0,transparent 50%);
+    background-size:5px 5px;
+  }
+  .fmt-dd{ position:relative; display:inline-block; }
+  .fmt-dd-menu{
+    position:absolute; top:calc(100% + 4px); left:0; z-index:60;
+    background:#fff; border:1px solid #c3ccda; border-radius:6px;
+    box-shadow:0 5px 16px rgba(20,40,80,.18); padding:5px;
+  }
+  .fmt-dd-menu.open{ display:grid !important; }
+  .fmt-dd[data-dd="phrase"] .fmt-dd-menu.open,
+  .fmt-dd[data-dd="table"] .fmt-dd-menu.open{ display:block !important; }
+  .fmt-dd-menu button{
+    border:1px solid transparent; background:none; color:#1f3a68;
+    font:inherit; font-size:12px; padding:5px 9px; border-radius:4px;
+    cursor:pointer; white-space:nowrap; text-align:center;
+  }
+  .fmt-dd[data-dd="phrase"] .fmt-dd-menu button{ display:block; width:100%; text-align:left; }
+  .fmt-dd[data-dd="table"] .fmt-dd-menu button{ display:block; width:100%; text-align:left; }
+  .fmt-cap-group{ display:inline-flex; align-items:center; gap:4px; }
+  .fmt-cap-lbl{ font-size:11px; color:#5b6b80; margin-right:1px; }
+  .fmt-dd-menu button:hover{ background:#eef2f8; }
+  @media print{ .fmt-bar{ display:none !important; } }
 
   /* ── Right-click text format menu ── */
   .ctx-menu {
@@ -2257,6 +2385,16 @@
 
   /* ── Workscope table (Repair Proposal → repair requirements for shipyard) ── */
   .ws-block { margin: 2mm 0 1mm; }
+  /* Discreet standing disclaimer shown above the workscope table. Prints in the
+     PDF (intentionally not .no-print); kept visually quiet — small, muted. */
+  .ws-disclaimer {
+    margin: 1mm 0 2.5mm; padding: 0 1mm 0 5mm;
+    font-size: 8pt; line-height: 1.4; color: #4a4a4a;
+    text-align: justify; list-style: disc;
+    break-after: avoid; page-break-after: avoid;
+  }
+  .ws-disclaimer li { margin: 0 0 1.3mm; }
+  .ws-disclaimer li:last-child { margin-bottom: 0; }
   .ws-table {
     border-collapse: collapse;
     width: 100%;
@@ -2697,7 +2835,7 @@
   /* ─────────────────────────────────── */
   #subjectType { flex-shrink:0; }
   #subjectShipName { font-style:italic; color:#b0b8c8; }
-  @media print { #subjectType { display:none; } #subjectDisplay { display:block !important; } }
+  @media print { #subjectEditRow { display:none !important; } #subjectDisplay { display:block !important; } }
 
   /* ── Print: make photos visible in PDF ── */
   @media print {
@@ -2749,22 +2887,6 @@
 <div class="toolbar">
   <span class="brand" style="font-size:11pt;font-weight:700;letter-spacing:.02em;color:#fff;white-space:nowrap;display:flex;flex-direction:column;line-height:1.2;align-items:center;text-shadow:0 1px 2px rgba(10,25,55,.4);">Löffler International<span style="font-weight:300;font-size:8pt;opacity:.85;letter-spacing:.01em;">reporting experts</span></span>
   <span class="hint" id="pageCount"></span>
-  <button id="undoBtn" onclick="_doUndo()" title="Undo (Ctrl+Z)"
-    style="background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.42));border:1px solid rgba(255,255,255,.7);cursor:pointer;width:34px;height:34px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto;backdrop-filter:blur(10px);box-shadow:inset 0 1px 1px rgba(255,255,255,.9), 0 3px 10px rgba(10,30,70,.35);transition:transform .15s;"
-    onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
-    <svg width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
-      <path d="M9 5 L3 10 L9 15 L9 12 C13 12 16 13 18 17 C18 12 16 7 9 8 Z"
-        fill="none" stroke="#1f8a4c" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
-    </svg>
-  </button>
-  <button id="redoBtn" onclick="_doRedo()" title="Redo (Ctrl+Y)"
-    style="background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.42));border:1px solid rgba(255,255,255,.7);cursor:pointer;width:34px;height:34px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto;backdrop-filter:blur(10px);box-shadow:inset 0 1px 1px rgba(255,255,255,.9), 0 3px 10px rgba(10,30,70,.35);transition:transform .15s;"
-    onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
-    <svg width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
-      <path d="M13 5 L19 10 L13 15 L13 12 C9 12 6 13 4 17 C4 12 6 7 13 8 Z"
-        fill="none" stroke="#c0392b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
-    </svg>
-  </button>
   <button id="saveReportBtn" onclick="saveReport()" title="Save — overwrite the file you're working on (Open or Save As a file first to set it)" style="background:#1a7a4a;color:#fff;border:1px solid #15643d;font-weight:600;">&#128190; Save</button>
   <button onclick="openComparePanel()" id="comparePanelBtn" title="Open a second report side-by-side for comparison and copy-paste">&#9707; Compare…</button>
   <button onclick="newReport()" title="Start a new empty report">&#128196; New report</button>
@@ -2783,6 +2905,96 @@
     <span id="reportPhotoCount" title="Photos inserted in report" style="font-size:7.5pt;color:rgba(255,255,255,.7);white-space:nowrap;letter-spacing:.01em;"></span>
     <span id="reportWordCount" title="Words typed in text fields and captions" style="font-size:7.5pt;color:rgba(255,255,255,.7);white-space:nowrap;letter-spacing:.01em;"></span>
   </div>
+</div>
+
+<!-- Secondary text-formatting bar (quick access during editing) -->
+<div class="fmt-bar no-print" id="fmtBar" aria-label="Text formatting">
+  <button id="undoBtn" onclick="_doUndo()" title="Undo (Ctrl+Z)"
+    style="background:linear-gradient(180deg,#ffffff,#eef2f8);border:1px solid #c3ccda;cursor:pointer;width:26px;height:26px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:inset 0 1px 1px rgba(255,255,255,.9), 0 1px 3px rgba(10,30,70,.2);transition:transform .15s;"
+    onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+    <svg width="17" height="17" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 5 L3 10 L9 15 L9 12 C13 12 16 13 18 17 C18 12 16 7 9 8 Z"
+        fill="none" stroke="#1f8a4c" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <button id="redoBtn" onclick="_doRedo()" title="Redo (Ctrl+Y)"
+    style="background:linear-gradient(180deg,#ffffff,#eef2f8);border:1px solid #c3ccda;cursor:pointer;width:26px;height:26px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:inset 0 1px 1px rgba(255,255,255,.9), 0 1px 3px rgba(10,30,70,.2);transition:transform .15s;"
+    onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+    <svg width="17" height="17" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 5 L19 10 L13 15 L13 12 C9 12 6 13 4 17 C4 12 6 7 13 8 Z"
+        fill="none" stroke="#c0392b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <span class="fmt-div"></span>
+  <div class="fmt-group">
+    <button type="button" class="fmt-btn" data-cmd="copy" title="Copy (Ctrl+C)">&#9106;</button>
+    <button type="button" class="fmt-btn" data-cmd="cut" title="Cut (Ctrl+X)">&#9986;</button>
+    <button type="button" class="fmt-btn" data-cmd="paste" title="Paste (Ctrl+V)"><svg width="14" height="15" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg></button>
+  </div>
+  <span class="fmt-div"></span>
+  <span class="fmt-bar-label">Format:</span>
+  <div class="fmt-group">
+    <button type="button" class="fmt-btn" data-act="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+    <button type="button" class="fmt-btn" data-act="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+    <button type="button" class="fmt-btn" data-act="underline" title="Underline (Ctrl+U)"><span style="text-decoration:underline">U</span></button>
+  </div>
+  <span class="fmt-div"></span>
+  <div class="fmt-dd" data-dd="size">
+    <button type="button" class="fmt-btn fmt-dd-trigger" title="Font size">Size&nbsp;<span id="fmtSizeCur">—</span>&nbsp;&#9662;</button>
+    <div class="fmt-dd-menu" style="display:none;grid-template-columns:repeat(4,1fr);gap:3px;min-width:128px;">
+      <button type="button" data-size="8">8</button>
+      <button type="button" data-size="9">9</button>
+      <button type="button" data-size="10">10</button>
+      <button type="button" data-size="11">11</button>
+      <button type="button" data-size="12">12</button>
+      <button type="button" data-size="14">14</button>
+      <button type="button" data-size="16">16</button>
+    </div>
+  </div>
+  <span class="fmt-div"></span>
+  <div class="fmt-hl">
+    <span class="fmt-hl-ico" title="Highlight" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4 4 2-2-4-4z"/><path d="M9 19l8-8-4-4-8 8z"/><path d="M13 7l4 4 3-3a2 2 0 0 0 0-3l-1-1a2 2 0 0 0-3 0z"/></svg></span>
+    <span class="fmt-sw" data-hl="#FFFF99" title="Yellow"  style="background:#FFFF99"></span>
+    <span class="fmt-sw" data-hl="#AEDFF7" title="Blue"    style="background:#AEDFF7"></span>
+    <span class="fmt-sw" data-hl="#B5EAD7" title="Green"   style="background:#B5EAD7"></span>
+    <span class="fmt-sw" data-hl="#FFB3B3" title="Red"     style="background:#FFB3B3"></span>
+    <span class="fmt-sw" data-hl="#E2CCFF" title="Purple"  style="background:#E2CCFF"></span>
+    <span class="fmt-sw" data-hl="#FFD9B3" title="Orange"  style="background:#FFD9B3"></span>
+    <span class="fmt-sw fmt-sw-clear" data-hl="transparent" title="Remove highlight"></span>
+  </div>
+  <span class="fmt-div"></span>
+  <div class="fmt-dd" data-dd="phrase">
+    <button type="button" class="fmt-btn fmt-dd-trigger" title="Insert phrase">&#xFF0B;&nbsp;Phrase&nbsp;&#9662;</button>
+    <div class="fmt-dd-menu" style="display:none;min-width:150px;">
+      <button type="button" data-phrase="Findings:">Findings:</button>
+      <button type="button" data-phrase="Recommendations:">Recommendations:</button>
+    </div>
+  </div>
+  <span class="fmt-div"></span>
+  <div class="fmt-dd" data-dd="table">
+    <button type="button" class="fmt-btn fmt-dd-trigger" title="Table editing — click inside a table cell first">&#8862;&nbsp;Table&nbsp;&#9662;</button>
+    <div class="fmt-dd-menu" style="display:none;min-width:150px;">
+      <button type="button" data-tbl="addRow">Add row</button>
+      <button type="button" data-tbl="delRow">Delete row</button>
+      <button type="button" data-tbl="addCol">Add column</button>
+      <button type="button" data-tbl="delCol">Delete column</button>
+      <button type="button" data-tbl="sumCol">Sum column</button>
+      <button type="button" data-tbl="sumRow">Sum row</button>
+    </div>
+  </div>
+  <span class="fmt-div"></span>
+  <span class="fmt-cap-group" title="Caption background — click inside a photo caption first">
+    <span class="fmt-cap-lbl">Caption</span>
+    <span class="fmt-sw" data-capcolor="gray" title="Default (gray)" style="background:#e2e6eb;"></span>
+    <span class="fmt-sw" data-capcolor="green" title="Green" style="background:#d4edda;"></span>
+  </span>
+  <span class="fmt-div"></span>
+  <button type="button" class="fmt-btn" data-cmd="insertimage" title="Insert image…"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
+  <span class="fmt-div"></span>
+  <button type="button" class="fmt-btn" data-cmd="clearformat" title="Clear formatting">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M5 13l6-6 7 7-4 4H9z"/></svg>
+  </button>
+  <button type="button" class="fmt-btn" id="fmtSpellBtn" data-cmd="spellcheck" title="Toggle spellcheck"><span style="text-decoration:underline wavy #c0392b;">abc</span></button>
 </div>
 
 <div class="pages" id="pagesRoot">
@@ -2954,7 +3166,7 @@
       <!-- Betreff -->
       <div class="rpt-cell span2">
         <span class="rpt-key">Betreff / Subject</span>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <div id="subjectEditRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <select id="subjectType" onchange="updateSubject()" style="font-size:12pt;border:1px solid var(--line-soft);border-radius:3px;padding:2px 6px;color:var(--navy);font-family:inherit;background:var(--bg-soft);cursor:pointer;outline:none;flex-shrink:0;">
             <option value="initial">HC's Initial Repair Report</option>
             <option value="daily">HC's Daily Service Report</option>
@@ -4563,12 +4775,12 @@ function buildSection(def) {
       ${_wsBtn}
       ${_condBtn}
       <button class="hc-add-schematic-btn no-print" onclick="hcAddSchematic(this)">＋ Add schematic &amp; legend</button>
-      <button class="stat-add-block-btn no-print" onclick="statAddBlock(this)">＋ Add stats table</button>${_scoreBtn}
+      <button class="stat-add-block-btn no-print" onclick="statAddBlock(this)">＋ Add table</button>${_scoreBtn}
       <div class="label photo-section-label">${_photoSectionLabel}</div>
       <div class="photo-pairs" id="pairs-${def.id}"></div>
       <div class="add-pair-row no-print" style="display:flex;align-items:center;margin-top:1mm;position:relative;">
         <button class="add-photo-btn pair-add-btn" onclick="if(!event.target.classList.contains('pair-count-sel'))addPairs('${def.id}', this)">&#xFF0B; Add photo pair<select class="pair-count-sel" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" title="Number of pairs to add"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></button>
-        <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add stats table</button>
+        <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add table</button>
         <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box below the photos" style="margin-left:auto;">&#43; Add text box</button>
       </div>`;
   } else {
@@ -4576,12 +4788,12 @@ function buildSection(def) {
     // Append photo pairs to any non-special section
     if(!def.noPhotos) {
       body += `<button class="hc-add-schematic-btn no-print" onclick="hcAddSchematic(this)">＋ Add schematic &amp; legend</button>
-        <button class="stat-add-block-btn no-print" onclick="statAddBlock(this)">＋ Add stats table</button>
+        <button class="stat-add-block-btn no-print" onclick="statAddBlock(this)">＋ Add table</button>
         <div class="label">Photos:</div>
         <div class="photo-pairs" id="pairs-${def.id}"></div>
         <div class="add-pair-row no-print" style="display:flex;align-items:center;margin-top:1mm;position:relative;">
           <button class="add-photo-btn pair-add-btn" onclick="if(!event.target.classList.contains('pair-count-sel'))addPairs('${def.id}', this)">&#xFF0B; Add photo pair<select class="pair-count-sel" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" title="Number of pairs to add"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></button>
-          <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add stats table</button>
+          <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add table</button>
           <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box below the photos" style="margin-left:auto;">&#43; Add text box</button>
         </div>`;
     }
@@ -4939,7 +5151,7 @@ function _reflow() {
       const bs = document.createElement('button');
       bs.className = 'stat-add-block-btn';
       bs.setAttribute('onclick', 'statAddBlock(this)');
-      bs.textContent = '＋ Add stats table';
+      bs.textContent = '＋ Add table';
       bs.style.cssText = 'position:absolute;left:50%;transform:translateX(-50%);';
       const bf = document.createElement('button');
       bf.className = 'bp-upload-btn add-frame-btn';
@@ -5982,6 +6194,10 @@ function _runAfterReflow() {
   statInit();
   _refreshScoreTables();
   _syncScoreTableBtn();
+  // Push stored scores onto the subchapter gauges. Without this, gauges only
+  // updated when a score was actively changed — so on load or after any
+  // re-pagination they showed blank even though scores existed.
+  if(typeof _updateAllGauges === 'function') _updateAllGauges();
   if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
   // buildTOC needs two extra frames to ensure the flow engine (which also
   // uses nested rAFs) has fully finished placing sections into pages
@@ -6150,11 +6366,20 @@ function buildTOC() {
     const listEl = document.getElementById('tocList');
     if(!listEl) return;
 
+    // IMPORTANT: fit the TOC to the PRINT-usable height, not the on-screen page
+    // height. On screen the meta page is a full 297mm, but in print the usable
+    // area is only ~A4 minus the @page margins and footer (~260mm). Measuring
+    // against the screen height let the TOC "fit" on screen yet spill its last
+    // line onto a near-blank second sheet in the PDF. Derive px-per-mm from the
+    // fixed 210mm page width (robust to zoom and to content height changes).
+    const pxPerMm = pageRect.width / 210;
+    const printBottom = pageRect.top + 260 * pxPerMm;
+
     // Reduce padding step by step if overflowing
     const padSteps = [1.8, 1.4, 1.0, 0.7, 0.5]; // mm values
     for(const pad of padSteps) {
       const listBottom = listEl.getBoundingClientRect().bottom;
-      const pageBottom = pageRect.bottom - 10; // 10px safety margin
+      const pageBottom = printBottom; // print-usable bottom (see above)
       if(listBottom <= pageBottom) break; // fits
       // Apply reduced padding
       listEl.querySelectorAll('.toc-item').forEach(function(li) {
@@ -6169,12 +6394,12 @@ function buildTOC() {
 
     // If still overflowing after minimum padding, reduce font size slightly
     const listBottom2 = listEl.getBoundingClientRect().bottom;
-    const pageBottom2 = pageRect.bottom - 10;
+    const pageBottom2 = printBottom;
     if(listBottom2 > pageBottom2) {
       const fontSteps = [8.5, 8, 7.5, 7];
       for(const fs of fontSteps) {
         const lb = listEl.getBoundingClientRect().bottom;
-        if(lb <= pageRect.bottom - 10) break;
+        if(lb <= printBottom) break;
         listEl.querySelectorAll('.toc-name, .toc-pg, .toc-num').forEach(function(el) {
           el.style.fontSize = fs + 'pt';
         });
@@ -6567,7 +6792,11 @@ document.addEventListener('contextmenu', e => {
   // Sketch-chapter image: a real <img> inside a .sketch-block (backed by
   // sketchStore). Accept it so the same right-click actions work there.
   const sketchImg  = e.target.closest('.sketch-block img');
-  const target = e.target.closest('[contenteditable="true"]') || statCell || legendCell || matCell || wsCell || sketchImg || photo;
+  // Custom right-click menu is now IMAGE-ONLY: photos, inline images and
+  // working-sketch images keep their markup/replace menu. Text fields, tables
+  // and captions fall through to the browser's native menu (real copy/paste,
+  // spellcheck suggestions). The text-formatting tools now live on the ribbon.
+  const target = sketchImg || photo;
   if(!target) return;
 
   // If the right-click landed on or inside an inline-img-wrap (inside a field),
@@ -7589,13 +7818,104 @@ function _wsRenumber(tbody) {
   });
 }
 
+// ── Workscope disclaimer (admin-editable standing text above the table) ──
+// Default bullets. Editing behind the admin password updates _wsDisclaimerText
+// (and every workscope disclaimer already in the document); new tables built
+// afterwards read from it. The edited text is plain DOM text, so it persists
+// with the saved report.
+const _WS_DISCLAIMER_DEFAULT = [
+  "The following repair/ maintenance proposals are for the purpose of assisting vessel superintendent and company technical department in preparations of dry-docking specs.",
+  "Proposals giving general and typical workplan recommendations and must be adjusted to individual company needs and shipyard capacity. However, all critical items or items which may compromise safety of crew, vessel and her cargo must be repaired.",
+  "Quantities are based on observation + estimation and are for informational purposes only. There should be no higher deviations, however some items may not be seen entirely or in sufficient quantity during inspection. Attached sketch may not very precisely match numbers in table as quantities may be based on estimation and our experience."
+];
+let _wsDisclaimerText = _WS_DISCLAIMER_DEFAULT.slice();
+
+function _wsDiscEsc(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function _wsDisclaimerHTML() {
+  return '<ul class="ws-disclaimer">' +
+    _wsDisclaimerText.map(t => '<li>' + _wsDiscEsc(t) + '</li>').join('') +
+    '</ul>';
+}
+
+let _wsDisclaimerUnlocked = false;
+function wsDisclaimerEdit(btn) {
+  const block = btn.closest('.ws-block'); if(!block) return;
+  if(!block.querySelector('.ws-disclaimer')) return;
+  if(!_wsDisclaimerUnlocked) { _wsDisclaimerPwPrompt(btn); return; }
+  _wsDisclaimerToggle(btn, block);
+}
+function _wsDisclaimerPwPrompt(btn) {
+  const head = btn.parentNode; if(!head) return;
+  if(head.querySelector('.sl-pw-row')) {
+    const ex = head.querySelector('.sl-pw-input'); if(ex) ex.focus();
+    return;
+  }
+  const row = document.createElement('span');
+  row.className = 'sl-pw-row no-print';
+  row.innerHTML =
+    '<input type="password" class="sl-pw-input" placeholder="Administrator password">' +
+    '<button type="button" class="sl-pw-ok">Unlock</button>' +
+    '<button type="button" class="sl-pw-cancel">Cancel</button>' +
+    '<span class="sl-pw-err">Incorrect password</span>';
+  head.appendChild(row);
+  const inp = row.querySelector('.sl-pw-input');
+  const ok  = row.querySelector('.sl-pw-ok');
+  const can = row.querySelector('.sl-pw-cancel');
+  const err = row.querySelector('.sl-pw-err');
+  const tryUnlock = () => {
+    const pw = (inp.value || '').trim();
+    if(typeof _instrMd5 === 'function' && _instrMd5(pw) === _INSTR_PW_HASH) {
+      _wsDisclaimerUnlocked = true;
+      row.remove();
+      _wsDisclaimerToggle(btn, btn.closest('.ws-block'));
+    } else {
+      err.style.display = 'inline';
+      inp.select();
+    }
+  };
+  ok.onclick  = tryUnlock;
+  can.onclick = () => row.remove();
+  inp.onkeydown = e => {
+    if(e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
+    else if(e.key === 'Escape') { e.preventDefault(); row.remove(); }
+    else { err.style.display = 'none'; }
+  };
+  setTimeout(() => inp.focus(), 30);
+}
+function _wsDisclaimerToggle(btn, block) {
+  if(!block) return;
+  const ul = block.querySelector('.ws-disclaimer'); if(!ul) return;
+  const lis = [...ul.querySelectorAll('li')];
+  const editing = ul.classList.toggle('ws-disc-editing');
+  if(editing) {
+    lis.forEach(li => { li.setAttribute('contenteditable', 'true'); li.style.background = '#fffbe6'; });
+    if(btn) btn.textContent = '✓ Done disclaimer';
+    if(lis[0]) lis[0].focus();
+  } else {
+    _wsDisclaimerText = lis.map((li, i) => (li.textContent || '').trim() || _WS_DISCLAIMER_DEFAULT[i] || '');
+    lis.forEach(li => { li.removeAttribute('contenteditable'); li.style.background = ''; });
+    if(btn) btn.textContent = '🔒 Edit disclaimer';
+    _wsDisclaimerUnlocked = false;
+    // Keep every workscope disclaimer in this report consistent with the edit.
+    document.querySelectorAll('.ws-disclaimer').forEach(other => {
+      if(other === ul) return;
+      const ls = [...other.querySelectorAll('li')];
+      _wsDisclaimerText.forEach((t, i) => { if(ls[i]) ls[i].textContent = t; });
+    });
+  }
+}
+
 function buildWorkscopeTableHTML() {
   return `
        <div class="ws-block">
          <div class="hc-schematic-head no-print">
            <span class="hc-schematic-label">Workscope table — repair requirements for shipyard</span>
+           <button type="button" class="sl-edit-btn no-print" onclick="wsDisclaimerEdit(this)" title="Edit the disclaimer text shown above the table (administrator password required)">🔒 Edit disclaimer</button>
            <button type="button" class="hc-schematic-remove" onclick="wsRemoveBlock(this)" title="Remove this workscope table">✕ Remove workscope table</button>
          </div>
+         ${_wsDisclaimerHTML()}
          <table class="ws-table">
            <colgroup>
              <col style="width:8%"><col style="width:46%"><col style="width:13%"><col style="width:10%"><col style="width:23%">
@@ -7934,8 +8254,8 @@ function buildStatsBlockHTML() {
   const rows = Array(d.rows).fill('<tr>' + bodyRow + '</tr>').join('');
   return `<div class="stat-block">
     <div class="stat-block-head">
-      <span class="stat-block-title" contenteditable="true" data-placeholder="Stats table" spellcheck="false">Stats table</span>
-      <button type="button" class="stat-block-remove no-print" onclick="statRemoveBlock(this)" title="Remove this stats table">✕ Remove table</button>
+      <span class="stat-block-title" contenteditable="true" data-placeholder="Table" spellcheck="false">Table</span>
+      <button type="button" class="stat-block-remove no-print" onclick="statRemoveBlock(this)" title="Remove this table">✕ Remove table</button>
     </div>
     <table class="stat-table">
       <thead><tr>${heads}</tr></thead>
@@ -8201,7 +8521,7 @@ function _insertButtonRowBefore(el, sec) {
   newRow.style.cssText = 'display:flex;align-items:center;margin-bottom:1mm;position:relative;';
   newRow.innerHTML = `
     <button class="add-photo-btn pair-add-btn" data-sid="${sid}" onclick="if(!event.target.classList.contains('pair-count-sel'))addPairAfter(this)">&#xFF0B; Add photo pair<select class="pair-count-sel" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" title="Number of pairs to add"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></button>
-    <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add stats table</button>
+    <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add table</button>
     <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box" style="margin-left:auto;">&#43; Add text box</button>`;
   el.parentNode.insertBefore(newRow, el);
   if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
@@ -8220,10 +8540,16 @@ function _insertButtonRowAfter(el, sec) {
   const spareBtn = isSpareChapter
     ? `<button class="bp-upload-btn" onclick="sparePartAddBlock(this)" style="margin-left:6px;">＋ Spare parts list</button>`
     : '';
+  // Score table: only in General, and only while no score table exists yet
+  // (it's one per chapter, but can be placed under any subchapter).
+  const scoreBtn = (sid === 'general' && !sec.querySelector('.score-block'))
+    ? `<button class="hc-add-schematic-btn no-print" onclick="addScoreTable(this)" style="margin-left:6px;">＋ Add score table</button>`
+    : '';
   newRow.innerHTML = `
     <button class="add-photo-btn pair-add-btn" data-sid="${sid}" onclick="if(!event.target.classList.contains('pair-count-sel'))addPairAfter(this)">&#xFF0B; Add photo pair<select class="pair-count-sel" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" title="Number of pairs to add"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></button>
     ${spareBtn}
-    <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add stats table</button>
+    <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add table</button>
+    ${scoreBtn}
     <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box below" style="margin-left:auto;">&#43; Add text box</button>`;
   el.parentNode.insertBefore(newRow, el.nextSibling);
   if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
@@ -8299,6 +8625,7 @@ function _collapseButtonRows() {
 // Close dropdowns when clicking elsewhere.
 document.addEventListener('click', () => {
   document.querySelectorAll('.br-menu.open').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.score-pop.open').forEach(p => p.classList.remove('open'));
   document.querySelectorAll('.br-more-pop.open').forEach(p => p.classList.remove('open'));
 });
 //  Inserted into the General chapter. Auto-populates from
@@ -8329,11 +8656,23 @@ let _scoreLegendText = _DEFAULT_SCORE_LEGEND.slice();
 function addScoreTable(btn) {
   const sec = btn ? btn.closest('.section[data-sid]') : null;
   if(!sec) return;
-  if(sec.querySelector('.score-block')) {
-    alert('A score table already exists in this chapter. Use the ↺ Refresh button to update it.');
+  // Score tables only ever belong in the General notes & remarks chapter.
+  if(sec.dataset.sid !== 'general') {
+    alert('The score table can only be added in the General notes & remarks chapter.');
     return;
   }
-  btn.style.display = 'none';
+  // Absolute single-table guarantee: if a score table already exists ANYWHERE
+  // (this chapter or, defensively, the whole report), refuse to create another.
+  const pr = document.getElementById('pagesRoot') || document;
+  if(sec.querySelector('.score-block') || pr.querySelector('.score-block')) {
+    alert('A score table already exists. Only one score table is allowed — remove the existing one first, or use the ↺ Refresh button to update it.');
+    return;
+  }
+  // One score table → hide every "Add score table" button in this section
+  // (the main one and any in subchapter add-rows) while it exists.
+  sec.querySelectorAll('.hc-add-schematic-btn').forEach(b => {
+    if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('addScoreTable')) b.style.display = 'none';
+  });
 
   const block = document.createElement('div');
   block.className = 'score-block';
@@ -8341,19 +8680,25 @@ function addScoreTable(btn) {
 
   _buildScoreBlock(block);
 
-  // Insert after the main Comments field (first .field in the section body)
-  // so the score table appears below the text box, not above it.
+  // Insert the score table at the position where the button was clicked, so it
+  // can sit under whichever subchapter the user is working in. We look for the
+  // clicked button's add-row (or the button's own container) and insert after
+  // it; if the button isn't in a row (e.g. the legacy main button), fall back
+  // to placing it after the main Comments field.
   const body = sec.querySelector('.section-body');
   if(!body) return;
-  const mainField = body.querySelector('.field[data-field-role="findings"]');
-  if(mainField) {
-    // Insert after the field — before whatever comes next
-    mainField.parentNode.insertBefore(block, mainField.nextSibling);
+  const clickedRow = btn.closest('.add-pair-row');
+  if(clickedRow && clickedRow.parentNode) {
+    clickedRow.parentNode.insertBefore(block, clickedRow.nextSibling);
   } else {
-    // Fallback: insert before the photo-section label or at end of body
-    const photoLabel = body.querySelector('.photo-section-label');
-    if(photoLabel) photoLabel.parentNode.insertBefore(block, photoLabel);
-    else body.appendChild(block);
+    const mainField = body.querySelector('.field[data-field-role="findings"], .field[data-field-role="body"]');
+    if(mainField) {
+      mainField.parentNode.insertBefore(block, mainField.nextSibling);
+    } else {
+      const photoLabel = body.querySelector('.photo-section-label');
+      if(photoLabel) photoLabel.parentNode.insertBefore(block, photoLabel);
+      else body.appendChild(block);
+    }
   }
   // A score table now exists in this chapter → reveal its subchapter gauges.
   _syncGaugeVisibilityForSection(sec);
@@ -8376,11 +8721,12 @@ function _buildScoreBlock(block) {
   removeBtn.className = 'score-remove-btn';
   removeBtn.textContent = '✕ Remove';
   removeBtn.onclick = function() {
-    // Restore the add button
+    // Restore every "Add score table" button in this section (main + subchapter rows)
     const sec = block.closest('.section[data-sid]');
     if(sec) {
-      const btn = [...sec.querySelectorAll('.hc-add-schematic-btn')].find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes('addScoreTable'));
-      if(btn) btn.style.display = '';
+      sec.querySelectorAll('.hc-add-schematic-btn').forEach(b => {
+        if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('addScoreTable')) b.style.display = '';
+      });
     }
     block.remove();
     // No score table now → hide this chapter's subchapter gauges.
@@ -8436,8 +8782,8 @@ function _buildScoreBlock(block) {
 
   // Colgroup for fixed widths
   const cg = document.createElement('colgroup');
-  // num col, label col, 10 score cols, N/A col
-  [7, 52, ...Array(10).fill(7), 10].forEach(w => {
+  // num col, item col, score col, condition col
+  [8, 52, 26, 53].forEach(w => {
     const col = document.createElement('col');
     col.style.width = w + 'mm';
     cg.appendChild(col);
@@ -8449,7 +8795,7 @@ function _buildScoreBlock(block) {
   // Row 1: big title
   const trTitle = document.createElement('tr');
   const tdTitle = document.createElement('td');
-  tdTitle.colSpan = 13;
+  tdTitle.colSpan = 4;
   tdTitle.className = 'score-title-cell';
   tdTitle.textContent = 'Average item score';
   trTitle.appendChild(tdTitle);
@@ -8457,7 +8803,7 @@ function _buildScoreBlock(block) {
   // Row 2: subtitle
   const trSub = document.createElement('tr');
   const tdSub = document.createElement('td');
-  tdSub.colSpan = 13;
+  tdSub.colSpan = 4;
   tdSub.className = 'score-subtitle-cell';
   tdSub.textContent = '(Approximate values based on available information obtained during inspection and on inspector evaluation)';
   trSub.appendChild(tdSub);
@@ -8469,14 +8815,19 @@ function _buildScoreBlock(block) {
   trHead.appendChild(thNum);
   const thItem = document.createElement('th');
   thItem.className = 'score-item-head';
-  thItem.textContent = 'Item / score';
+  thItem.textContent = 'Item';
   trHead.appendChild(thItem);
-  SCORE_COLS.forEach(v => {
-    const th = document.createElement('th');
-    th.className = v === 'N/A' ? 'score-na-head' : 'score-num-head';
-    th.textContent = v;
-    trHead.appendChild(th);
-  });
+  const thScore = document.createElement('th');
+  thScore.className = 'score-col-head';
+  thScore.style.width = '26mm';
+  thScore.textContent = 'Score';
+  trHead.appendChild(thScore);
+  const thCond = document.createElement('th');
+  thCond.className = 'score-col-head';
+  thCond.style.textAlign = 'left';
+  thCond.style.paddingLeft = '3mm';
+  thCond.textContent = 'Condition';
+  trHead.appendChild(thCond);
   thead.appendChild(trHead);
   tbl.appendChild(thead);
 
@@ -8485,7 +8836,7 @@ function _buildScoreBlock(block) {
   if(!rows.length) {
     const trEmpty = document.createElement('tr');
     const tdEmpty = document.createElement('td');
-    tdEmpty.colSpan = 13;
+    tdEmpty.colSpan = 4;
     tdEmpty.style.cssText = 'padding:8px 10px;color:#7a869a;font-style:italic;text-align:center;';
     tdEmpty.textContent = 'No subchapters yet — add subchapters to the inspection chapters to score them here.';
     trEmpty.appendChild(tdEmpty);
@@ -8506,43 +8857,101 @@ function _buildScoreBlock(block) {
     tdLabel.textContent = row.label;
     tr.appendChild(tdLabel);
 
-    // Score cells
-    SCORE_COLS.forEach(v => {
-      const td = document.createElement('td');
-      const scoreVal = v === 'N/A' ? 'na' : String(v);
-      const cls = SCORE_COLORS[scoreVal] || '';
-      td.className = 'score-cell';
-      td.dataset.val = scoreVal;
+    // Score control: custom picker (each option in its own band color) +
+    // colored pill (print) + condition text.
+    const tdScore = document.createElement('td');
+    tdScore.className = 'score-set-cell';
 
-      // Restore saved score
-      const saved = _scoreData[row.key];
-      if(saved !== undefined && String(saved) === scoreVal) {
-        td.classList.add(cls, 'score-active');
-        td.textContent = v;
+    const picker = document.createElement('div');
+    picker.className = 'score-picker no-print';
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'score-trigger';
+    trigger.title = 'Set score';
+    const pop = document.createElement('div');
+    pop.className = 'score-pop';
+    const grid = document.createElement('div');
+    grid.className = 'score-pop-grid';
+    for(let n = 1; n <= 10; n++) {
+      const opt = document.createElement('button');
+      opt.type = 'button';
+      opt.className = 'score-opt ' + (SCORE_COLORS[String(n)] || '');
+      opt.dataset.val = String(n);
+      opt.textContent = n;
+      grid.appendChild(opt);
+    }
+    pop.appendChild(grid);
+    const foot = document.createElement('div');
+    foot.className = 'score-pop-foot';
+    const naBtn = document.createElement('button');
+    naBtn.type = 'button';
+    naBtn.className = 'score-opt score-opt-wide sc-na';
+    naBtn.dataset.val = 'na';
+    naBtn.textContent = 'N/A';
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'score-opt score-opt-wide score-opt-clear';
+    clearBtn.dataset.val = '';
+    clearBtn.textContent = '— Clear';
+    foot.appendChild(naBtn);
+    foot.appendChild(clearBtn);
+    pop.appendChild(foot);
+    picker.appendChild(trigger);
+    picker.appendChild(pop);
+
+    const pill = document.createElement('span');
+    pill.className = 'score-pill';
+
+    const tdCond = document.createElement('td');
+    tdCond.className = 'score-cond-cell';
+
+    const applyRow = (val) => {
+      ['sc-1','sc-2','sc-3','sc-4','sc-5','sc-6','sc-7','sc-8','sc-9','sc-10','sc-na']
+        .forEach(c => { trigger.classList.remove(c); pill.classList.remove(c); });
+      trigger.classList.remove('score-sel-empty');
+      let cls = '', label = '', cond = '';
+      if(val === 'na') {
+        cls = 'sc-na'; label = 'N/A'; cond = 'Not assessed';
+      } else if(val) {
+        cls = SCORE_COLORS[val] || '';
+        label = val + ' / 10';
+        const b = Math.floor((parseInt(val, 10) - 1) / 2);
+        cond = _scoreLegendText[b] || _DEFAULT_SCORE_LEGEND[b] || '';
       }
+      if(cls) { trigger.classList.add(cls); pill.classList.add(cls); }
+      else { trigger.classList.add('score-sel-empty'); }
+      trigger.textContent = label || '—';
+      pill.textContent = label || '—';
+      tdCond.textContent = cond;
+      tdCond.classList.toggle('score-cond-muted', !val || val === 'na');
+    };
 
-      td.addEventListener('click', function() {
-        // Toggle off if already active
-        const wasActive = td.classList.contains('score-active');
-        // Clear all cells in this row
-        tr.querySelectorAll('.score-cell').forEach(c => {
-          c.classList.remove('score-active');
-          const cv = c.dataset.val;
-          c.classList.remove(SCORE_COLORS[cv] || '');
-          c.textContent = '';
-        });
-        if(!wasActive) {
-          td.classList.add(cls, 'score-active');
-          td.textContent = v;
-          _scoreData[row.key] = scoreVal;
-        } else {
-          delete _scoreData[row.key];
-        }
-        // Update gauges immediately after score change
-        if(typeof _updateAllGauges === 'function') _updateAllGauges();
-      });
-      tr.appendChild(td);
+    const saved = _scoreData[row.key];
+    const initVal = (saved === undefined || saved === null) ? '' : String(saved);
+    applyRow(initVal);
+
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const wasOpen = pop.classList.contains('open');
+      document.querySelectorAll('.score-pop.open').forEach(p => p.classList.remove('open'));
+      if(!wasOpen) pop.classList.add('open');
     });
+    pop.addEventListener('click', function(e) {
+      const optEl = e.target.closest('.score-opt');
+      if(!optEl) return;
+      e.stopPropagation();
+      const v = optEl.dataset.val;
+      if(v === '') delete _scoreData[row.key];
+      else _scoreData[row.key] = v;
+      applyRow(v);
+      pop.classList.remove('open');
+      if(typeof _updateAllGauges === 'function') _updateAllGauges();
+    });
+
+    tdScore.appendChild(picker);
+    tdScore.appendChild(pill);
+    tr.appendChild(tdScore);
+    tr.appendChild(tdCond);
     tbody.appendChild(tr);
   });
   tbl.appendChild(tbody);
@@ -8668,6 +9077,9 @@ function _toggleScoreLegendEditing(legTable) {
     });
     if(btn) btn.textContent = '✎ Edit';
     _scoreLegendUnlocked = false;
+    // Re-render so the Condition column reflects the edited legend text.
+    const _blk = legTable.closest('.score-block');
+    if(_blk && typeof _buildScoreBlock === 'function') _buildScoreBlock(_blk);
   }
 }
 
@@ -13524,6 +13936,7 @@ async function exportToCustomer() {
 
   const REMOVE_SELECTORS = [
     '.toolbar',
+    '.fmt-bar',
     '.no-print',
     '.add-photo-btn',
     '.remove-pair-btn',
@@ -16789,73 +17202,84 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Toolbar hamburger ──────────────────────────────────────
-  function _setupMobileToolbar() {
+  // Reversible: builds the overflow tray when the window is narrow and tears
+  // it back down (restoring the original button order) when it's wide again.
+  // Runs on load AND resize so widening a window that loaded narrow doesn't
+  // leave an unstyled tray dumping buttons into a broken wrapped row.
+  var _tbOrigOrder = null;
+  function _syncToolbarLayout() {
     var tb = document.querySelector('.toolbar');
-    if(!tb || tb.dataset.mobileSetup) return;
-    tb.dataset.mobileSetup = '1';
+    if(!tb) return;
+    // Snapshot the original (desktop) child order the first time we run, before
+    // any tray is built, so teardown can restore it exactly.
+    if(!_tbOrigOrder) _tbOrigOrder = [].slice.call(tb.children);
 
-    if(window.innerWidth >= 900) return; // desktop — no changes
+    var narrow = window.innerWidth < 900;
+    var tray = tb.querySelector('.tb-overflow-wrap');
+    var moreBtn = tb.querySelector('.tb-more-btn');
 
-    // Collect buttons to move into the overflow tray
-    // Keep: brand, undo, redo, page count, size indicator group, print button
-    // Move to overflow: new report, compare, instructions, translate, open, save, compress, export
-    var overflowIds = ['comparePanelBtn','fullscreenBtn'];
-    var overflowOnclicks = [
-      'openComparePanel','openInstructions','openTranslateDialog',
-      'openRecompressDialog','exportToCustomer','newReport','openReportJSON','saveAsReportJSON'
-    ];
+    if(narrow) {
+      if(tray) return; // already in mobile layout
+      var overflowIds = ['comparePanelBtn','fullscreenBtn'];
+      var overflowOnclicks = [
+        'openComparePanel','openInstructions','openTranslateDialog',
+        'openRecompressDialog','exportToCustomer','newReport','openReportJSON','saveAsReportJSON'
+      ];
+      var allBtns = [].slice.call(tb.querySelectorAll('button:not(#undoBtn):not(#redoBtn)'));
+      var toMove = allBtns.filter(function(b) {
+        var oc = b.getAttribute('onclick') || '';
+        var id = b.id || '';
+        return overflowOnclicks.some(function(fn) { return oc.includes(fn); })
+            || overflowIds.includes(id);
+      });
+      if(!toMove.length) return;
 
-    // Find buttons to overflow
-    var allBtns = [...tb.querySelectorAll('button:not(#undoBtn):not(#redoBtn)')];
-    var toMove = allBtns.filter(function(b) {
-      var oc = b.getAttribute('onclick') || '';
-      var id = b.id || '';
-      return overflowOnclicks.some(function(fn) { return oc.includes(fn); })
-          || overflowIds.includes(id);
-    });
+      tray = document.createElement('div');
+      tray.className = 'tb-overflow-wrap no-print';
+      toMove.forEach(function(b) { tray.appendChild(b); });
 
-    if(!toMove.length) return;
+      moreBtn = document.createElement('button');
+      moreBtn.className = 'tb-more-btn no-print';
+      moreBtn.textContent = '⋯ Menu';
+      moreBtn.title = 'Show more options';
+      moreBtn.onclick = function() {
+        var open = tray.classList.toggle('open');
+        moreBtn.textContent = open ? '✕ Close' : '⋯ Menu';
+      };
 
-    // Create overflow tray
-    var tray = document.createElement('div');
-    tray.className = 'tb-overflow-wrap no-print';
-    toMove.forEach(function(b) { tray.appendChild(b); });
-
-    // Create toggle button
-    var moreBtn = document.createElement('button');
-    moreBtn.className = 'tb-more-btn no-print';
-    moreBtn.textContent = '⋯ Menu';
-    moreBtn.title = 'Show more options';
-    moreBtn.onclick = function() {
-      var open = tray.classList.toggle('open');
-      moreBtn.textContent = open ? '✕ Close' : '⋯ Menu';
-    };
-
-    // Insert before the print button (keep print always visible)
-    var printBtn = tb.querySelector('button.primary');
-    if(printBtn) {
-      tb.insertBefore(moreBtn, printBtn);
+      var printBtn = tb.querySelector('button.primary');
+      if(printBtn) tb.insertBefore(moreBtn, printBtn);
+      else tb.appendChild(moreBtn);
+      tb.appendChild(tray);
     } else {
-      tb.appendChild(moreBtn);
+      // Desktop — remove any mobile tray/menu and restore the original layout.
+      if(!tray && !moreBtn) return;
+      // Re-appending the snapshot in order pulls the tray's buttons back out as
+      // direct toolbar children in their original positions.
+      _tbOrigOrder.forEach(function(el) { tb.appendChild(el); });
+      if(tray) tray.remove();
+      if(moreBtn) moreBtn.remove();
     }
-    tb.appendChild(tray);
   }
 
   // ── Init ──────────────────────────────────────────────────
   function _mobileInit() {
     _setPageScale();
-    _setupMobileToolbar();
+    _syncToolbarLayout();
   }
 
+  var _tbLayoutTimer = null;
   // Run on load and on resize
   document.addEventListener('DOMContentLoaded', function() {
     _mobileInit();
-    // Update scale on orientation change and resize
+    // Update scale + toolbar layout on resize (debounced) and orientation change
     window.addEventListener('resize', function() {
       _setPageScale();
+      clearTimeout(_tbLayoutTimer);
+      _tbLayoutTimer = setTimeout(_syncToolbarLayout, 150);
     });
     window.addEventListener('orientationchange', function() {
-      setTimeout(_setPageScale, 150); // wait for orientation animation
+      setTimeout(function() { _setPageScale(); _syncToolbarLayout(); }, 150);
     });
   });
 })();
@@ -16885,6 +17309,169 @@ document.addEventListener('change', e => {
       _runAfterReflow();
   }
 });
+</script>
+
+<script>
+// ── Secondary formatting bar wiring ──────────────────────────────────────
+// Reuses the existing right-click formatting commands (ctxFormat / ctxFontSize
+// / ctxHighlight / ctxInsertPhrase). The challenge is preserving the text
+// selection: clicking a bar control must not blur the contenteditable. We
+// (1) preventDefault on mousedown so focus stays put, and (2) continuously
+// track the active field's selection into the same range the ctx commands use.
+(function(){
+  function initFmtBar(){
+    const bar = document.getElementById('fmtBar');
+    const toolbar = document.querySelector('.toolbar');
+    if(!bar || !toolbar) return;
+
+    // Stack this bar sticky directly beneath the (also sticky) main ribbon.
+    const setTop = () => { bar.style.top = toolbar.offsetHeight + 'px'; };
+    setTop();
+    window.addEventListener('resize', setTop);
+    window.addEventListener('load', setTop);
+
+    const EDITABLE = '.field[contenteditable], .caption, .joined-caption, [contenteditable="true"]';
+
+    function activeField(){
+      const sel = window.getSelection();
+      if(!sel || sel.rangeCount === 0) return null;
+      const node = sel.anchorNode;
+      const el = node && (node.nodeType === 1 ? node : node.parentElement);
+      return el && el.closest ? el.closest(EDITABLE) : null;
+    }
+    function updateActive(){
+      try{
+        bar.querySelector('[data-act="bold"]').classList.toggle('active', document.queryCommandState('bold'));
+        bar.querySelector('[data-act="italic"]').classList.toggle('active', document.queryCommandState('italic'));
+        bar.querySelector('[data-act="underline"]').classList.toggle('active', document.queryCommandState('underline'));
+      }catch(e){}
+    }
+    function closeMenus(){ bar.querySelectorAll('.fmt-dd-menu.open').forEach(m => m.classList.remove('open')); }
+
+    // Table editing from the ribbon. These actions are contextual — they act on
+    // the table cell the cursor is in — so we resolve that cell from the live
+    // selection (or _ctxTargetEl), set it as the target, then call the matching
+    // context function for whichever table type the cell belongs to.
+    function ribbonTableAction(action){
+      let node = _ctxTargetEl;
+      if(!node){
+        const sel = window.getSelection && window.getSelection();
+        node = sel && sel.anchorNode;
+      }
+      if(node && node.nodeType === 3) node = node.parentElement;
+      const statCell = node && node.closest ? node.closest('.stat-block td, .stat-block th') : null;
+      const matCell  = node && node.closest ? node.closest('.mat-table td, .mat-table th') : null;
+      const wsCell   = node && node.closest ? node.closest('.ws-table td, .ws-table th') : null;
+      const legCell  = node && node.closest ? node.closest('.hc-legend td') : null;
+      const cell = statCell || matCell || wsCell || legCell;
+      if(!cell){ alert('Place your cursor inside a table cell first, then choose a table action.'); return; }
+      _ctxTargetEl = cell;
+      const run = (fn, arg) => { if(typeof window[fn] === 'function') window[fn](arg); };
+      const NA = () => alert('That action isn\u2019t available for this type of table.');
+      if(statCell){
+        ({ addRow:()=>run('ctxStatAddRow'), delRow:()=>run('ctxStatDelRow'),
+           addCol:()=>run('ctxStatAddCol','right'), delCol:()=>run('ctxStatDelCol'),
+           sumCol:()=>run('ctxStatSum','column'), sumRow:()=>run('ctxStatSum','row') }[action] || NA)();
+      } else if(matCell){
+        ({ addRow:()=>run('ctxMatAddRow'), delRow:()=>run('ctxMatDelRow'),
+           sumCol:()=>run('ctxMatSum','column'), sumRow:()=>run('ctxMatSum','row') }[action] || NA)();
+      } else if(wsCell){
+        ({ addRow:()=>run('ctxWsAddRow'), delRow:()=>run('ctxWsDelRow') }[action] || NA)();
+      } else if(legCell){
+        (action === 'delRow' ? ()=>run('ctxLegendDelRow') : NA)();
+      }
+    }
+
+    // Track the live selection inside editable fields so the format commands,
+    // which restore _ctxSavedRange, act on what the user has selected.
+    document.addEventListener('selectionchange', () => {
+      const field = activeField();
+      if(!field) return;
+      if(typeof ctxSaveSelection === 'function') ctxSaveSelection();
+      try{ _ctxTargetEl = field; }catch(e){}   // so phrase insert targets it
+      updateActive();
+    });
+
+    // Keep focus + selection in the contenteditable while using the bar.
+    bar.addEventListener('mousedown', e => {
+      if(e.target.closest('button, .fmt-sw, .fmt-hl-ico')) e.preventDefault();
+    });
+
+    bar.addEventListener('click', e => {
+      const fmtBtn = e.target.closest('.fmt-btn[data-act]');
+      if(fmtBtn){ if(typeof ctxFormat === 'function') ctxFormat(fmtBtn.dataset.act); updateActive(); return; }
+
+      const cmdBtn = e.target.closest('.fmt-btn[data-cmd]');
+      if(cmdBtn){
+        const c = cmdBtn.dataset.cmd;
+        if(c === 'copy' && typeof ctxCopy === 'function') ctxCopy();
+        else if(c === 'cut' && typeof ctxCut === 'function') ctxCut();
+        else if(c === 'paste'){
+          // Prefer the real clipboard read (a button click is a valid user
+          // gesture for it); fall back to the manual Ctrl+V box if the
+          // browser blocks programmatic reads.
+          if(navigator.clipboard && navigator.clipboard.readText){
+            navigator.clipboard.readText().then(text => {
+              if(typeof ctxRestoreSelection === 'function') ctxRestoreSelection();
+              if(text) document.execCommand('insertText', false, text);
+            }).catch(() => { if(typeof ctxPaste === 'function') ctxPaste(); });
+          } else if(typeof ctxPaste === 'function') ctxPaste();
+        }
+        else if(c === 'insertimage'){
+          const field = activeField();
+          if(field){ try{ _ctxTargetEl = field; }catch(_){} }
+          if(typeof ctxInsertImage === 'function') ctxInsertImage();
+        }
+        else if(c === 'clearformat' && typeof ctxClearFormat === 'function'){ ctxClearFormat(); updateActive(); }
+        else if(c === 'spellcheck' && typeof ctxToggleSpellcheck === 'function'){
+          ctxToggleSpellcheck();
+          try{ cmdBtn.classList.toggle('active', !!_spellOn); }catch(_){}
+        }
+        return;
+      }
+
+      const sizeItem = e.target.closest('[data-size]');
+      if(sizeItem){
+        if(typeof ctxFontSize === 'function') ctxFontSize(parseInt(sizeItem.dataset.size, 10));
+        const cur = document.getElementById('fmtSizeCur'); if(cur) cur.textContent = sizeItem.dataset.size;
+        closeMenus(); return;
+      }
+      const sw = e.target.closest('.fmt-sw[data-hl]');
+      if(sw){ if(typeof ctxHighlight === 'function') ctxHighlight(sw.dataset.hl); return; }
+
+      const phrase = e.target.closest('[data-phrase]');
+      if(phrase){
+        const field = activeField();
+        if(field){ try{ _ctxTargetEl = field; }catch(e){} }
+        if(typeof ctxInsertPhrase === 'function') ctxInsertPhrase(phrase.dataset.phrase);
+        closeMenus(); return;
+      }
+      const capItem = e.target.closest('[data-capcolor]');
+      if(capItem){
+        const field = activeField();
+        const cap = field && field.closest ? field.closest('.caption, .joined-caption') : null;
+        if(cap){ try{ _ctxTargetEl = cap; }catch(_){} }
+        if(typeof ctxSetCaptionColor === 'function') ctxSetCaptionColor(capItem.dataset.capcolor);
+        closeMenus(); return;
+      }
+      const tblItem = e.target.closest('[data-tbl]');
+      if(tblItem){ ribbonTableAction(tblItem.dataset.tbl); closeMenus(); return; }
+      const trig = e.target.closest('.fmt-dd-trigger');
+      if(trig){
+        const menu = trig.parentElement.querySelector('.fmt-dd-menu');
+        const wasOpen = menu.classList.contains('open');
+        closeMenus();
+        if(!wasOpen) menu.classList.add('open');
+        return;
+      }
+    });
+
+    // Close dropdowns when clicking outside the bar's dropdown wrappers.
+    document.addEventListener('click', e => { if(!e.target.closest('#fmtBar .fmt-dd')) closeMenus(); });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFmtBar);
+  else initFmtBar();
+})();
 </script>
 
 </body>
