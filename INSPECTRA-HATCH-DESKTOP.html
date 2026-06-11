@@ -226,6 +226,8 @@
   .field ul { list-style: disc; }
   .field ol { list-style: decimal; }
   .field li { margin: 0.3mm 0; }
+  .field ul.bl-dash { list-style: none; padding-left: 7mm; }
+  .field ul.bl-dash > li::before { content: "\2013"; display: inline-block; width: 4mm; margin-left: -4mm; }
   /* Panel grid */
 
   .legend{display:flex;gap:4mm;flex-wrap:wrap;font-size:8.5pt;margin-top:3mm;color:var(--ink-soft);}
@@ -1856,13 +1858,15 @@
   }
   .fmt-dd-menu.open{ display:grid !important; }
   .fmt-dd[data-dd="phrase"] .fmt-dd-menu.open,
+  .fmt-dd[data-dd="bullet"] .fmt-dd-menu.open,
   .fmt-dd[data-dd="table"] .fmt-dd-menu.open{ display:block !important; }
   .fmt-dd-menu button{
     border:1px solid transparent; background:none; color:#1f3a68;
     font:inherit; font-size:12px; padding:5px 9px; border-radius:4px;
     cursor:pointer; white-space:nowrap; text-align:center;
   }
-  .fmt-dd[data-dd="phrase"] .fmt-dd-menu button{ display:block; width:100%; text-align:left; }
+  .fmt-dd[data-dd="phrase"] .fmt-dd-menu button,
+  .fmt-dd[data-dd="bullet"] .fmt-dd-menu button{ display:block; width:100%; text-align:left; }
   .fmt-dd[data-dd="table"] .fmt-dd-menu button{ display:block; width:100%; text-align:left; }
   .fmt-cap-group{ display:inline-flex; align-items:center; gap:4px; }
   .fmt-cap-lbl{ font-size:11px; color:#5b6b80; margin-right:1px; }
@@ -2393,6 +2397,34 @@
 
   /* ── Workscope table (Repair Proposal → repair requirements for shipyard) ── */
   .ws-block { margin: 2mm 0 1mm; }
+  /* Numbering reference picker (chapter / subchapter mode) */
+  .ws-ref-pick{ border:1px solid #c3ccda; background:#fff; color:#1f3a68; border-radius:3px; cursor:pointer; font-size:10px; line-height:1; padding:1px 4px; }
+  .ws-ref-pick:hover{ background:#eef2f8; }
+  /* Number always on its own line, centered; the ▾ picker centered just below
+     it — so a short "3" and a longer "3.1" look identical (symmetrical). */
+  .ws-no { text-align:center; }
+  .ws-no .ws-no-num{ display:block; }
+  .ws-block:not([data-numbering="ref"]) .ws-no .ws-ref-pick{ display:none; }
+  .ws-block[data-numbering="ref"] .ws-no .ws-ref-pick{ display:block; margin:3px auto 0; }
+  .ws-ref-menu{ position:absolute; z-index:9999; background:#fff; border:1px solid #c3ccda; border-radius:6px; box-shadow:0 6px 20px rgba(20,41,77,.18); max-height:340px; overflow:auto; min-width:230px; padding:4px; }
+  .ws-ref-opt{ display:block; width:100%; text-align:left; border:none; background:none; padding:5px 9px; font:inherit; font-size:12px; color:#1f3a68; cursor:pointer; border-radius:4px; white-space:nowrap; }
+  .ws-ref-opt:hover{ background:#eef2f8; }
+  .ws-ref-clear{ color:#a0526a; border-top:1px solid #eef2f8; margin-top:3px; }
+  .ws-ref-empty{ padding:9px; color:#8893a5; font-size:12px; }
+  /* Multi-cell selection highlight (screen only; never printed) */
+  .cell-sel{ outline:2px solid #2c5599; outline-offset:-2px; box-shadow: inset 0 0 0 9999px rgba(44,85,153,.14); }
+  @media print { .cell-sel{ outline:none !important; box-shadow:none !important; } }
+  /* Import Word/Excel table dialog */
+  .imp-overlay{ position:fixed; inset:0; background:rgba(20,33,61,.45); z-index:10000; display:none; align-items:center; justify-content:center; }
+  .imp-dialog{ background:#fff; border-radius:10px; padding:18px 20px; width:min(560px,92vw); box-shadow:0 18px 50px rgba(0,0,0,.3); }
+  .imp-title{ font-weight:700; color:#1f3a68; font-size:16px; margin-bottom:6px; }
+  .imp-help{ color:#5b6b80; font-size:13px; line-height:1.45; margin-bottom:12px; }
+  .imp-paste{ min-height:90px; max-height:210px; overflow:auto; border:2px dashed #b9c2d2; border-radius:8px; padding:10px 12px; font-size:13px; color:#1f3a68; background:#f7f9fc; }
+  .imp-paste:focus{ outline:none; border-color:#2c5599; background:#fff; }
+  .imp-paste:empty::before{ content:attr(data-ph); color:#9aa6b8; }
+  .imp-actions{ text-align:right; margin-top:12px; }
+  .imp-cancel{ border:1px solid #c3ccda; background:#fff; color:#1f3a68; border-radius:6px; padding:6px 14px; cursor:pointer; font:inherit; }
+  .imp-cancel:hover{ background:#eef2f8; }
   /* Discreet standing disclaimer shown above the workscope table. Prints in the
      PDF (intentionally not .no-print); kept visually quiet — small, muted. */
   .ws-disclaimer {
@@ -2954,10 +2986,17 @@
     <button type="button" class="fmt-btn" data-act="justifyFull" title="Justify"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
   </div>
   <span class="fmt-div"></span>
-  <div class="fmt-group">
-    <button type="button" class="fmt-btn" data-act="insertUnorderedList" title="Bulleted list"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4.5" cy="6" r="1.3" fill="#1f3a68" stroke="none"/><circle cx="4.5" cy="12" r="1.3" fill="#1f3a68" stroke="none"/><circle cx="4.5" cy="18" r="1.3" fill="#1f3a68" stroke="none"/></svg></button>
-    <button type="button" class="fmt-btn" data-act="insertOrderedList" title="Numbered list"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><text x="1.5" y="8.5" font-size="8" fill="#1f3a68" stroke="none" font-family="sans-serif">1</text><text x="1.5" y="14.5" font-size="8" fill="#1f3a68" stroke="none" font-family="sans-serif">2</text><text x="1.5" y="20.5" font-size="8" fill="#1f3a68" stroke="none" font-family="sans-serif">3</text></svg></button>
+  <div class="fmt-dd" data-dd="bullet">
+    <button type="button" class="fmt-btn fmt-dd-trigger" title="Bulleted list — choose a style"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4.5" cy="6" r="1.3" fill="#1f3a68" stroke="none"/><circle cx="4.5" cy="12" r="1.3" fill="#1f3a68" stroke="none"/><circle cx="4.5" cy="18" r="1.3" fill="#1f3a68" stroke="none"/></svg>&nbsp;&#9662;</button>
+    <div class="fmt-dd-menu" style="display:none;min-width:140px;">
+      <button type="button" data-bullet="disc">&#8226;&nbsp;&nbsp;Filled circle</button>
+      <button type="button" data-bullet="circle">&#9702;&nbsp;&nbsp;Hollow circle</button>
+      <button type="button" data-bullet="square">&#9642;&nbsp;&nbsp;Square</button>
+      <button type="button" data-bullet="dash">&#8211;&nbsp;&nbsp;Dash</button>
+      <button type="button" data-bullet="none">&#10005;&nbsp;&nbsp;Remove bullets</button>
+    </div>
   </div>
+  <button type="button" class="fmt-btn" data-act="insertOrderedList" title="Numbered list"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1f3a68" stroke-width="2" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><text x="1.5" y="8.5" font-size="8" fill="#1f3a68" stroke="none" font-family="sans-serif">1</text><text x="1.5" y="14.5" font-size="8" fill="#1f3a68" stroke="none" font-family="sans-serif">2</text><text x="1.5" y="20.5" font-size="8" fill="#1f3a68" stroke="none" font-family="sans-serif">3</text></svg></button>
   <span class="fmt-div"></span>
   <div class="fmt-dd" data-dd="size">
     <button type="button" class="fmt-btn fmt-dd-trigger" title="Font size">Size&nbsp;<span id="fmtSizeCur">—</span>&nbsp;&#9662;</button>
@@ -4802,6 +4841,7 @@ function buildSection(def) {
       ${_condBtn}
       <button class="hc-add-schematic-btn no-print" onclick="hcAddSchematic(this)">＋ Add schematic &amp; legend</button>
       <button class="stat-add-block-btn no-print" onclick="statAddBlock(this)">＋ Add table</button>${_scoreBtn}
+      <button class="hc-add-schematic-btn no-print" onclick="impTable(this)" title="Import a table copied from Word or Excel, placed below the text box">&#10515; Import Word/Excel table</button>
       <div class="label photo-section-label">${_photoSectionLabel}</div>
       <div class="photo-pairs" id="pairs-${def.id}"></div>
       <div class="add-pair-row no-print" style="display:flex;align-items:center;margin-top:1mm;position:relative;">
@@ -4815,6 +4855,7 @@ function buildSection(def) {
     if(!def.noPhotos) {
       body += `<button class="hc-add-schematic-btn no-print" onclick="hcAddSchematic(this)">＋ Add schematic &amp; legend</button>
         <button class="stat-add-block-btn no-print" onclick="statAddBlock(this)">＋ Add table</button>
+        <button class="hc-add-schematic-btn no-print" onclick="impTable(this)" title="Import a table copied from Word or Excel">&#10515; Import Word/Excel table</button>
         <div class="label">Photos:</div>
         <div class="photo-pairs" id="pairs-${def.id}"></div>
         <div class="add-pair-row no-print" style="display:flex;align-items:center;margin-top:1mm;position:relative;">
@@ -6768,6 +6809,58 @@ document.addEventListener('focusout', e => {
   setTimeout(() => { if(_anyPageOverflows()) doReflow(); }, 0);
 });
 
+// ── Multi-cell selection in tables ────────────────────────────
+// Each table cell is its own editable, so the browser can't drag-select across
+// them. This adds an explicit marking selection: Ctrl/Cmd-click toggles a cell,
+// Shift-click selects a rectangle from the last cell, and a plain click clears
+// it (so normal typing is unaffected). The cell-background swatches in the
+// Table menu then apply to every marked cell. Marks are screen-only.
+let _cellSelAnchor = null;
+function _clearCellSel(){
+  document.querySelectorAll('.cell-sel').forEach(c => c.classList.remove('cell-sel'));
+  _cellSelAnchor = null;
+}
+function _cellTableOf(cell){ return cell ? cell.closest('table') : null; }
+
+document.addEventListener('mousedown', e => {
+  const cell = e.target.closest('td, th');
+  const inReport = cell && cell.closest('#pagesRoot') && _cellTableOf(cell);
+  if(inReport){
+    // Ctrl / Cmd click → toggle this cell in the selection
+    if(e.metaKey || e.ctrlKey){
+      e.preventDefault();
+      const tbl = _cellTableOf(cell);
+      if(_cellSelAnchor && _cellTableOf(_cellSelAnchor) !== tbl) _clearCellSel();
+      cell.classList.toggle('cell-sel');
+      _cellSelAnchor = cell.classList.contains('cell-sel') ? cell : _cellSelAnchor;
+      return;
+    }
+    // Shift click → rectangular range from the anchor to this cell
+    if(e.shiftKey && _cellSelAnchor && _cellTableOf(_cellSelAnchor) === _cellTableOf(cell)){
+      e.preventDefault();
+      const tbl = _cellTableOf(cell);
+      const aR = _cellSelAnchor.closest('tr').rowIndex, aC = _cellSelAnchor.cellIndex;
+      const bR = cell.closest('tr').rowIndex, bC = cell.cellIndex;
+      const r1 = Math.min(aR,bR), r2 = Math.max(aR,bR), c1 = Math.min(aC,bC), c2 = Math.max(aC,bC);
+      tbl.querySelectorAll('.cell-sel').forEach(c => c.classList.remove('cell-sel'));
+      [...tbl.rows].forEach(tr => {
+        if(tr.rowIndex >= r1 && tr.rowIndex <= r2){
+          [...tr.cells].forEach(td => { if(td.cellIndex >= c1 && td.cellIndex <= c2) td.classList.add('cell-sel'); });
+        }
+      });
+      return;
+    }
+    // Plain click in a cell → clear any marks (and allow normal editing)
+    if(document.querySelector('.cell-sel')) _clearCellSel();
+    return;
+  }
+  // Click anywhere else clears the marks — EXCEPT the ribbon/menus, so the user
+  // can pick a colour to apply to the current selection.
+  if(document.querySelector('.cell-sel') && !e.target.closest('.fmt-bar, #wsRefMenu, .ws-ref-menu, #ctxMenu')){
+    _clearCellSel();
+  }
+});
+
 
 // ── Paste sanitizer ───────────────────────────────────────────
 // Pasting from Word/PDF/web injects foreign HTML (fonts, margins, absolute
@@ -7843,7 +7936,7 @@ function _matRenumber(tbody) {
 // table survives save/load (JSON) without rewiring.
 function _wsRowHTML() {
   return `<tr>
-            <td class="ws-no"><span class="ws-no-num"></span></td>
+            <td class="ws-no"><span class="ws-no-num"></span><button type="button" class="ws-ref-pick no-print" onclick="wsOpenRefMenu(this)" title="Pick the chapter / subchapter this repair relates to">&#9662;</button></td>
             <td class="ws-item" contenteditable="true" data-ph="Item name + description…"></td>
             <td contenteditable="true" data-ph="Qty"></td>
             <td contenteditable="true" data-ph="Unit"></td>
@@ -7855,14 +7948,132 @@ function _wsRowHTML() {
 // actually exist, so a vertically-merged group counts as a single number.
 function _wsRenumber(tbody) {
   if(!tbody) return;
+  const block = tbody.closest('.ws-block');
+  const ref = block && block.dataset.numbering === 'ref';
   let n = 0;
   [...tbody.querySelectorAll('.ws-no .ws-no-num')].forEach(numEl => {
-    n += 1;
-    numEl.textContent = n + '.';
+    if(ref){
+      const tr = numEl.closest('tr');
+      numEl.textContent = (tr && tr.dataset.wsRef) ? tr.dataset.wsRef : '';
+    } else {
+      n += 1;
+      numEl.textContent = n + '.';
+    }
   });
 }
 
-// ── Workscope disclaimer (admin-editable standing text above the table) ──
+// ── Workscope numbering: plain 1,2,3 (default) or chapter/subchapter ref ──
+// In "ref" mode each row shows ONLY the chapter/subchapter number in the No.
+// column (e.g. 4.2); a small ▾ picker lets the user choose from the report's
+// chapters/subchapters, and choosing auto-fills the item NAME into the
+// Item/Requirements column. Chapters like "Hatch covers overview" and "General
+// notes" are excluded from the list. The number lives in the No. span and the
+// name in the Item cell — both plain text, so they persist and print; the ▾
+// picker is screen-only.
+function _wsEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Chapters that are context/preamble rather than repairable scope.
+function _wsExcludedTitle(t){
+  const x = (t || '').toLowerCase();
+  return /overview/.test(x) || /general\s+note/.test(x) || /notes?\s*&\s*remarks?/.test(x) || /notes?\s+and\s+remarks?/.test(x);
+}
+
+function _wsRefOptions(){
+  const opts = [];
+  const pr = document.getElementById('pagesRoot') || document;
+  let chapters = [];
+  if(typeof chapterState !== 'undefined' && chapterState.length){
+    let n = 0;
+    chapterState.forEach(ch => { if(ch.enabled){ n++; chapters.push({ num:n, title: ch.title || '' }); } });
+  } else {
+    let n = 0;
+    pr.querySelectorAll('.section[data-sid]').forEach(s => {
+      const h = s.querySelector('.section-head');
+      if(h){ n++; chapters.push({ num:n, title:(h.dataset.title || h.textContent.replace(/^\s*\d+\.\s*/, '').trim()) }); }
+    });
+  }
+  chapters.forEach(ch => {
+    if(_wsExcludedTitle(ch.title)) return;   // skip overview / general notes (and their subchapters)
+    opts.push({ num: String(ch.num), name: (ch.title || ('Chapter ' + ch.num)) });
+    const subs = [];
+    pr.querySelectorAll('.subch-label-bar[data-name]').forEach(bar => {
+      const key = bar.dataset.scoreKey || '', name = bar.dataset.name || '';
+      if(key && name && key.indexOf(ch.num + '.') === 0) subs.push({ key:key, name:name });
+    });
+    subs.sort((a,b) => (parseInt(a.key.split('.')[1] || '0', 10)) - (parseInt(b.key.split('.')[1] || '0', 10)));
+    subs.forEach(su => opts.push({ num: su.key, name: su.name }));
+  });
+  return opts;
+}
+
+let _wsRefMenuRow = null;
+function wsOpenRefMenu(btn){
+  const row = btn.closest('tr'); if(!row) return;
+  _wsRefMenuRow = row;
+  let menu = document.getElementById('wsRefMenu');
+  if(!menu){
+    menu = document.createElement('div');
+    menu.id = 'wsRefMenu';
+    menu.className = 'ws-ref-menu no-print';
+    menu.style.display = 'none';
+    document.body.appendChild(menu);
+    document.addEventListener('mousedown', e => {
+      if(menu.style.display !== 'none' && !menu.contains(e.target) && !e.target.closest('.ws-ref-pick')) wsCloseRefMenu();
+    });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') wsCloseRefMenu(); });
+  }
+  const opts = _wsRefOptions();
+  menu.innerHTML = opts.length
+    ? opts.map(o => '<button type="button" class="ws-ref-opt" data-num="' + _wsEsc(o.num) + '" data-name="' + _wsEsc(o.name) + '"><b>' + _wsEsc(o.num) + '</b>\u2002' + _wsEsc(o.name) + '</button>').join('')
+        + '<button type="button" class="ws-ref-opt ws-ref-clear" data-num="" data-name="">— Clear —</button>'
+    : '<div class="ws-ref-empty">No eligible chapters yet</div>';
+  menu.querySelectorAll('.ws-ref-opt').forEach(b => {
+    b.onclick = () => { wsApplyRef(b.dataset.num, b.dataset.name); wsCloseRefMenu(); };
+  });
+  const r = btn.getBoundingClientRect();
+  menu.style.display = 'block';
+  menu.style.left = (window.scrollX + r.left) + 'px';
+  menu.style.top  = (window.scrollY + r.bottom + 3) + 'px';
+}
+function wsCloseRefMenu(){ const m = document.getElementById('wsRefMenu'); if(m) m.style.display = 'none'; _wsRefMenuRow = null; }
+function wsApplyRef(num, name){
+  const row = _wsRefMenuRow; if(!row) return;
+  const numSpan = row.querySelector('.ws-no-num');
+  if(numSpan) numSpan.textContent = num || '';
+  row.dataset.wsRef = num || '';
+  // Auto-fill the item name — but never clobber text the user has typed: only
+  // fill when the cell is empty or still holds the previously auto-filled name.
+  // The name is inserted bold + underlined, followed by a colon, so the user
+  // types the description after it in normal text.
+  const itemCell = row.querySelector('.ws-item');
+  if(itemCell && name){
+    const cur = (itemCell.textContent || '').trim();
+    const prevAuto = (row.dataset.wsAutoName || '').trim();
+    if(!cur || cur === prevAuto){
+      const esc = String(name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      itemCell.innerHTML = '<b><u>' + esc + '</u></b>:&nbsp;';
+      row.dataset.wsAutoName = (itemCell.textContent || '').trim();
+      // place the caret after the ": " so typing continues in normal text
+      try {
+        itemCell.focus({ preventScroll: true });
+        const r = document.createRange(); r.selectNodeContents(itemCell); r.collapse(false);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      } catch(_) {}
+    }
+  }
+}
+
+function wsToggleNumbering(btn){
+  const block = btn.closest('.ws-block'); if(!block) return;
+  block.dataset.numbering = (block.dataset.numbering === 'ref') ? 'seq' : 'ref';
+  const ref = block.dataset.numbering === 'ref';
+  _wsRenumber(block.querySelector('.ws-table tbody'));
+  btn.textContent = ref ? '# By subchapter' : '# 1, 2, 3';
+}
+
+
+
+
 // Default bullets. Editing behind the admin password updates _wsDisclaimerText
 // (and every workscope disclaimer already in the document); new tables built
 // afterwards read from it. The edited text is plain DOM text, so it persists
@@ -7957,6 +8168,7 @@ function buildWorkscopeTableHTML() {
          <div class="hc-schematic-head no-print">
            <span class="hc-schematic-label">Workscope table — repair requirements for shipyard</span>
            <button type="button" class="sl-edit-btn no-print" onclick="wsDisclaimerEdit(this)" title="Edit the disclaimer text shown above the table (administrator password required)">🔒 Edit disclaimer</button>
+           <button type="button" class="sl-edit-btn no-print" onclick="wsToggleNumbering(this)" title="Switch the item numbers between plain 1, 2, 3 and chapter / subchapter references (e.g. 4.2) so the customer sees which subchapter each repair relates to"># 1, 2, 3</button>
            <button type="button" class="hc-schematic-remove" onclick="wsRemoveBlock(this)" title="Remove this workscope table">✕ Remove workscope table</button>
          </div>
          ${_wsDisclaimerHTML()}
@@ -8348,11 +8560,17 @@ function addInlineFrame(btn) {
     // Otherwise it's a plain standalone text box — remove just it and its rows.
     const prevEl = wrap.previousElementSibling;
     const nextEl = wrap.nextElementSibling;
+    let afterEl = prevEl;
+    if(afterEl && afterEl.classList.contains('add-pair-row')) afterEl = afterEl.previousElementSibling;
     if(nextEl && nextEl.classList.contains('add-pair-row')) nextEl.remove();
     if(prevEl && prevEl.classList.contains('add-pair-row')) prevEl.remove();
     wrap.remove();
     const secEl = sec || (btn && btn.closest('.section[data-sid]'));
-    if(secEl) { const bd = secEl.querySelector('.section-body') || secEl; _renumberSubchapters(bd); }
+    if(secEl) {
+      const bd = secEl.querySelector('.section-body') || secEl;
+      _renumberSubchapters(bd);
+      _ensureSectionButtonRow(secEl, afterEl);   // bring the controls back
+    }
     doReflow();
   });
   labelRow.appendChild(lbl);
@@ -8533,6 +8751,113 @@ function _condRestoreAll() {
   });
 }
 
+// ── Import a Word / Excel table (paste-based, offline) ────────
+// Copying a table in Word or a cell range in Excel puts an HTML <table> (and a
+// tab-separated text fallback) on the clipboard. We capture that on paste,
+// extract plain cell text, and build an editable, printable table block in the
+// same style as the app's other tables. No external libraries / internet.
+let _impCtx = null;
+function impTable(btn){
+  const row = btn.closest('.add-pair-row');
+  const sec = btn.closest('.section[data-sid]');
+  _impCtx = { row: row, sec: sec, parent: row ? row.parentNode : (sec ? sec.querySelector('.section-body') : null) };
+  _impOpenOverlay();
+}
+function _impOpenOverlay(){
+  let ov = document.getElementById('impOverlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'impOverlay';
+    ov.className = 'imp-overlay no-print';
+    ov.innerHTML =
+      '<div class="imp-dialog">' +
+        '<div class="imp-title">Import a Word or Excel table</div>' +
+        '<div class="imp-help">In Word select the table, or in Excel select the cell range, and copy it (Ctrl/Cmd + C). Then click the box below and paste (Ctrl/Cmd + V) — the table is added under your text.</div>' +
+        '<div class="imp-paste" contenteditable="true" data-ph="Click here, then paste your table (Ctrl/Cmd + V)…"></div>' +
+        '<div class="imp-actions"><button type="button" class="imp-cancel">Cancel</button></div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('mousedown', e => { if(e.target === ov) _impClose(); });
+    ov.querySelector('.imp-cancel').onclick = _impClose;
+    ov.querySelector('.imp-paste').addEventListener('paste', _impOnPaste);
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape'){ const o = document.getElementById('impOverlay'); if(o && o.style.display !== 'none') _impClose(); }
+    });
+  }
+  ov.style.display = 'flex';
+  const pa = ov.querySelector('.imp-paste');
+  pa.innerHTML = '';
+  setTimeout(() => pa.focus(), 40);
+}
+function _impClose(){ const o = document.getElementById('impOverlay'); if(o) o.style.display = 'none'; }
+
+function _impParseHtmlTable(html){
+  if(!html) return null;
+  let doc;
+  try { doc = new DOMParser().parseFromString(html, 'text/html'); } catch(_){ return null; }
+  const table = doc.querySelector('table');
+  if(!table) return null;
+  const rows = [];
+  table.querySelectorAll('tr').forEach(tr => {
+    const cells = [...tr.querySelectorAll('td, th')].map(c => (c.textContent || '').replace(/\s+/g, ' ').trim());
+    if(cells.length) rows.push(cells);
+  });
+  return rows.length ? rows : null;
+}
+function _impParseText(text){
+  if(!text) return null;
+  const lines = text.replace(/\r/g, '').split('\n').filter(l => l.length > 0);
+  if(!lines.length) return null;
+  // Tab-separated (Excel) preferred; fall back to 2+ spaces.
+  const rows = lines.map(l => (l.indexOf('\t') !== -1 ? l.split('\t') : l.split(/\s{2,}/)).map(c => c.trim()));
+  return rows.length ? rows : null;
+}
+function _impBuildBlock(rows){
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  rows = rows.slice(0, 200);                                   // safety caps
+  const ncol = Math.min(30, Math.max.apply(null, rows.map(r => r.length)));
+  const pad = r => { const a = r.slice(0, ncol); while(a.length < ncol) a.push(''); return a; };
+  const header = pad(rows[0]);
+  const body = rows.slice(1).map(pad);
+  const thead = '<thead><tr>' + header.map(h => '<th contenteditable="true">' + esc(h) + '</th>').join('') + '</tr></thead>';
+  const tbody = '<tbody>' + (body.length ? body : [pad([''])]).map(r =>
+    '<tr>' + r.map(c => '<td contenteditable="true">' + esc(c) + '</td>').join('') + '</tr>'
+  ).join('') + '</tbody>';
+  const wrap = document.createElement('div');
+  wrap.innerHTML =
+    '<div class="stat-block imp-block">' +
+      '<div class="stat-block-head no-print">' +
+        '<span class="stat-block-title" contenteditable="true" data-placeholder="Table" spellcheck="false">Imported table</span>' +
+        '<button type="button" class="stat-block-remove no-print" onclick="statRemoveBlock(this)" title="Remove this table">✕ Remove table</button>' +
+      '</div>' +
+      '<table class="stat-table imp-table">' + thead + tbody + '</table>' +
+    '</div>';
+  return wrap.firstElementChild;
+}
+function _impInsert(block){
+  const ctx = _impCtx; if(!ctx || !block) return;
+  const parent = ctx.parent || (ctx.sec && ctx.sec.querySelector('.section-body')) || (ctx.row && ctx.row.parentNode);
+  if(!parent) return;
+  const anchor = ctx.row ? ctx.row.nextSibling : null;
+  if(ctx.row) ctx.row.remove();
+  parent.insertBefore(block, anchor);
+  if(ctx.sec && typeof _insertButtonRowAfter === 'function'){ try { _insertButtonRowAfter(block, ctx.sec); } catch(_){} }
+  if(typeof doReflow === 'function' && typeof _anyPageOverflows === 'function' && _anyPageOverflows()){ try { doReflow(); } catch(_){} }
+}
+function _impOnPaste(e){
+  e.preventDefault();
+  const cd = e.clipboardData || window.clipboardData;
+  const html = cd ? cd.getData('text/html') : '';
+  const text = cd ? cd.getData('text/plain') : '';
+  const rows = _impParseHtmlTable(html) || _impParseText(text);
+  if(!rows || !rows.length){
+    alert('No table was found in what you pasted.\n\nIn Excel, select the cell range; in Word, select the whole table — then copy and paste here.');
+    return;
+  }
+  _impInsert(_impBuildBlock(rows));
+  _impClose();
+}
+
 function statAddBlock(fromBtn) {
   if(!fromBtn) return;
   const tmp = document.createElement('div');
@@ -8566,9 +8891,26 @@ function _insertButtonRowBefore(el, sec) {
   newRow.innerHTML = `
     <button class="add-photo-btn pair-add-btn" data-sid="${sid}" onclick="if(!event.target.classList.contains('pair-count-sel'))addPairAfter(this)">&#xFF0B; Add photo pair<select class="pair-count-sel" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" title="Number of pairs to add"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></button>
     <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add table</button>
+    <button class="hc-add-schematic-btn no-print" onclick="impTable(this)" style="margin-left:6px;">&#10515; Import Word/Excel table</button>
     <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box" style="margin-left:auto;">&#43; Add text box</button>`;
   el.parentNode.insertBefore(newRow, el);
   if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
+}
+
+// After removing a content block (table / text box / imported table), the
+// removers below may delete the add-pair-row(s) around it. If that leaves the
+// section with NO add-content row, the "+ More ▾" affordance disappears and the
+// user can't add anything more. This restores one button row at the former
+// position so the controls (incl. "+ More ▾") come back.
+function _ensureSectionButtonRow(sec, afterEl) {
+  if(!sec || typeof _insertButtonRowAfter !== 'function') return;
+  if(sec.querySelector('.add-pair-row')) return;            // a row still exists
+  let ref = (afterEl && afterEl.parentNode) ? afterEl : null;
+  if(!ref){
+    const body = sec.querySelector('.section-body') || sec;
+    ref = body.lastElementChild;
+  }
+  if(ref) _insertButtonRowAfter(ref, sec);
 }
 
 function _insertButtonRowAfter(el, sec) {
@@ -8594,6 +8936,7 @@ function _insertButtonRowAfter(el, sec) {
     ${spareBtn}
     <button class="stat-add-block-btn" onclick="statAddBlock(this)" style="position:absolute;left:50%;transform:translateX(-50%);">＋ Add table</button>
     ${scoreBtn}
+    <button class="hc-add-schematic-btn no-print" onclick="impTable(this)" style="margin-left:6px;">&#10515; Import Word/Excel table</button>
     <button class="bp-upload-btn add-frame-btn" onclick="addInlineFrame(this)" title="Add a text box below" style="margin-left:auto;">&#43; Add text box</button>`;
   el.parentNode.insertBefore(newRow, el.nextSibling);
   if(typeof _collapseButtonRows === 'function') { try { _collapseButtonRows(); } catch(e) {} }
@@ -9417,12 +9760,17 @@ function sparePartAddRow(btn) {
 function statRemoveBlock(fromBtn) {
   const block = fromBtn.closest('.stat-block, .spare-part-block');
   if(!block) return;
-  // Remove button rows immediately before AND after the block
+  const sec = block.closest('.section[data-sid]');
+  // Remember where the block sat so we can put the controls back there.
   const prev = block.previousElementSibling;
   const next = block.nextElementSibling;
+  let afterEl = prev;
+  if(afterEl && afterEl.classList.contains('add-pair-row')) afterEl = afterEl.previousElementSibling;
+  // Remove button rows immediately before AND after the block
   if(next && next.classList.contains('add-pair-row')) next.remove();
   if(prev && prev.classList.contains('add-pair-row')) prev.remove();
   block.remove();
+  _ensureSectionButtonRow(sec, afterEl);   // restore the add-content row (+ "More ▾")
 }
 
 function statAddRow(fromBtn) {
@@ -17405,10 +17753,12 @@ document.addEventListener('change', e => {
         bar.querySelector('[data-act="bold"]').classList.toggle('active', document.queryCommandState('bold'));
         bar.querySelector('[data-act="italic"]').classList.toggle('active', document.queryCommandState('italic'));
         bar.querySelector('[data-act="underline"]').classList.toggle('active', document.queryCommandState('underline'));
-        ['justifyLeft','justifyCenter','justifyRight','justifyFull','insertUnorderedList','insertOrderedList'].forEach(a => {
+        ['justifyLeft','justifyCenter','justifyRight','justifyFull','insertOrderedList'].forEach(a => {
           const b = bar.querySelector('[data-act="' + a + '"]');
           if(b) b.classList.toggle('active', document.queryCommandState(a));
         });
+        const bt = bar.querySelector('.fmt-dd[data-dd="bullet"] .fmt-dd-trigger');
+        if(bt) bt.classList.toggle('active', document.queryCommandState('insertUnorderedList'));
       }catch(e){}
     }
     function closeMenus(){ bar.querySelectorAll('.fmt-dd-menu.open').forEach(m => m.classList.remove('open')); }
@@ -17453,33 +17803,86 @@ document.addEventListener('change', e => {
     // Colour is set as an inline style so it persists with the saved report and
     // prints in the PDF.
     function ribbonCellColor(color){
-      let cells = [];
-      const sel = window.getSelection && window.getSelection();
-      if(sel && sel.rangeCount && !sel.isCollapsed){
-        const range = sel.getRangeAt(0);
-        let anc = range.commonAncestorContainer;
-        if(anc && anc.nodeType === 3) anc = anc.parentNode;
-        const table = anc && anc.closest ? anc.closest('table') : null;
-        if(table){
-          cells = [...table.querySelectorAll('td, th')]
-            .filter(c => { try{ return range.intersectsNode(c); }catch(_){ return false; } });
+      // Marked multi-cell selection (Ctrl/Cmd-click, Shift-click) takes priority.
+      const marked = [...document.querySelectorAll('.cell-sel')];
+      let cells = marked.slice();
+      if(!cells.length){
+        const sel = window.getSelection && window.getSelection();
+        if(sel && sel.rangeCount && !sel.isCollapsed){
+          const range = sel.getRangeAt(0);
+          let anc = range.commonAncestorContainer;
+          if(anc && anc.nodeType === 3) anc = anc.parentNode;
+          const table = anc && anc.closest ? anc.closest('table') : null;
+          if(table){
+            cells = [...table.querySelectorAll('td, th')]
+              .filter(c => { try{ return range.intersectsNode(c); }catch(_){ return false; } });
+          }
         }
       }
       if(!cells.length){
+        const sel2 = window.getSelection && window.getSelection();
         let node = _ctxTargetEl;
-        if(!node && sel && sel.anchorNode) node = sel.anchorNode;
+        if(!node && sel2 && sel2.anchorNode) node = sel2.anchorNode;
         if(node && node.nodeType === 3) node = node.parentElement;
         const cell = node && node.closest ? node.closest('td, th') : null;
         if(cell) cells = [cell];
       }
       if(!cells.length){
-        alert('Click inside a table cell (or select several cells) first, then pick a colour.');
+        alert('Click inside a table cell, or Ctrl/Cmd-click (Shift-click for a range) to select several cells, then pick a colour.');
         return;
       }
       cells.forEach(c => {
         if(color) c.style.background = color;
         else c.style.background = '';
       });
+      // Clear the marks so the result is visible; re-select to apply again.
+      if(marked.length && typeof _clearCellSel === 'function') _clearCellSel();
+    }
+
+    // Find the unordered list (if any) containing the current selection.
+    function _ulFromSelection(){
+      const sel = window.getSelection && window.getSelection();
+      let n = sel && (sel.anchorNode || (sel.rangeCount && sel.getRangeAt(0).startContainer));
+      if(!n) return null;
+      if(n.nodeType === 3) n = n.parentElement;
+      return n && n.closest ? n.closest('.field ul') : null;
+    }
+    // Apply a bullet style (disc / circle / square / dash) or remove the list.
+    // Mirrors the phrase-insert approach that works reliably: resolve the field,
+    // FOCUS it, and ensure the caret/selection is inside it before running the
+    // command — otherwise execCommand has no target and nothing happens.
+    function ribbonBullet(style){
+      let field = _ctxTargetEl && _ctxTargetEl.closest
+        ? (_ctxTargetEl.classList && _ctxTargetEl.classList.contains('field') ? _ctxTargetEl : _ctxTargetEl.closest('.field'))
+        : null;
+      if((!field || !field.isContentEditable) && _ctxSavedRange){
+        let n = _ctxSavedRange.startContainer;
+        if(n && n.nodeType === 3) n = n.parentElement;
+        field = n && n.closest ? n.closest('.field') : null;
+      }
+      if(!field || !field.isContentEditable) return;
+      field.focus();
+      const sel = window.getSelection();
+      if(_ctxSavedRange && field.contains(_ctxSavedRange.startContainer)){
+        sel.removeAllRanges(); sel.addRange(_ctxSavedRange);
+      } else if(!sel.rangeCount || !field.contains(sel.anchorNode)){
+        const range = document.createRange();
+        range.selectNodeContents(field); range.collapse(false);
+        sel.removeAllRanges(); sel.addRange(range);
+      }
+      let ul = _ulFromSelection();
+      if(style === 'none'){
+        if(ul) document.execCommand('insertUnorderedList', false, null); // toggle off
+        return;
+      }
+      if(!ul){
+        document.execCommand('insertUnorderedList', false, null);
+        ul = _ulFromSelection();
+      }
+      if(ul){
+        if(style === 'dash'){ ul.classList.add('bl-dash'); ul.style.listStyleType = 'none'; }
+        else { ul.classList.remove('bl-dash'); ul.style.listStyleType = style; }
+      }
     }
 
     // Track the live selection inside editable fields so the format commands,
@@ -17556,6 +17959,13 @@ document.addEventListener('change', e => {
       }
       const cellCol = e.target.closest('[data-cellcolor]');
       if(cellCol){ ribbonCellColor(cellCol.dataset.cellcolor); closeMenus(); return; }
+      const bulletItem = e.target.closest('[data-bullet]');
+      if(bulletItem){
+        const field = activeField();
+        if(field){ try{ _ctxTargetEl = field; }catch(_){} }
+        ribbonBullet(bulletItem.dataset.bullet);
+        updateActive(); closeMenus(); return;
+      }
       const tblItem = e.target.closest('[data-tbl]');
       if(tblItem){ ribbonTableAction(tblItem.dataset.tbl); closeMenus(); return; }
       const trig = e.target.closest('.fmt-dd-trigger');
