@@ -2874,6 +2874,17 @@
     padding-left: 18px;
     padding-right: 18px;
   }
+  /* The format ribbon stays visible in compare mode, pinned just under the
+     toolbar, so the editing tools are available while editing side-by-side. */
+  body.compare-mode .fmt-bar {
+    position: fixed;
+    top: var(--fmt-bar-top, 48px);
+    left: 0; right: 0;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 199;
+    margin: 0;
+  }
   /* Compare panel starts below the toolbar */
   body.compare-mode #compareWrap {
     top: var(--toolbar-h, 48px);
@@ -3264,7 +3275,11 @@
         </div>
       </div>
       <div class="ch-modal-foot">
-        <span class="ch-status" id="chStatus"></span>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="ch-status" id="chStatus"></span>
+          <button id="chSettingsExportBtn" onclick="exportUserSettings()" oncontextmenu="setDesignatedFolder('userSettings'); return false;" title="Export the chapter &amp; subchapter structure to a file (right-click: set a fixed folder)" style="background:#fff;border:1px solid var(--line-soft);border-radius:4px;padding:5px 11px;font-size:8.5pt;font-family:inherit;color:var(--navy);cursor:pointer;">&#10515; Export user settings</button>
+          <button id="chSettingsImportBtn" onclick="importUserSettings()" oncontextmenu="setDesignatedFolder('userSettings'); return false;" title="Import a saved chapter &amp; subchapter structure (right-click: set a fixed folder)" style="background:#fff;border:1px solid var(--line-soft);border-radius:4px;padding:5px 11px;font-size:8.5pt;font-family:inherit;color:var(--navy);cursor:pointer;">&#10514; Import user settings</button>
+        </div>
         <button class="ch-execute" onclick="executeChapters()">&#9654;&nbsp; Apply &amp; Rebuild report</button>
       </div>
     </div>
@@ -3531,7 +3546,7 @@ function buildSchematicBlockHTML() {
        <div class="hc-schematic">
          <div class="hc-schematic-head no-print">
            <span class="hc-schematic-label">Schematic &amp; legend</span>
-           <button type="button" onclick="hcClearGrid(this)" style="background:#fff;color:#c0392b;border:1px solid #c0392b;border-radius:4px;padding:2px 9px;font-size:8pt;cursor:pointer;font-family:inherit;" title="Remove all rows, cells and legend entries">✕ Clear all</button>
+           <button type="button" onclick="hcClearGrid(this)" style="background:#fff;color:#c0392b;border:1px solid #c0392b;border-radius:4px;padding:2px 9px;font-size:8pt;cursor:pointer;font-family:inherit;" title="Remove the entire schematic & legend — click twice to confirm">✕ Clear all</button>
            <button type="button" class="hc-schematic-remove" onclick="hcRemoveSchematic(this)" title="Hide this schematic from the report (keeps the data)">✕ Hide schematic</button>
          </div>
          <div class="label" style="margin-top:1mm">Schematic (top view):</div>
@@ -11272,16 +11287,37 @@ function hcResetGrid(fromBtn) {
 // scratch. Different from hcResetGrid (which reloads the canned
 // default). Legend is preserved — only the grid is cleared.
 function hcClearGrid(fromBtn) {
-  if(!confirm('Clear all rows, cells and legend entries from this schematic?')) return;
-  const grid = _hcFindGrid(fromBtn);
-  if(!grid) return;
-  grid.innerHTML = '';
-  // Also clear the legend — walk up to find the .hc-schematic parent
-  const schematic = fromBtn.closest('.hc-schematic') || grid.closest('.hc-schematic');
-  if(schematic) {
-    const tbody = schematic.querySelector('.hc-legend tbody');
-    if(tbody) tbody.innerHTML = '';
+  const schematic = fromBtn.closest('.hc-schematic');
+  if(!schematic) return;
+  // Two-click confirmation to avoid accidental removal: the first click arms
+  // the button and relabels it; a second click within a few seconds removes
+  // the whole schematic & legend. (It auto-disarms if not confirmed.)
+  if(fromBtn.dataset.armed !== '1') {
+    fromBtn.dataset.armed = '1';
+    fromBtn.dataset.origLabel = fromBtn.innerHTML;
+    fromBtn.innerHTML = '✕ Click again to remove';
+    fromBtn.style.background = '#c0392b';
+    fromBtn.style.color = '#fff';
+    clearTimeout(fromBtn._armTimer);
+    fromBtn._armTimer = setTimeout(() => {
+      fromBtn.dataset.armed = '';
+      fromBtn.innerHTML = fromBtn.dataset.origLabel || '✕ Clear all';
+      fromBtn.style.background = '#fff';
+      fromBtn.style.color = '#c0392b';
+    }, 3000);
+    return;
   }
+  clearTimeout(fromBtn._armTimer);
+  const sec = schematic.closest('.section');
+  schematic.remove();
+  // Let this section offer "Add schematic" again in the right-click Insert menu
+  // (it was marked single-use while a schematic existed). The button itself
+  // stays visually hidden; clearing the inline 'none' just re-lists it.
+  if(sec) {
+    const addBtn = sec.querySelector('.hc-add-schematic-btn[onclick*="hcAddSchematic"]');
+    if(addBtn) addBtn.style.display = '';
+  }
+  if(typeof doReflow === 'function') doReflow();
 }
 
 // Walk all existing rows once at boot so the delete handles get attached
@@ -15907,7 +15943,8 @@ const _DF_BTNS = {
   saveAs:       { btn: 'dfSaveAsBtn', label: 'Save report',                        base: 'Save report \u2014 choose where to save the file' },
   mobileImport: { btn: 'dfImportBtn', label: 'Mobile import',                      base: 'Import photos from the mobile app' },
   mobileExport: { btn: 'dfExportBtn', label: 'Mobile export',                      base: 'Export the chapter list for the mobile app' },
-  customer:     { btn: 'dfCustBtn',   label: 'Customer file',                      base: 'Export a view-only HTML report' }
+  customer:     { btn: 'dfCustBtn',   label: 'Customer file',                      base: 'Export a view-only HTML report' },
+  userSettings: { btn: 'chSettingsExportBtn', label: 'User settings folder',        base: 'Export the chapter & subchapter structure' }
 };
 
 function _dfOpenDB() {
@@ -16086,6 +16123,133 @@ function exportChapterStructure() {
     }
     _download();
   })();
+}
+
+// ── Export / import "user settings" (chapter & subchapter structure) ──
+// Lets a user arrange chapters, subchapters, vessel type and report type once,
+// save them to a file, and reload that arrangement into another report later.
+// It stores the structure only (not the photos/text), and the file is saved the
+// same way reports are: to a fixed folder if one is set (right-click the
+// button), otherwise a Save-As dialog, otherwise a normal download.
+function _dfSaveBlob(blob, fileName, dfKey, desc) {
+  const _download = () => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  };
+  (async () => {
+    try {
+      const dir = dfKey ? await _dfGet(dfKey, true) : null;
+      if(dir) {
+        const fh = await dir.getFileHandle(fileName, { create: true });
+        const w = await fh.createWritable(); await w.write(blob); await w.close();
+        return;
+      }
+    } catch(e) { console.warn('Designated-folder save failed, falling back:', e); }
+    if(window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [{ description: desc || 'JSON', accept: { 'application/json': ['.json'] } }]
+        });
+        const writable = await handle.createWritable(); await writable.write(blob); await writable.close();
+        return;
+      } catch(err) { if(err && err.name === 'AbortError') return; }
+    }
+    _download();
+  })();
+}
+function exportUserSettings() {
+  const reportType = document.getElementById('subjectType') ? document.getElementById('subjectType').value : 'daily';
+  const vesselType = (typeof _vesselType !== 'undefined') ? _vesselType : 'container';
+  const settings = {
+    type: 'hc-user-settings',
+    version: 1,
+    createdAt: new Date().toISOString(),
+    vesselType: vesselType,
+    reportType: reportType,
+    chapters: (typeof chapterState !== 'undefined' ? chapterState : []).map(ch => ({
+      id: ch.id,
+      title: ch.title,
+      enabled: ch.enabled !== false,
+      hasFindings: ch.hasFindings,
+      subchapters: Array.isArray(ch.subchapters)
+        ? ch.subchapters.map(s => (typeof s === 'string' ? s : (s && s.name) || '')).filter(Boolean)
+        : []
+    }))
+  };
+  // Auto filename, mirroring the report's pattern: date + report type + vessel.
+  const _rtl = { initial:'Initial', daily:'Daily', final:'Final', predocking:'Predocking', intermediate:'Control', special:'Special' };
+  const d = new Date(), pad = n => String(n).padStart(2, '0');
+  const datePart = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  const fileName = datePart + '_HC_' + (_rtl[reportType] || 'Daily') + '_'
+    + (vesselType === 'bulk' ? 'Bulk' : 'Container') + '_chapters.json';
+  const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+  _dfSaveBlob(blob, fileName, 'userSettings', 'HC user settings');
+}
+function _pickFileText() {
+  return new Promise(resolve => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = () => {
+      const f = inp.files && inp.files[0];
+      if(!f) { resolve(null); return; }
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result || ''));
+      r.onerror = () => resolve(null);
+      r.readAsText(f);
+    };
+    inp.click();
+  });
+}
+async function importUserSettings() {
+  let text = null;
+  if(window.showOpenFilePicker) {
+    try {
+      const opts = { types: [{ description: 'HC user settings', accept: { 'application/json': ['.json'] } }], multiple: false };
+      try { const dir = await _dfGet('userSettings', false); if(dir) opts.startIn = dir; } catch(e){}
+      const [handle] = await window.showOpenFilePicker(opts);
+      const file = await handle.getFile();
+      text = await file.text();
+    } catch(err) { if(err && err.name === 'AbortError') return; }
+  }
+  if(text === null) { text = await _pickFileText(); if(text === null) return; }
+  let data;
+  try { data = JSON.parse(text); } catch(e) { alert('That file could not be read.'); return; }
+  if(!data || (data.type !== 'hc-user-settings' && !Array.isArray(data.chapters))) {
+    alert('That file is not a saved user-settings file.'); return;
+  }
+  if(!confirm('Import this chapter structure?\n\nIt replaces the current chapter and subchapter arrangement, vessel type and report type. Your photo and text content is not changed.')) return;
+  _applyUserSettings(data);
+}
+function _applyUserSettings(data) {
+  try {
+    if(data.vesselType && typeof _vesselType !== 'undefined') {
+      _vesselType = (data.vesselType === 'bulk') ? 'bulk' : 'container';
+      if(typeof _chUpdateVesselButtons === 'function') _chUpdateVesselButtons();
+    }
+    if(data.reportType && typeof setReportType === 'function') setReportType(data.reportType);
+    if(Array.isArray(data.chapters)) {
+      chapterState = data.chapters.map(ch => ({
+        id: ch.id,
+        title: ch.title || ch.id,
+        enabled: ch.enabled !== false,
+        hasFindings: ch.hasFindings,
+        subchapters: Array.isArray(ch.subchapters)
+          ? ch.subchapters.map(s => (typeof s === 'string' ? s : (s && s.name) || '')).filter(Boolean)
+          : []
+      }));
+    }
+    if(typeof _selChapterIdx !== 'undefined') _selChapterIdx = 0;
+    if(typeof renderChapterList === 'function') renderChapterList();
+    if(typeof updateChStatus === 'function') updateChStatus();
+    if(typeof executeChapters === 'function') executeChapters();   // rebuild the report from the imported structure
+  } catch(e) {
+    console.warn('Apply user settings failed:', e);
+    alert('Sorry — those settings could not be applied.');
+  }
 }
 
 // ── Import photos captured with the mobile app ────────────────────────
@@ -17874,7 +18038,12 @@ function openComparePanel() {
   // Measure actual toolbar height — safe now that panel is visible
   const tb = document.querySelector('.toolbar');
   const tbH = tb ? tb.offsetHeight : 48;
-  document.documentElement.style.setProperty('--toolbar-h', tbH + 'px');
+  // Keep the format ribbon visible too: pin it just under the toolbar and push
+  // both panels down so they clear the toolbar + ribbon together.
+  const fb = document.getElementById('fmtBar');
+  const fbH = (fb && fb.offsetHeight > 0) ? fb.offsetHeight : 40;
+  document.documentElement.style.setProperty('--fmt-bar-top', tbH + 'px');
+  document.documentElement.style.setProperty('--toolbar-h', (tbH + fbH) + 'px');
 
   // Measure compare toolbar height — force a layout pass first so the browser
   // has rendered the now-visible wrap before we read offsetHeight.
@@ -17905,7 +18074,26 @@ function openComparePanel() {
   requestAnimationFrame(_applyCompareZoom);
 }
 
+// Pick the element to return to when leaving compare mode: the field being
+// edited if there is one, otherwise the report block nearest the top of the
+// viewport. Used to keep the report at the same spot after the layout reverts.
+function _compareScrollAnchor() {
+  const ae = document.activeElement;
+  if(ae && ae.closest && ae.closest('#pagesRoot') && (ae.isContentEditable || /^(INPUT|TEXTAREA)$/.test(ae.tagName))) return ae;
+  const root = document.getElementById('pagesRoot');
+  if(!root) return null;
+  let best = null, bestDist = Infinity;
+  root.querySelectorAll('.section, .photo-pair, .field, .stat-block, .hc-schematic, .extra-text-box').forEach(el => {
+    const r = el.getBoundingClientRect();
+    if(r.height <= 0 || r.bottom <= 0) return;
+    const d = Math.abs(r.top);
+    if(d < bestDist) { bestDist = d; best = el; }
+  });
+  return best;
+}
+
 function closeComparePanel() {
+  const _returnTo = _compareScrollAnchor();   // remember where the user was editing
   document.getElementById('compareWrap').classList.remove('open');
   document.body.classList.remove('compare-mode');
   document.getElementById('comparePanelBtn').textContent = '⧇ Compare…';
@@ -17920,6 +18108,11 @@ function closeComparePanel() {
       inp.style.display = '';
     });
   }
+  // After the layout reverts from the zoomed half-width compare view, bring the
+  // spot the user was editing back into view so the report doesn't jump.
+  if(_returnTo) requestAnimationFrame(() => requestAnimationFrame(() => {
+    try { _returnTo.scrollIntoView({ block: 'center', inline: 'nearest' }); } catch(e) {}
+  }));
 }
 
 function loadCompareFile(input) {
