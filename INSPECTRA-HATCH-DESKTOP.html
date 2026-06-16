@@ -749,7 +749,7 @@
   .ch-modal {
     background: #fff; border-radius: 14px;
     box-shadow: 0 20px 56px rgba(10,30,70,.4);
-    width: 560px; max-width: 95vw;
+    width: 760px; max-width: 95vw;
     max-height: 88vh;
     display: flex; flex-direction: column;
     overflow: hidden; font-family: "Source Sans 3", Arial, sans-serif;
@@ -781,6 +781,25 @@
   /* Scrollable list */
   .ch-modal-body {
     flex: 1; overflow-y: auto; padding: 8px 0;
+  }
+  /* Two-pane layout: chapters (left) + selected chapter's subchapters (right) */
+  .ch-modal-body.ch-twopane { display: flex; padding: 0; overflow: hidden; align-items: stretch; }
+  .ch-pane { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .ch-pane-left { border-right: 1px solid #e6eaf2; }
+  .ch-pane-title {
+    font-size: 7.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: #9aa3b2; padding: 10px 20px 5px; position: sticky; top: 0; background: #fff; z-index: 2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ch-pane-right #chSubList { padding: 4px 16px 2px; }
+  .ch-pane-right .ch-subadd { margin: 4px 16px 14px; }
+  .ch-sub-empty { padding: 12px 18px; font-size: 8.5pt; color: #aab2c2; line-height: 1.5; }
+  .ch-item.selected { background: #eef2fb; box-shadow: inset 3px 0 0 var(--navy); }
+  .ch-item.selected:hover { background: #e7eef9; }
+  @media (max-width: 740px) {
+    .ch-modal-body.ch-twopane { flex-direction: column; overflow-y: auto; }
+    .ch-pane { flex: none; }
+    .ch-pane-left { border-right: none; border-bottom: 1px solid #e6eaf2; }
   }
 
   /* Each chapter row */
@@ -837,6 +856,40 @@
     cursor: pointer; font-family: inherit; transition: background .12s;
   }
   .ch-add-btn:hover { background: var(--bg-soft); }
+
+  /* ── Subchapter management (nested under each chapter) ───────── */
+  .ch-subblock { list-style: none; margin: 0; padding: 2px 20px 8px 52px; background: #fbfcfe; border-bottom: 1px solid #f2f4f8; }
+  .ch-subitem {
+    display: flex; align-items: center; gap: 9px;
+    padding: 5px 10px; margin: 3px 0;
+    background: #fff; border: 1px solid #eef1f6; border-radius: 5px;
+    cursor: default; user-select: none; transition: background .1s;
+  }
+  .ch-subitem:hover { background: #f6f8fc; }
+  .ch-subitem.dragging { opacity: .4; background: #eef2f8; }
+  .ch-subitem.drag-over { border-top: 2.5px solid var(--navy); background: #eef2fb; }
+  .ch-subdrag { color: #c8d0de; cursor: grab; font-size: 11pt; flex-shrink: 0; line-height: 1; }
+  .ch-subdrag:active { cursor: grabbing; }
+  .ch-subname {
+    flex: 1; outline: none; font-size: 9pt; color: var(--ink-soft);
+    border-bottom: 1.5px solid transparent; padding: 1px 3px; margin: 0 -3px;
+    border-radius: 2px 2px 0 0;
+  }
+  .ch-subname:focus { border-bottom-color: var(--navy); background: #fffbe6; color: var(--ink); }
+  .ch-subdelete {
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid #e2e6ee; background: #fff; color: #c0392b;
+    font-size: 10px; cursor: pointer; line-height: 1; padding: 0;
+  }
+  .ch-subdelete:hover { background: #fdecea; border-color: #e7b9b3; }
+  .ch-subadd {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin: 4px 0 2px; padding: 4px 10px;
+    background: #fff; border: 1.5px dashed #d0d8e8; border-radius: 5px;
+    color: var(--navy); font-size: 8.5pt; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: background .12s;
+  }
+  .ch-subadd:hover { background: var(--bg-soft); }
 
   /* Footer with Execute */
   .ch-modal-foot {
@@ -1471,6 +1524,40 @@
     cursor: pointer; font-family: inherit; margin-bottom: 2mm;
   }
   .subch-trigger:hover { border-color: var(--navy); color: var(--navy); }
+
+  /* Subchapters are now created and arranged in the "Manage chapters" dialog,
+     so the in-report add controls (+ Add subchapter, its dropdown and the
+     custom-name field) are hidden. Named subchapters and their content are
+     unaffected, and "Apply & Rebuild" still creates them. */
+  .subch-trigger,
+  .subch-sel-bar,
+  .subch-custom-wrap { display: none !important; }
+  /* Collapse an empty (unnamed) subchapter widget so it leaves no gap. */
+  .subch-wrap:not(:has(.subch-label-bar[data-name])) { display: none !important; }
+
+  /* Object-insert buttons now live in the right-click "Insert below" menu, so
+     they're hidden in the report — only "Add photo pair" stays a button. The
+     buttons remain in the DOM (hidden); the menu triggers them by clicking
+     them, so hiding them changes nothing functionally. Targeted by the handler
+     they call, so the photo-pair button (addPairs) is never affected. */
+  .section[data-sid] button[onclick*="statAddBlock"],
+  .section[data-sid] button[onclick*="matAddBlock"],
+  .section[data-sid] button[onclick*="wsAddTable"],
+  .section[data-sid] button[onclick*="hcAddSchematic"],
+  .section[data-sid] button[onclick*="sparePartAddBlock"],
+  .section[data-sid] button[onclick*="addScoreTable"],
+  .section[data-sid] button[onclick*="condAddPanel"],
+  .section[data-sid] button[onclick*="sketchAddFrame"],
+  .section[data-sid] button[onclick*="hcLegendAdd"],
+  .section[data-sid] button[onclick*="addInlineFrame"],
+  .section[data-sid] button[onclick*="impTable"] {
+    display: none !important;
+  }
+  /* The "＋ More ▾" dropdown on the right of each photo-pair row held those same
+     insert buttons in a popover — now redundant with the right-click menu.
+     Hidden too; the buttons inside stay in the DOM for the menu to trigger. */
+  .section[data-sid] .br-more-wrap,
+  .section[data-sid] .br-more-toggle { display: none !important; }
   .subch-sel-bar { display: none; align-items: center; gap: 6px; margin-bottom: 2mm; }
   .subch-select {
     flex: 1; height: 28px; font-size: 8.5pt;
@@ -1912,6 +1999,10 @@
     font-size: 9.5pt;
     display: none;
     user-select: none;
+    /* Never run taller than the screen — scroll instead of clipping off-screen */
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   .ctx-menu.open { display: block; }
 
@@ -3146,9 +3237,17 @@
         <span>&#8597; Drag &#x22EF; handle to reorder</span>
         <span>&#9998; Click name to rename</span>
       </div>
-      <div class="ch-modal-body">
-        <ul class="ch-list" id="chList"></ul>
-        <button class="ch-add-btn" onclick="addChapter()">＋ Add chapter</button>
+      <div class="ch-modal-body ch-twopane">
+        <div class="ch-pane ch-pane-left">
+          <div class="ch-pane-title">Chapters</div>
+          <ul class="ch-list" id="chList"></ul>
+          <button class="ch-add-btn" onclick="addChapter()">＋ Add chapter</button>
+        </div>
+        <div class="ch-pane ch-pane-right">
+          <div class="ch-pane-title" id="chSubTitle">Subchapters</div>
+          <div id="chSubList"></div>
+          <button class="ch-subadd" id="chSubAddBtn" onclick="addSubchapterToSelected()">＋ Add subchapter</button>
+        </div>
       </div>
       <div class="ch-modal-foot">
         <span class="ch-status" id="chStatus"></span>
@@ -3842,6 +3941,40 @@ function _detachGaugeFromLabelBar(labelBar) {
 
 // Build and wire the subchapter widget that sits above a text box.
 // Returns a <div class="subch-wrap"> element.
+// Every subchapter should be followed by its own Comments box. Full-unit
+// subchapters (.extra-text-box) already include one; bare subchapters created
+// from the top "+ Add subchapter" trigger did not. This inserts a Comments box
+// directly after a bare subchapter's widget (after its gauge) if one isn't there
+// yet, and returns it. No-op for full-unit subchapters and for unnamed triggers.
+function _ensureSubchCommentBox(wrap) {
+  if(!wrap || !wrap.classList || !wrap.classList.contains('subch-wrap')) return null;
+  if(wrap.closest('.extra-text-box')) return null;        // full unit already has one
+  const next = wrap.nextElementSibling;
+  if(next && next.classList && next.classList.contains('subch-comment-box')) return next;
+
+  const box = document.createElement('div');
+  box.className = 'subch-comment-box';
+  box.style.cssText = 'margin-top:1.5mm;position:relative;';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'label';
+  lbl.textContent = 'Comments:';
+
+  const field = document.createElement('div');
+  field.className = 'field';
+  field.contentEditable = 'true';
+  // Unique storage role so each box keeps its own text across reflows.
+  field.dataset.fieldRole = 'extra_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  field.dataset.placeholder = 'Enter comments…';
+  field.setAttribute('lang', 'en-US');
+  field.setAttribute('spellcheck', 'false');
+
+  box.appendChild(lbl);
+  box.appendChild(field);
+  if(wrap.parentNode) wrap.parentNode.insertBefore(box, wrap.nextSibling);
+  return box;
+}
+
 function _buildSubchWidget(sid) {
   const opts = _subchOpts(sid);
   const wrap = document.createElement('div');
@@ -3913,17 +4046,18 @@ function _buildSubchWidget(sid) {
     const sec = wrap.closest('.section[data-sid]');
     const body = sec ? (sec.querySelector('.section-body') || sec) : wrap.parentNode;
     _renumberSubchapters(body);
+    // Every subchapter gets its own Comments box right after its widget.
+    const _cbox = (typeof _ensureSubchCommentBox === 'function') ? _ensureSubchCommentBox(wrap) : null;
     // Give the new subchapter one default photo pair (matching the chapter's
     // own default), so every subchapter starts with the same photo frames.
     // The pair must appear UNDER the subchapter's comments textbox: if this
     // subchapter widget lives inside an .extra-text-box (the per-subchapter
     // comments box), anchor the pair AFTER that whole box; otherwise after the
-    // subchapter wrap itself. Only when freshly created (no pair there yet).
+    // subchapter's own comments box (or the wrap itself as a fallback).
     try {
       if(sec) {
-        // The element after which the pair should be inserted: the text box if
-        // the subchapter has one, else the subchapter wrap.
-        const anchorEl = wrap.closest('.extra-text-box') || wrap;
+        // The element after which the pair should be inserted.
+        const anchorEl = wrap.closest('.extra-text-box') || _cbox || wrap;
         // Already a photo-pair right after the anchor (before the next
         // subchapter / text box)? If so, don't add another.
         let scan = anchorEl.nextElementSibling, hasPair = false, addRow = null;
@@ -3961,6 +4095,10 @@ function _buildSubchWidget(sid) {
     const unit = labelBar.closest('.extra-text-box');
     if(unit) { _removeSubchapterUnit(labelBar); return; }
     _detachGaugeFromLabelBar(labelBar);
+    // Remove the subchapter's own Comments box (added on confirm) so it isn't
+    // left orphaned when the subchapter reverts to the "+ Add subchapter" trigger.
+    const _cb = wrap.nextElementSibling;
+    if(_cb && _cb.classList && _cb.classList.contains('subch-comment-box')) _cb.remove();
     delete labelBar.dataset.name;
     labelBar.style.display = 'none';
     labelEl.textContent = '';
@@ -4050,6 +4188,7 @@ function _wireRestoredSubchWidgets(root) {
       const s = wrap.closest('.section[data-sid]');
       const body = s ? (s.querySelector('.section-body') || s) : wrap.parentNode;
       _renumberSubchapters(body);
+      if(typeof _ensureSubchCommentBox === 'function') _ensureSubchCommentBox(wrap);
     }
 
     if (trigger) trigger.onclick = function() { trigger.style.display = 'none'; if(selBar) selBar.style.display = 'flex'; if(sel) sel.focus(); };
@@ -4058,6 +4197,8 @@ function _wireRestoredSubchWidgets(root) {
       const unit = labelBar.closest('.extra-text-box');
       if(unit) { _removeSubchapterUnit(labelBar); return; }
       _detachGaugeFromLabelBar(labelBar);
+      const _cb = wrap.nextElementSibling;
+      if(_cb && _cb.classList && _cb.classList.contains('subch-comment-box')) _cb.remove();
       delete labelBar.dataset.name;
       labelBar.style.display = 'none';
       if(labelEl) labelEl.textContent = '';
@@ -4086,6 +4227,11 @@ function _wireRestoredSubchWidgets(root) {
       if(customWrap) customWrap.style.display = 'none';
       const body2 = (wrap.closest('.section[data-sid]') || {querySelector:()=>null}).querySelector && (wrap.closest('.section[data-sid]').querySelector('.section-body') || wrap.closest('.section[data-sid]'));
       if(body2) _renumberSubchapters(body2);
+      // Older reports saved bare subchapters without a Comments box — give them
+      // one now so every subchapter consistently has its comment field.
+      if(!wrap.closest('.extra-text-box') && typeof _ensureSubchCommentBox === 'function') {
+        _ensureSubchCommentBox(wrap);
+      }
     }
     // Ensure toggle button exists in label bar
     if(labelBar && !labelBar.querySelector('.subch-gauge-toggle')) {
@@ -5005,6 +5151,10 @@ let _reflowing = false; // true while doReflow is rebuilding/restoring focus; a
                         // reflow (an endless loop that froze scrolling when a
                         // pasted field was too tall to fit a page).
 let _reflowingGuardTimer = null; // safety net so _reflowing never sticks on
+// Set true on a real content edit (typing/paste) and consumed by doReflow.
+// A plain click moves focus but changes no content, so it must NOT trigger a
+// full re-pagination — that was the whole-report "blink" on every cell click.
+let _contentDirty = false;
 // Cheap check: does any chapter's content extend past its page's printable
 // bottom? Used to skip a full reflow (and its visible "blink") when typing
 // hasn't actually pushed anything off the page yet.
@@ -5032,6 +5182,7 @@ function doReflow() {
   requestAnimationFrame(() => {
     _rfPending = false;
     _reflowing = true;
+    _contentDirty = false; // this reflow accounts for all edits up to now
     // Safety net: if the rebuild below ever throws before the normal clear runs,
     // make sure the guard still releases so reflow isn't disabled for good. The
     // normal clear (next tick after the rebuild) fires almost immediately; this
@@ -5641,17 +5792,24 @@ function bindPhoto(el) {
     if(!f.type.startsWith('image')) return;
     loadImgInto(el,f);
   });
-  // Add draw button to photo
-  if(!el.querySelector('.photo-draw-btn')) {
-    const drawBtn = document.createElement('button');
+  // Add the draw button, or re-bind a restored one. On load the button comes
+  // back in the saved HTML but its click handler does not (event listeners are
+  // not serialized), so bind by a marker rather than by the button's presence —
+  // otherwise restored photos get a dead "Draw on photo" button.
+  let drawBtn = el.querySelector('.photo-draw-btn');
+  if(!drawBtn) {
+    drawBtn = document.createElement('button');
     drawBtn.className = 'photo-draw-btn no-print';
     drawBtn.innerHTML = '✏';
     drawBtn.title = 'Draw on photo';
+    el.appendChild(drawBtn);
+  }
+  if(!drawBtn._drawBound) {
+    drawBtn._drawBound = true;
     drawBtn.addEventListener('click', e => {
       e.stopPropagation();
       activatePhotoDraw(el);
     });
-    el.appendChild(drawBtn);
   }
   // Create SVG overlay
   if(!el.querySelector('.photo-draw-svg')) {
@@ -7022,6 +7180,7 @@ document.addEventListener('input', e => {
   const t = e.target;
   if(!t.isContentEditable) return;
   const sec = t.closest('.section[data-sid]');
+  if(sec) _contentDirty = true; // a real edit happened — a later reflow is justified
 
   if(sec && t.classList.contains('field') && !t.dataset.contOf) {
     // Save text, then schedule a debounced reflow so a growing field re-paginates
@@ -7073,7 +7232,7 @@ document.addEventListener('focusout', e => {
   clearTimeout(_inputTimer);
   // Defer one tick so focus settles on the next element first; doReflow then
   // preserves whatever ends up focused.
-  setTimeout(() => { if(_reflowing) return; if(_anyPageOverflows()) doReflow(); }, 0);
+  setTimeout(() => { if(_reflowing) return; if(_contentDirty && _anyPageOverflows()) doReflow(); }, 0);
 });
 
 // ── Multi-cell selection in tables ────────────────────────────
@@ -7165,8 +7324,23 @@ document.addEventListener('paste', e => {
     sel.removeAllRanges();
     sel.addRange(range);
   }
-  // Fire input so the field's own save + debounced reflow logic runs.
-  t.dispatchEvent(new Event('input', { bubbles: true }));
+  // Persist immediately AND notify the field's own save logic. The raw paste
+  // target can be an inner node (e.g. a formatting <span>) rather than the
+  // .field itself; if we only dispatched 'input' on that node, the save handler
+  // wouldn't recognise it as a field and the stored text would stay stale — and
+  // the next bounds-enforcement / reflow would then rewrite the field from that
+  // stale text, making the pasted text vanish. So resolve to the .field host,
+  // store its current content, and dispatch the event there.
+  const fieldHost = (t.closest && t.closest('.field[contenteditable="true"]')) || t;
+  const _fhSec = fieldHost.closest && fieldHost.closest('.section[data-sid]');
+  if(_fhSec && fieldHost.classList && fieldHost.classList.contains('field') &&
+     !fieldHost.dataset.contOf && typeof setFieldText === 'function') {
+    const _sid = _fhSec.dataset.sid;
+    const _role = fieldHost.dataset.fieldRole ||
+      ('f' + [..._fhSec.querySelectorAll('.field[contenteditable]')].indexOf(fieldHost));
+    setFieldText(_sid, _role, fieldHost.innerHTML);
+  }
+  fieldHost.dispatchEvent(new Event('input', { bubbles: true }));
 }, true);
 
 // ── Right-click context menu for text formatting ──────────────
@@ -7184,7 +7358,130 @@ function ctxRestoreSelection() {
 }
 
 let _ctxTargetEl = null;
+// Single source of truth for placing the context menu near the cursor and
+// keeping it inside the viewport. (Previously this block was duplicated.)
+function _ctxPos(menu, cx, cy){
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let x = cx, y = cy;
+  menu.style.display = 'block';
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  menu.style.display = '';
+  if(x + mw > vw - 8) x = vw - mw - 8;
+  if(y + mh > vh - 8) y = vh - mh - 8;
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+}
+
+// ── Right-click "Insert below" menu ───────────────────────────
+// Objects (tables, schematics, text boxes, …) are added from the same
+// right-click menu that already serves photos. The menu is built from the
+// insert buttons that chapter already has, so it can never offer the wrong
+// object or miss one. Editable text and table cells are left to the browser's
+// native menu (copy/paste/spellcheck), and photos/sketches keep their options.
+
+// Insert-function names whose buttons appear in the menu — everything except
+// the photo-pair button, which stays a button in the report.
+const _INSERT_FN_NAMES = ['statAddBlock','matAddBlock','wsAddTable','hcAddSchematic',
+  'sparePartAddBlock','addScoreTable','condAddPanel','sketchAddFrame','hcLegendAdd',
+  'addInlineFrame','impTable'];
+
+function _collectSectionInsertButtons(sec) {
+  const out = [], seen = new Set();
+  sec.querySelectorAll('button[onclick]').forEach(btn => {
+    const oc = btn.getAttribute('onclick') || '';
+    if(!_INSERT_FN_NAMES.some(n => oc.indexOf(n + '(') !== -1)) return;
+    if(btn.style && btn.style.display === 'none') return;   // app hid it inline (e.g. already added once)
+    const label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
+    if(!label || seen.has(label)) return;
+    seen.add(label);
+    out.push({ label: label, btn: btn });
+  });
+  return out;
+}
+
+// The visible top-level section-body block the click is on or directly below —
+// used as the insert anchor so a new object lands right under where you clicked,
+// even when the click lands in the empty gap beneath a block.
+function _anchorForClick(clientY, secBody) {
+  let best = null;
+  Array.from(secBody.children).forEach(ch => {
+    const r = ch.getBoundingClientRect();
+    if(r.height <= 0) return;                 // skip hidden / zero-height (e.g. hidden buttons)
+    if(r.top - 2 <= clientY) best = ch;       // last block that starts at or above the click
+  });
+  return best;
+}
+
+// Run an existing insert button's handler, then move the newly-created
+// top-level block(s) to sit right after the block the user right-clicked.
+// Row-type adds (e.g. a legend row) create no new top-level block, so nothing
+// moves and they land in their own table — which is correct.
+function _insertAfterAnchor(srcBtn, anchorBlock, secBody) {
+  if(!srcBtn || !secBody) return;
+  const before = new Set(Array.from(secBody.children));
+  try { srcBtn.click(); } catch(e) {}
+  try {
+    const added = Array.from(secBody.children).filter(c => !before.has(c));
+    if(added.length) {
+      // Always reposition: after the clicked block, or at the top if the click
+      // was above everything. (Without this, the object stays wherever the
+      // underlying button inserts it — which was above the photos.)
+      let ref = (anchorBlock && anchorBlock.parentNode === secBody)
+        ? anchorBlock.nextSibling : secBody.firstChild;
+      added.forEach(el => { secBody.insertBefore(el, ref); ref = el.nextSibling; });
+    }
+  } catch(e) {}
+  if(typeof doReflow === 'function') doReflow();
+}
+
+// Other ctx-menu sections — hidden while the Insert menu is showing.
+const _CTX_OTHER_SECTIONS = ['ctxEditingSection','ctxPhraseSection','ctxCaptionSep',
+  'ctxCaptionLabel','ctxCaptionColors','ctxMatSep','ctxMatLabel','ctxMatItems',
+  'ctxWsSep','ctxWsLabel','ctxWsItems','ctxLegendSep','ctxLegendLabel','ctxLegendItems',
+  'ctxStatSep','ctxStatLabel','ctxStatItems','ctxEditingSection2','ctxPhotoSep',
+  'ctxPhotoLabel','ctxPhotoItems','ctxSketchSep','ctxSketchLabel','ctxSketchItems'];
+
+// Returns true (and shows the Insert menu) if the right-click landed on a
+// non-editable spot inside a report chapter; false to let the native menu show.
+function _maybeShowInsertMenu(e) {
+  if(e.target.closest('[contenteditable="true"]')) return false;           // keep native copy/paste
+  if(e.target.closest('button, select, input, textarea, a, .add-pair-row')) return false;
+  const sec = e.target.closest('#pagesRoot .section[data-sid]');
+  if(!sec) return false;
+  const secBody = sec.querySelector('.section-body') || sec;
+  const items = _collectSectionInsertButtons(sec);
+  if(!items.length) return false;
+
+  // Anchor on the block the click is on or directly below; insert after it.
+  const anchor = _anchorForClick(e.clientY, secBody);
+
+  const menu = document.getElementById('ctxMenu');
+  const insSec = document.getElementById('ctxInsertSection');
+  const insItems = document.getElementById('ctxInsertItems');
+  if(!menu || !insSec || !insItems) return false;
+
+  _CTX_OTHER_SECTIONS.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
+  insItems.innerHTML = '';
+  items.forEach(it => {
+    const row = document.createElement('div');
+    row.className = 'ctx-item';
+    row.innerHTML = '<span class="ctx-icon">＋</span> ' + it.label.replace(/^[^A-Za-z0-9]+\s*/, '');
+    row.onclick = function() {
+      menu.classList.remove('open');
+      _insertAfterAnchor(it.btn, anchor, secBody);
+    };
+    insItems.appendChild(row);
+  });
+  insSec.style.display = 'block';
+
+  _ctxPos(menu, e.clientX, e.clientY);
+  menu.classList.add('open');
+  return true;
+}
+
 document.addEventListener('contextmenu', e => {
+  // Reset the "Insert below" section on every open so it never lingers.
+  { const _is = document.getElementById('ctxInsertSection'); if(_is) _is.style.display = 'none'; }
   // Allow draw menu on photos too
   const photo = e.target.closest('.photo, .vessel-large');
   // Accept stats-table cells and legend row cells so their context-menu
@@ -7201,7 +7498,10 @@ document.addEventListener('contextmenu', e => {
   // and captions fall through to the browser's native menu (real copy/paste,
   // spellcheck suggestions). The text-formatting tools now live on the ribbon.
   const target = sketchImg || photo;
-  if(!target) return;
+  if(!target) {
+    if(typeof _maybeShowInsertMenu === 'function' && _maybeShowInsertMenu(e)) e.preventDefault();
+    return;
+  }
 
   // If the right-click landed on or inside an inline-img-wrap (inside a field),
   // store the wrap as the target so "Draw markup" anchors shapes to the image.
@@ -7214,15 +7514,7 @@ document.addEventListener('contextmenu', e => {
     // Show the context menu as normal (fall through to positioning code below)
     const menu = document.getElementById('ctxMenu');
     if(!menu) return;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    let x = e.clientX, y = e.clientY;
-    menu.style.display = 'block';
-    const mw = menu.offsetWidth, mh = menu.offsetHeight;
-    menu.style.display = '';
-    if(x + mw > vw - 8) x = vw - mw - 8;
-    if(y + mh > vh - 8) y = vh - mh - 8;
-    menu.style.left = x + 'px';
-    menu.style.top  = y + 'px';
+    _ctxPos(menu, e.clientX, e.clientY);
     // Hide editing-only sections (no text editing on an image)
     const editing1 = document.getElementById('ctxEditingSection');
     const editing2 = document.getElementById('ctxEditingSection2');
@@ -7278,15 +7570,7 @@ document.addEventListener('contextmenu', e => {
   if(!menu) return;
 
   // Position menu near cursor, keep within viewport
-  const vw = window.innerWidth, vh = window.innerHeight;
-  let x = e.clientX, y = e.clientY;
-  menu.style.display = 'block';
-  const mw = menu.offsetWidth, mh = menu.offsetHeight;
-  menu.style.display = '';
-  if(x + mw > vw - 8) x = vw - mw - 8;
-  if(y + mh > vh - 8) y = vh - mh - 8;
-  menu.style.left = x + 'px';
-  menu.style.top  = y + 'px';
+  _ctxPos(menu, e.clientX, e.clientY);
   menu.classList.add('open');
 
   // Hide editing-only menu sections when the right-clicked target is a
@@ -9237,9 +9521,29 @@ function _insertButtonRowAfter(el, sec) {
 //    • Idempotent: a row already grouped is skipped; nothing is rebuilt on
 //      reflow, so a row the insert logic just created is never consumed.
 //    • Screen-only (no-print); never affects the PDF.
+// Bind a "+ More" toggle's open/close behaviour. Marked with _brBound so it's
+// only attached once, and so restored toggles (whose listeners were lost when
+// the report was saved/loaded as HTML) can be safely re-bound.
+function _bindMoreToggle(toggle, pr) {
+  if(!toggle || toggle._brBound) return;
+  toggle._brBound = true;
+  toggle.addEventListener('click', e => {
+    e.stopPropagation();
+    const pop = toggle.parentNode ? toggle.parentNode.querySelector('.br-more-pop') : null;
+    (pr || document).querySelectorAll('.br-more-pop.open').forEach(p => { if(p !== pop) p.classList.remove('open'); });
+    if(pop) pop.classList.toggle('open');
+  });
+}
+
 function _collapseButtonRows() {
   const pr = document.getElementById('pagesRoot') || document;
   pr.querySelectorAll('.add-pair-row').forEach(row => {
+    // Re-bind any restored "+ More" toggle whose click handler was lost on load
+    // (event listeners aren't part of the saved HTML, so an already-grouped row
+    // coming back from a report file would otherwise have a dead toggle).
+    const restored = row.querySelector('.br-more-toggle');
+    if(restored) _bindMoreToggle(restored, pr);
+
     if(row.dataset.grouped === '1') return;                 // already grouped
     const photoBtn = row.querySelector('.add-photo-btn');
     // Secondary buttons = direct-child buttons that are NOT the photo button.
@@ -9263,18 +9567,13 @@ function _collapseButtonRows() {
     toggle.type = 'button';
     toggle.className = 'br-more-toggle no-print';
     toggle.innerHTML = '&#43; More &#9662;';
-    toggle.addEventListener('click', e => {
-      e.stopPropagation();
-      pr.querySelectorAll('.br-more-pop.open').forEach(p => { if(p !== pop) p.classList.remove('open'); });
-      pop.classList.toggle('open');
-    });
 
     // Wrap toggle + popover so they position together on the right.
     const wrap = document.createElement('div');
     wrap.className = 'br-more-wrap no-print';
     wrap.appendChild(toggle);
     wrap.appendChild(pop);
-
+    _bindMoreToggle(toggle, pr);
     row.style.justifyContent = 'space-between';
     // Belt-and-braces: guarantee the photo button is visible and anchored left,
     // regardless of any stale inline styles from templates/reflow.
@@ -11305,7 +11604,9 @@ document.addEventListener('DOMContentLoaded', () => _attachInlineImgDragAll());
 // The SVG is position:absolute inside the wrap so it moves with the image
 // when the user drags it to a new field position.
 function _attachInlineImgDraw(wrap) {
-  if(wrap.querySelector('.inline-img-draw-btn')) return;   // already wired
+  // (Previously returned early when a draw button was already present. On load
+  // the button comes back in the saved HTML without its click handler, so we no
+  // longer bail — instead each piece below is created-or-rebound idempotently.)
 
   // Resize handles — SE corner, E/W/S edges
   if(!wrap.querySelector('.inline-img-resize-handle')) {
@@ -11342,18 +11643,25 @@ function _attachInlineImgDraw(wrap) {
     });
   }
 
-  // Draw button — sits top-right, left of the ✕ remove button
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'inline-img-draw-btn no-print';
-  btn.textContent = '✏';
-  btn.title = 'Draw on image';
-  btn.addEventListener('mousedown', e => e.stopPropagation());
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    activateInlineImgDraw(wrap);
-  });
-  wrap.appendChild(btn);
+  // Draw button — sits top-right, left of the ✕ remove button. Reuse a restored
+  // one (and re-bind it) rather than appending a duplicate with a dead handler.
+  let btn = wrap.querySelector('.inline-img-draw-btn');
+  if(!btn) {
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'inline-img-draw-btn no-print';
+    btn.textContent = '✏';
+    btn.title = 'Draw on image';
+    wrap.appendChild(btn);
+  }
+  if(!btn._drawBound) {
+    btn._drawBound = true;
+    btn.addEventListener('mousedown', e => e.stopPropagation());
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      activateInlineImgDraw(wrap);
+    });
+  }
 
   // SVG overlay anchored to the wrap
   if(!wrap.querySelector('.inline-img-draw-svg')) {
@@ -12271,6 +12579,7 @@ function ctxToggleSpellcheck() {
 // ── Chapter Manager ──────────────────────────────────────────
 // chapterState: array of {id, title, enabled} in display order
 let chapterState = [];
+let _selChapterIdx = 0; // which chapter's subchapters are shown in the right pane
 
 function openChManager() {
   renderChapterList();
@@ -12330,8 +12639,15 @@ function executeChapters() {
   _rfPending = false;  // Clear any pending debounce
   doReflow();
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    buildTOC();
-    numberChapters();
+    // Sections are now (re)built — create every subchapter defined in the modal
+    // in one pass, then re-paginate so the new subchapters flow across pages.
+    _applyModelSubchapters();
+    _rfPending = false;
+    doReflow();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      buildTOC();
+      numberChapters();
+    }));
   }));
 }
 
@@ -12347,7 +12663,7 @@ function initChapterManager() {
 
 function addChapter() {
   const uid = 'custom_' + Date.now();
-  chapterState.push({ id: uid, title: 'New chapter', enabled: true, hasFindings: true });
+  chapterState.push({ id: uid, title: 'New chapter', enabled: true, hasFindings: true, subchapters: [] });
   // Initialise pair store with one blank pair
   const p = makePairEl();
   bindPairEl(p);
@@ -12371,13 +12687,220 @@ function addChapter() {
   });
 }
 
+// Render the nested subchapter manager for chapter index `i`, appended as a
+// non-draggable <li> right after that chapter's row. Subchapter names live in
+// chapterState[i].subchapters (an array of strings). Add / rename / reorder /
+// delete all mutate that array and re-render — the report itself is only built
+// later, on "Apply & Rebuild", via _applyModelSubchapters().
+// Render the SELECTED chapter's subchapters into the right pane. Names live in
+// chapterState[_selChapterIdx].subchapters (an array of strings). Add / rename /
+// reorder / delete mutate that array; the report itself is built later, on
+// "Apply & Rebuild", via _applyModelSubchapters().
+function renderSubchapterPane() {
+  const listEl  = document.getElementById('chSubList');
+  const titleEl = document.getElementById('chSubTitle');
+  const addBtn  = document.getElementById('chSubAddBtn');
+  if(!listEl) return;
+
+  // Keep the selection in range (chapters may have been deleted/reordered).
+  if(_selChapterIdx < 0) _selChapterIdx = 0;
+  if(_selChapterIdx > chapterState.length - 1) _selChapterIdx = chapterState.length - 1;
+
+  listEl.innerHTML = '';
+  const i = _selChapterIdx;
+  const ch = chapterState[i];
+  if(!ch) {
+    if(titleEl) titleEl.textContent = 'Subchapters';
+    if(addBtn) addBtn.style.display = 'none';
+    return;
+  }
+  if(!Array.isArray(ch.subchapters)) ch.subchapters = [];
+  if(titleEl) titleEl.textContent = 'Subchapters · ' + (ch.title || '');
+  if(addBtn) addBtn.style.display = '';
+
+  if(!ch.subchapters.length) {
+    const empty = document.createElement('div');
+    empty.className = 'ch-sub-empty';
+    empty.textContent = 'No subchapters yet. Add them here — they will all appear under “'
+      + (ch.title || 'this chapter') + '” when you Apply & Rebuild.';
+    listEl.appendChild(empty);
+  }
+
+  ch.subchapters.forEach((subName, j) => {
+    const row = document.createElement('div');
+    row.className = 'ch-subitem';
+    row.draggable = true;
+    row.dataset.sub = j;
+
+    const drag = document.createElement('span');
+    drag.className = 'ch-subdrag';
+    drag.textContent = '⠿';
+    drag.title = 'Drag to reorder subchapter';
+
+    const name = document.createElement('div');
+    name.className = 'ch-subname';
+    name.contentEditable = true;
+    name.textContent = subName;
+    name.title = 'Click to rename subchapter';
+    name.addEventListener('input', () => { chapterState[i].subchapters[j] = name.textContent.trim(); });
+    name.addEventListener('click', e => e.stopPropagation());
+    name.addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); name.blur(); } });
+
+    const del = document.createElement('button');
+    del.className = 'ch-subdelete';
+    del.title = 'Remove this subchapter';
+    del.innerHTML = '&#x2715;';
+    del.onclick = (e) => {
+      e.stopPropagation();
+      chapterState[i].subchapters.splice(j, 1);
+      renderSubchapterPane();
+    };
+
+    row.appendChild(drag);
+    row.appendChild(name);
+    row.appendChild(del);
+
+    // Drag-reorder within the selected chapter only.
+    row.addEventListener('dragstart', e => {
+      e.stopPropagation();
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', 'sub:' + i + ':' + j);
+      requestAnimationFrame(() => row.classList.add('dragging'));
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      listEl.querySelectorAll('.ch-subitem').forEach(el => el.classList.remove('drag-over'));
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = 'move';
+      listEl.querySelectorAll('.ch-subitem').forEach(el => el.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      row.classList.remove('drag-over');
+      const data = e.dataTransfer.getData('text/plain');
+      if(data.indexOf('sub:') !== 0) return;
+      const parts = data.split(':');
+      const fromChap = parseInt(parts[1]), fromIdx = parseInt(parts[2]);
+      if(fromChap !== i) return;
+      const toIdx = j;
+      if(fromIdx === toIdx) return;
+      const arr = chapterState[i].subchapters;
+      const moved = arr.splice(fromIdx, 1)[0];
+      arr.splice(toIdx, 0, moved);
+      renderSubchapterPane();
+    });
+
+    listEl.appendChild(row);
+  });
+}
+
+// Add a subchapter to the currently-selected chapter (right-pane button).
+function addSubchapterToSelected() {
+  const ch = chapterState[_selChapterIdx];
+  if(!ch) return;
+  if(!Array.isArray(ch.subchapters)) ch.subchapters = [];
+  ch.subchapters.push('New subchapter');
+  renderSubchapterPane();
+  requestAnimationFrame(() => {
+    const names = document.querySelectorAll('#chSubList .ch-subname');
+    const last = names[names.length - 1];
+    if(last) {
+      last.focus();
+      const range = document.createRange();
+      range.selectNodeContents(last);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  });
+}
+
+// Select a chapter in the left pane → show its subchapters on the right.
+// Updates the highlight in place (no full rebuild) so an in-progress rename of
+// another chapter isn't interrupted.
+function _selectChapter(i) {
+  _selChapterIdx = i;
+  document.querySelectorAll('#chList .ch-item').forEach((el, idx) =>
+    el.classList.toggle('selected', idx === i));
+  renderSubchapterPane();
+}
+
+// Ensure a subchapter widget has its Comments box AND one default photo pair —
+// the same content confirmSub() adds when a subchapter is created via the
+// in-report trigger. Idempotent: it scans for an existing pair/comment box and
+// won't add a second, so it's safe to call on every Apply & Rebuild.
+function _ensureSubchPhotoPair(wrap) {
+  if(!wrap || !wrap.classList || !wrap.classList.contains('subch-wrap')) return;
+  const sec = wrap.closest('.section[data-sid]');
+  if(!sec) return;
+  try {
+    // Comments box first (also serves as the anchor for the photo pair).
+    const _cbox = (typeof _ensureSubchCommentBox === 'function') ? _ensureSubchCommentBox(wrap) : null;
+    const anchorEl = wrap.closest('.extra-text-box') || _cbox || wrap;
+    // Is there already a photo pair after the anchor (before the next
+    // subchapter / text box)? If so, leave it alone.
+    let scan = anchorEl.nextElementSibling, hasPair = false, addRow = null;
+    while(scan) {
+      if(scan.classList && (scan.classList.contains('subch-wrap') || scan.classList.contains('extra-text-box'))) break;
+      if(scan.classList && (scan.classList.contains('extra-photo-pair-block') || (scan.querySelector && scan.querySelector('.photo-pair')))) { hasPair = true; break; }
+      if(scan.classList && scan.classList.contains('add-pair-row')) { addRow = scan; }
+      scan = scan.nextElementSibling;
+    }
+    if(!hasPair) {
+      let row = anchorEl.nextElementSibling;
+      if(!(row && row.classList && row.classList.contains('add-pair-row'))) {
+        if(typeof _insertButtonRowAfter === 'function') { _insertButtonRowAfter(anchorEl, sec); row = anchorEl.nextElementSibling; }
+      }
+      const btn = (row && row.querySelector) ? row.querySelector('.add-photo-btn')
+                : (addRow && addRow.querySelector ? addRow.querySelector('.add-photo-btn') : null);
+      if(btn && typeof addPairAfter === 'function') addPairAfter(btn);
+    }
+  } catch(e) { /* non-fatal: subchapter still created, just without an auto pair */ }
+}
+
+// On "Apply & Rebuild", create every subchapter defined in the modal at once.
+// Reuses the existing, content-safe mobile-restore path: it only ADDS names
+// that aren't already present in a section, so existing subchapters and their
+// photos/text are never touched or duplicated. Each newly-created subchapter
+// then gets the default Comments box + one photo pair.
+function _applyModelSubchapters() {
+  if(typeof _restoreSubchaptersFromStructure !== 'function') return;
+  const structure = chapterState.map(ch => ({
+    id: ch.id,
+    subchapters: (Array.isArray(ch.subchapters) ? ch.subchapters : [])
+      .map(s => (typeof s === 'string' ? s : (s && s.name) || ''))
+      .map(s => s.trim())
+      .filter(Boolean)
+  })).filter(c => c.subchapters.length);
+  if(!structure.length) return;
+  _restoreSubchaptersFromStructure(structure);
+  // Give every modelled subchapter its default Comments box + one photo pair.
+  structure.forEach(ch => {
+    const sec = document.querySelector('.section[data-sid="' + ch.id + '"]');
+    if(!sec) return;
+    const body = sec.querySelector('.section-body') || sec;
+    const wanted = new Set(ch.subchapters);
+    body.querySelectorAll('.subch-wrap').forEach(wrap => {
+      const lb = wrap.querySelector('.subch-label-bar');
+      const nm = lb && lb.dataset ? (lb.dataset.name || '').trim() : '';
+      if(nm && wanted.has(nm)) _ensureSubchPhotoPair(wrap);
+    });
+  });
+}
+
 function renderChapterList() {
   const list = document.getElementById('chList');
   if(!list) return;
   list.innerHTML = '';
   chapterState.forEach((ch, i) => {
     const li = document.createElement('li');
-    li.className = 'ch-item' + (ch.enabled ? ' enabled' : '');
+    li.className = 'ch-item' + (ch.enabled ? ' enabled' : '') + (i === _selChapterIdx ? ' selected' : '');
     li.dataset.idx = i;
     li.draggable = true;
 
@@ -12420,6 +12943,7 @@ function renderChapterList() {
       numberChapters();
     });
     name.addEventListener('click', e => e.stopPropagation());
+    name.addEventListener('focus', () => _selectChapter(i));
     name.addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); name.blur(); } });
 
     // Delete button
@@ -12442,6 +12966,7 @@ function renderChapterList() {
     li.appendChild(name);
     li.appendChild(del);
     list.appendChild(li);
+    li.addEventListener('click', () => _selectChapter(i));   // show this chapter's subchapters on the right
     updateChStatus();
     // Rebuild TOC to reflect current chapter state (names, order, enabled)
     buildTOC();
@@ -12466,7 +12991,9 @@ function renderChapterList() {
     li.addEventListener('drop', e => {
       e.preventDefault();
       li.classList.remove('drag-over');
-      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const _dragData = e.dataTransfer.getData('text/plain');
+      if(_dragData.indexOf('sub:') === 0) return;   // a subchapter drag — not a chapter move
+      const fromIdx = parseInt(_dragData);
       const toIdx = parseInt(li.dataset.idx);
       if(fromIdx === toIdx) return;
       const moved = chapterState.splice(fromIdx, 1)[0];
@@ -12475,6 +13002,7 @@ function renderChapterList() {
       doReflow();
     });
   });
+  renderSubchapterPane();   // refresh the right pane for the current selection
 }
 
 // Override buildSection to use chapterState titles
@@ -16702,6 +17230,10 @@ window.addEventListener('load', () => {
 
 <!-- Right-click text format context menu -->
 <div class="ctx-menu no-print" id="ctxMenu">
+  <div id="ctxInsertSection" style="display:none;">
+    <div class="ctx-section-label">Insert below</div>
+    <div id="ctxInsertItems"></div>
+  </div>
   <div id="ctxEditingSection">
     <div class="ctx-section-label">Edit</div>
     <div class="ctx-item" onclick="ctxCopy()">
