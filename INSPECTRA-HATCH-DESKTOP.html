@@ -3041,10 +3041,10 @@
 <div class="toolbar">
   <span class="brand" style="font-size:11pt;font-weight:700;letter-spacing:.02em;color:#fff;white-space:nowrap;display:flex;flex-direction:column;line-height:1.2;align-items:center;text-shadow:0 1px 2px rgba(10,25,55,.4);">Löffler International<span style="font-weight:300;font-size:8pt;opacity:.85;letter-spacing:.01em;">reporting experts</span></span>
   <span class="hint" id="pageCount"></span>
-  <button id="saveReportBtn" onclick="saveReport()" title="Save — overwrite the file you're working on (Open or Save As a file first to set it)" style="background:#1a7a4a;color:#fff;border:1px solid #15643d;font-weight:600;">&#128190; Save</button>
-  <button onclick="openComparePanel()" id="comparePanelBtn" title="Open a second report side-by-side for comparison and copy-paste">&#9707; Compare…</button>
   <button onclick="newReport()" title="Start a new empty report">&#128196; New report</button>
+  <button onclick="openComparePanel()" id="comparePanelBtn" title="Open a second report side-by-side for comparison and copy-paste">&#9707; Compare…</button>
   <button id="dfOpenBtn" onclick="openReportJSON()" oncontextmenu="setDesignatedFolder('open'); return false;" title="Open a report — choose a JSON file from disk (right-click: set a fixed folder)">&#128194; Open…</button>
+  <button id="saveReportBtn" onclick="saveReport()" title="Save — overwrite the file you're working on (Open or Save As a file first to set it)" style="background:#1a7a4a;color:#fff;border:1px solid #15643d;font-weight:600;">&#128190; Save</button>
   <button id="dfSaveAsBtn" onclick="saveAsReportJSON()" oncontextmenu="setDesignatedFolder('saveAs'); return false;" title="Save report — choose where to save the file (right-click: set a fixed folder)">&#128190; Save As…</button>
   <button id="dfImportBtn" onclick="importMobilePhotos()" oncontextmenu="setDesignatedFolder('mobileImport'); return false;" title="Import photos from the mobile app (right-click: set a fixed folder)">&#128241; Mobile import</button>
   <button id="dfExportBtn" onclick="exportChapterStructure()" oncontextmenu="setDesignatedFolder('mobileExport'); return false;" title="Export the chapter list for the mobile app (right-click: set a fixed folder)">&#128203; Mobile export</button>
@@ -3153,6 +3153,8 @@
       <button type="button" data-tbl="delCol">Delete column</button>
       <button type="button" data-tbl="sumCol">Sum column</button>
       <button type="button" data-tbl="sumRow">Sum row</button>
+      <button type="button" data-tbl="merge">Merge cells</button>
+      <button type="button" data-tbl="unmerge">Unmerge cells</button>
       <div class="fmt-cc-row">
         <span class="fmt-cc-lbl">Cell background (current cell, or selected cells):</span>
         <span class="fmt-sw" data-cellcolor="#fff3b0" title="Yellow" style="background:#fff3b0"></span>
@@ -3231,6 +3233,18 @@
         <button id="chVtContainer" onclick="switchVesselType('container')" style="padding:4px 14px;font-size:8.5pt;font-family:inherit;border-radius:4px;border:1.5px solid #1f3a68;cursor:pointer;">&#9635; Container</button>
         <button id="chVtBulk"      onclick="switchVesselType('bulk')"      style="padding:4px 14px;font-size:8.5pt;font-family:inherit;border-radius:4px;border:1.5px solid #1f3a68;cursor:pointer;">&#9651; Bulk carrier</button>
         <span id="chVtLabel" style="font-size:7.5pt;color:var(--ink-soft);margin-left:4px;"></span>
+      </div>
+      <!-- Report type -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f0f3f8;border-bottom:1px solid #d0d8e8;">
+        <span style="font-size:8.5pt;color:var(--ink-soft);font-weight:600;">Report type:</span>
+        <select id="chReportType" onchange="setReportType(this.value)" style="font-size:8.5pt;font-family:inherit;border:1.5px solid #1f3a68;border-radius:4px;padding:4px 10px;color:var(--navy);background:#fff;cursor:pointer;outline:none;">
+          <option value="initial">HC's Initial Repair Report</option>
+          <option value="daily">HC's Daily Service Report</option>
+          <option value="final">HC's Final Service Report</option>
+          <option value="predocking">HC's Pre-docking Inspection</option>
+          <option value="intermediate">HC's Control Inspection</option>
+          <option value="special">HC's Special Occasion Inspection</option>
+        </select>
       </div>
       <div class="ch-modal-hint">
         <span>&#9745; Click checkbox to show/hide</span>
@@ -3354,7 +3368,7 @@
       <div class="rpt-cell span2">
         <span class="rpt-key">Betreff / Subject</span>
         <div id="subjectEditRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <select id="subjectType" onchange="updateSubject()" style="font-size:12pt;border:1px solid var(--line-soft);border-radius:3px;padding:2px 6px;color:var(--navy);font-family:inherit;background:var(--bg-soft);cursor:pointer;outline:none;flex-shrink:0;">
+          <select id="subjectType" onchange="updateSubject()" style="font-size:12pt;border:1px solid var(--line-soft);border-radius:3px;padding:2px 6px;color:var(--navy);font-family:inherit;background:var(--bg-soft);cursor:pointer;outline:none;flex-shrink:0;display:none;">
             <option value="initial">HC's Initial Repair Report</option>
             <option value="daily">HC's Daily Service Report</option>
             <option value="final">HC's Final Service Report</option>
@@ -3362,6 +3376,7 @@
             <option value="intermediate">HC's Control Inspection</option>
             <option value="special">HC's Special Occasion Inspection</option>
           </select>
+          <span id="subjectTypeText" style="font-size:12pt;color:var(--navy);font-weight:600;flex-shrink:0;"></span>
           <span style="font-size:12pt;color:var(--ink-soft);">of</span>
           <span style="font-size:12pt;color:var(--ink);">&ldquo;<span id="subjectShipName" data-ph="SHIP NAME" style="font-style:italic;color:#b0b8c8;display:inline-block;"></span>&rdquo;</span>
         </div>
@@ -6309,6 +6324,15 @@ function setSalutationSpan(btn, spanId, prefix) {
   }
 }
 
+// Report type is chosen in the Manage chapters dialog; page two only displays it.
+// We keep #subjectType as the hidden source of truth so all existing logic
+// (titles, footers, chapter rules, subchapter presets, filename) is unchanged.
+function setReportType(val) {
+  const sel = document.getElementById('subjectType');
+  if(sel) sel.value = val;
+  if(typeof updateSubject === 'function') updateSubject();
+}
+
 function updateSubject() {
   const sel    = document.getElementById('subjectType');
   const nameEl = document.getElementById('subjectShipName');
@@ -6316,6 +6340,12 @@ function updateSubject() {
   const ship   = document.querySelector('.ship-name-input')?.textContent?.trim() || '';
   const typeVal   = sel ? sel.value : 'daily';
   const typeLabel = sel ? sel.options[sel.selectedIndex]?.text : "HC's Daily Service Report";
+
+  // Mirror the selected type to the read-only page-two label and the modal selector.
+  const _stt = document.getElementById('subjectTypeText');
+  if(_stt) _stt.textContent = typeLabel;
+  const _crt = document.getElementById('chReportType');
+  if(_crt && _crt.value !== typeVal) _crt.value = typeVal;
 
   // Short label used in page headers, footers, and the browser tab title
   const _shortLabels = { final:'HC Final Report', initial:'HC Initial Report',
@@ -7242,6 +7272,7 @@ document.addEventListener('focusout', e => {
 // it (so normal typing is unaffected). The cell-background swatches in the
 // Table menu then apply to every marked cell. Marks are screen-only.
 let _cellSelAnchor = null;
+let _dragStartCell = null, _dragSelecting = false, _dragTable = null;
 function _clearCellSel(){
   document.querySelectorAll('.cell-sel').forEach(c => c.classList.remove('cell-sel'));
   _cellSelAnchor = null;
@@ -7276,8 +7307,12 @@ document.addEventListener('mousedown', e => {
       });
       return;
     }
-    // Plain click in a cell → clear any marks (and allow normal editing)
+    // Plain click in a cell → clear any marks and arm a possible drag-select.
+    // (Text selection within this one cell still works; dragging across cells
+    // switches to selecting cells.)
     if(document.querySelector('.cell-sel')) _clearCellSel();
+    _dragStartCell = cell;
+    _dragSelecting = false;
     return;
   }
   // Click anywhere else clears the marks — EXCEPT the ribbon/menus, so the user
@@ -7286,6 +7321,161 @@ document.addEventListener('mousedown', e => {
     _clearCellSel();
   }
 });
+
+// Drag across cells to select a rectangular block (Excel-style). Dragging
+// inside a single cell still selects text normally; only crossing into another
+// cell switches to cell-selection and suppresses the text highlight.
+function _selectCellRange(tbl, a, b){
+  const aR=a.closest('tr').rowIndex, aC=a.cellIndex, bR=b.closest('tr').rowIndex, bC=b.cellIndex;
+  const r1=Math.min(aR,bR), r2=Math.max(aR,bR), c1=Math.min(aC,bC), c2=Math.max(aC,bC);
+  tbl.querySelectorAll('.cell-sel').forEach(c => c.classList.remove('cell-sel'));
+  [...tbl.rows].forEach(tr => {
+    if(tr.rowIndex>=r1 && tr.rowIndex<=r2){
+      [...tr.cells].forEach(td => { if(td.cellIndex>=c1 && td.cellIndex<=c2) td.classList.add('cell-sel'); });
+    }
+  });
+}
+document.addEventListener('mousemove', e => {
+  if(!_dragStartCell || (e.buttons & 1) === 0) return;        // only while left button held
+  const tbl = _cellTableOf(_dragStartCell);
+  const cell = e.target && e.target.closest ? e.target.closest('td, th') : null;
+  if(!cell || _cellTableOf(cell) !== tbl) return;
+  if(cell === _dragStartCell && !_dragSelecting) return;      // still in the start cell → text select
+  if(!_dragSelecting){
+    _dragSelecting = true;
+    _cellSelAnchor = _dragStartCell;
+    _dragTable = tbl;
+    tbl.style.userSelect = 'none';                            // stop the blue text highlight while dragging cells
+  }
+  e.preventDefault();
+  const sel = window.getSelection && window.getSelection();
+  if(sel) sel.removeAllRanges();
+  _selectCellRange(tbl, _dragStartCell, cell);
+});
+document.addEventListener('mouseup', () => {
+  if(_dragTable){ _dragTable.style.userSelect = ''; _dragTable = null; }
+  _dragStartCell = null;
+  _dragSelecting = false;
+});
+
+// ── Merge / unmerge selected cells (works on any table) ───────────
+// Builds a logical grid that accounts for existing colspan/rowspan, so it works
+// on a clean rectangular block selected by dragging, Ctrl-click, or Shift-click.
+function _tblBuildGrid(table){
+  const grid = [];
+  [...table.rows].forEach((tr, r) => {
+    if(!grid[r]) grid[r] = [];
+    let c = 0;
+    [...tr.cells].forEach(cell => {
+      while(grid[r][c]) c++;                       // skip positions filled by spans from above
+      const rs = cell.rowSpan || 1, cs = cell.colSpan || 1;
+      for(let dr = 0; dr < rs; dr++){
+        for(let dc = 0; dc < cs; dc++){
+          const rr = r + dr, cc = c + dc;
+          if(!grid[rr]) grid[rr] = [];
+          grid[rr][cc] = { cell, anchorR: r, anchorC: c };
+        }
+      }
+      c += cs;
+    });
+  });
+  return grid;
+}
+function _mergeSelectedCells(){
+  const sel = [...document.querySelectorAll('.cell-sel')];
+  if(sel.length < 2){ alert('Select two or more cells first (drag across them, or Ctrl/Shift-click), then choose Merge cells.'); return; }
+  const table = sel[0].closest('table');
+  if(!table || sel.some(c => c.closest('table') !== table)){ alert('Select cells within a single table to merge.'); return; }
+  const grid = _tblBuildGrid(table);
+  const selSet = new Set(sel);
+  let r1 = Infinity, r2 = -Infinity, c1 = Infinity, c2 = -Infinity;
+  for(let r = 0; r < grid.length; r++){
+    const row = grid[r] || [];
+    for(let c = 0; c < row.length; c++){
+      if(row[c] && selSet.has(row[c].cell)){
+        if(r < r1) r1 = r; if(r > r2) r2 = r; if(c < c1) c1 = c; if(c > c2) c2 = c;
+      }
+    }
+  }
+  if(r1 === Infinity) return;
+  // The selection must be a solid rectangle with no foreign cell poking in.
+  for(let r = r1; r <= r2; r++){
+    for(let c = c1; c <= c2; c++){
+      const g = grid[r] && grid[r][c];
+      if(!g || !selSet.has(g.cell)){ alert('Please select a full rectangle of cells to merge.'); return; }
+    }
+  }
+  const anchor = grid[r1][c1].cell;
+  const others = new Set();
+  for(let r = r1; r <= r2; r++) for(let c = c1; c <= c2; c++){
+    const cell = grid[r][c].cell; if(cell !== anchor) others.add(cell);
+  }
+  others.forEach(cell => {
+    const t = (cell.textContent || '').trim();
+    if(t){ if((anchor.textContent || '').trim()) anchor.appendChild(document.createElement('br')); anchor.appendChild(document.createTextNode(t)); }
+  });
+  anchor.colSpan = c2 - c1 + 1;
+  anchor.rowSpan = r2 - r1 + 1;
+  others.forEach(cell => cell.remove());
+  _clearCellSel();
+  anchor.classList.add('cell-sel');
+  _cellSelAnchor = anchor;
+  if(typeof doReflow === 'function') doReflow();
+}
+function _tblColTemplate(grid, cc, exclude){
+  for(let rr = 0; rr < grid.length; rr++){
+    const g = grid[rr] && grid[rr][cc];
+    if(g && g.cell !== exclude && g.anchorC === cc) return g.cell;
+  }
+  return null;
+}
+function _unmergeOne(cell){
+  const table = cell.closest('table'); if(!table) return;
+  const grid = _tblBuildGrid(table);
+  let r = -1, c = -1;
+  outer: for(let rr = 0; rr < grid.length; rr++){
+    const row = grid[rr] || [];
+    for(let cc = 0; cc < row.length; cc++){
+      const g = row[cc];
+      if(g && g.cell === cell && g.anchorR === rr && g.anchorC === cc){ r = rr; c = cc; break outer; }
+    }
+  }
+  if(r < 0) return;
+  const rs = cell.rowSpan || 1, cs = cell.colSpan || 1;
+  if(rs <= 1 && cs <= 1) return;
+  cell.rowSpan = 1; cell.colSpan = 1;
+  for(let rr = r; rr < r + rs; rr++){
+    for(let cc = c; cc < c + cs; cc++){
+      if(rr === r && cc === c) continue;
+      const tr = table.rows[rr]; if(!tr) continue;
+      const tpl = _tblColTemplate(grid, cc, cell) || cell;
+      const nu = tpl.cloneNode(false);
+      nu.removeAttribute('colspan'); nu.removeAttribute('rowspan');
+      nu.classList.remove('cell-sel');
+      nu.innerHTML = '';
+      // Insert before the first original cell to the right of column cc.
+      const rowMap = grid[rr] || [];
+      let ref = null;
+      for(let x = cc + 1; x < rowMap.length; x++){
+        const g = rowMap[x];
+        if(g && g.cell.parentElement === tr && g.anchorR === rr && g.anchorC === x){ ref = g.cell; break; }
+      }
+      tr.insertBefore(nu, ref);
+    }
+  }
+}
+function _unmergeSelectedCells(){
+  let targets = [...document.querySelectorAll('.cell-sel')].filter(c => (c.rowSpan || 1) > 1 || (c.colSpan || 1) > 1);
+  if(!targets.length){
+    const node = _ctxTargetEl;
+    const cell = node && node.closest ? node.closest('td, th') : null;
+    if(cell && ((cell.rowSpan || 1) > 1 || (cell.colSpan || 1) > 1)) targets = [cell];
+  }
+  if(!targets.length){ alert('Select a merged cell (one that spans several cells) to unmerge.'); return; }
+  targets.forEach(_unmergeOne);
+  _clearCellSel();
+  if(typeof doReflow === 'function') doReflow();
+}
 
 
 // ── Paste sanitizer ───────────────────────────────────────────
@@ -7399,6 +7589,27 @@ function _collectSectionInsertButtons(sec) {
   return out;
 }
 
+// Forbid inserting in the protected gaps: between a chapter heading and its
+// first comment box / subchapter, and between a subchapter and its own comment
+// box. We nudge the anchor forward past any leading label or subchapter
+// label-widget, so a new object always lands AFTER the comment box — never
+// between a heading/subchapter and the text that belongs to it.
+function _safeAnchor(anchor, secBody) {
+  const isLabelish = el => !!(el && el.classList &&
+    (el.classList.contains('label') || el.classList.contains('subch-wrap')));
+  let a = anchor;
+  if(!a) {
+    // Click was above all content (on/near the heading): start at the first
+    // visible block so the loop skips the whole leading comment/subchapter unit.
+    a = Array.from(secBody.children).find(k => k.getBoundingClientRect().height > 0) || null;
+  }
+  let guard = 0;
+  while(a && isLabelish(a) && a.nextElementSibling && guard++ < 30) {
+    a = a.nextElementSibling;
+  }
+  return a;
+}
+
 // The visible top-level section-body block the click is on or directly below —
 // used as the insert anchor so a new object lands right under where you clicked,
 // even when the click lands in the empty gap beneath a block.
@@ -7453,7 +7664,7 @@ function _maybeShowInsertMenu(e) {
   if(!items.length) return false;
 
   // Anchor on the block the click is on or directly below; insert after it.
-  const anchor = _anchorForClick(e.clientY, secBody);
+  const anchor = _safeAnchor(_anchorForClick(e.clientY, secBody), secBody);
 
   const menu = document.getElementById('ctxMenu');
   const insSec = document.getElementById('ctxInsertSection');
@@ -12552,11 +12763,11 @@ function dmSyncBericht() {
 // prose text areas. On by default so misspelled English words are flagged as
 // you type, without having to turn anything on. The underlines are screen-only
 // — browsers never print them, so the PDF is unaffected.
-let _spellOn = true;
+let _spellOn = false;
 function _applySpellcheck() {
   // Apply to the prose areas (comment / findings / subchapter text boxes and
   // photo captions) — not table cells, which hold codes and numbers.
-  document.querySelectorAll('.field, .caption, .joined-caption, .vessel-caption-bar').forEach(el => {
+  document.querySelectorAll('.field, .caption, .joined-caption, .vessel-caption-bar, [data-field-role]').forEach(el => {
     el.setAttribute('spellcheck', _spellOn ? 'true' : 'false');
     el.setAttribute('lang', 'en-US');
   });
@@ -12585,6 +12796,8 @@ function openChManager() {
   renderChapterList();
   updateChStatus();
   _chUpdateVesselButtons();
+  const _crt = document.getElementById('chReportType'), _st = document.getElementById('subjectType');
+  if(_crt && _st) _crt.value = _st.value;
   document.getElementById('chOverlay').classList.add('open');
 }
 
@@ -16960,20 +17173,30 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('load', () => {
-  // 1. Disable spellcheck on all fields by default
-  document.querySelectorAll('[contenteditable]').forEach(el => {
-    el.setAttribute('spellcheck', 'false');
-  });
+  // 1. Native English spellcheck (Word-style red squiggles + right-click
+  //    suggestions, from the browser's own engine). ON by default for prose
+  //    fields; table cells (codes/numbers) stay unchecked to avoid noise.
+  //    Applied to existing fields now, re-applied as new fields appear, and
+  //    toggled via the ribbon's "abc" button.
+  const _SPELL_PROSE = '.field, .caption, .joined-caption, .vessel-caption-bar, [data-field-role]';
+  function _spellApplyTo(el) {
+    if(!el || !el.setAttribute) return;
+    if(el.matches && el.matches(_SPELL_PROSE)) {
+      el.setAttribute('spellcheck', _spellOn ? 'true' : 'false');
+      el.setAttribute('lang', 'en-US');
+    } else if(el.getAttribute && el.getAttribute('contenteditable') === 'true') {
+      el.setAttribute('spellcheck', 'false');   // table cells / codes — no spellcheck
+    }
+  }
+  document.querySelectorAll('[contenteditable]').forEach(_spellApplyTo);
   new MutationObserver(muts => {
     muts.forEach(m => m.addedNodes.forEach(n => {
-      if(n.nodeType === 1) {
-        [n, ...n.querySelectorAll('[contenteditable]')].forEach(el => {
-          if(el.hasAttribute && el.hasAttribute('contenteditable'))
-            el.setAttribute('spellcheck', _spellOn ? 'true' : 'false');
-        });
-      }
+      if(n.nodeType !== 1) return;
+      _spellApplyTo(n);
+      if(n.querySelectorAll) n.querySelectorAll('[contenteditable]').forEach(_spellApplyTo);
     }));
   }).observe(document.body, { childList: true, subtree: true });
+  if(typeof _applySpellcheck === 'function') { _applySpellcheck(); setTimeout(_applySpellcheck, 700); }
 
   // 2. Init chapter manager FIRST (populates chapterState)
   initChapterManager();
@@ -18721,6 +18944,8 @@ document.addEventListener('change', e => {
     // selection (or _ctxTargetEl), set it as the target, then call the matching
     // context function for whichever table type the cell belongs to.
     function ribbonTableAction(action){
+      if(action === 'merge'){ if(typeof _mergeSelectedCells === 'function') _mergeSelectedCells(); return; }
+      if(action === 'unmerge'){ if(typeof _unmergeSelectedCells === 'function') _unmergeSelectedCells(); return; }
       let node = _ctxTargetEl;
       if(!node){
         const sel = window.getSelection && window.getSelection();
