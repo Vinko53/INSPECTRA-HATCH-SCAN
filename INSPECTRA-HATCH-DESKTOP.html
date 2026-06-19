@@ -804,6 +804,19 @@
   }
   .ch-pane-right #chSubList { padding: 4px 16px 2px; }
   .ch-pane-right .ch-subadd { margin: 4px 16px 14px; }
+  .ch-sub-header {
+    position: sticky; top: 0; background: #fff; z-index: 2;
+    padding: 10px 16px 9px; border-bottom: 1px solid #e6eaf2;
+  }
+  .ch-sub-eyebrow {
+    font-size: 7.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: #9aa3b2; margin-bottom: 4px;
+  }
+  .ch-sub-chaptername {
+    font-size: 11.5pt; font-weight: 700; color: #fff; background: var(--navy);
+    padding: 6px 12px; border-radius: 6px; line-height: 1.3;
+    white-space: normal; word-break: break-word;
+  }
   .ch-sub-empty { padding: 12px 18px; font-size: 8.5pt; color: #aab2c2; line-height: 1.5; }
   .ch-item.selected { background: #eef2fb; box-shadow: inset 3px 0 0 var(--navy); }
   .ch-item.selected:hover { background: #e7eef9; }
@@ -3280,7 +3293,10 @@
           <button class="ch-add-btn" onclick="addChapter()">＋ Add chapter</button>
         </div>
         <div class="ch-pane ch-pane-right">
-          <div class="ch-pane-title" id="chSubTitle">Subchapters</div>
+          <div class="ch-sub-header">
+            <div class="ch-sub-eyebrow">Subchapters of</div>
+            <div class="ch-sub-chaptername" id="chSubTitle">—</div>
+          </div>
           <div id="chSubList"></div>
           <button class="ch-subadd" id="chSubAddBtn" onclick="addSubchapterToSelected()">＋ Add subchapter</button>
         </div>
@@ -6357,6 +6373,17 @@ function setReportType(val) {
   const sel = document.getElementById('subjectType');
   if(sel) sel.value = val;
   if(typeof updateSubject === 'function') updateSubject();
+  // If the Manage-chapters modal is open, refresh its list + panes so the
+  // chapters this report type adds or removes (Disclaimer, Materials, Safety,
+  // Interior, Spare Parts, …) appear or disappear in the table immediately.
+  const ov = document.getElementById('chOverlay');
+  if(ov && ov.classList.contains('open')) {
+    if(typeof _selChapterIdx !== 'undefined' && typeof chapterState !== 'undefined'
+       && _selChapterIdx >= chapterState.length) _selChapterIdx = 0;
+    if(typeof renderChapterList === 'function') renderChapterList();
+    if(typeof renderSubchapterPane === 'function') renderSubchapterPane();
+    if(typeof updateChStatus === 'function') updateChStatus();
+  }
 }
 
 function updateSubject() {
@@ -12970,12 +12997,12 @@ function renderSubchapterPane() {
   const i = _selChapterIdx;
   const ch = chapterState[i];
   if(!ch) {
-    if(titleEl) titleEl.textContent = 'Subchapters';
+    if(titleEl) titleEl.textContent = 'Select a chapter';
     if(addBtn) addBtn.style.display = 'none';
     return;
   }
   if(!Array.isArray(ch.subchapters)) ch.subchapters = [];
-  if(titleEl) titleEl.textContent = 'Subchapters · ' + (ch.title || '');
+  if(titleEl) titleEl.textContent = ch.title || '—';
   if(addBtn) addBtn.style.display = '';
 
   if(!ch.subchapters.length) {
@@ -15466,7 +15493,11 @@ async function exportToCustomer() {
   (function(){
     const ss = cloned.ownerDocument.createElement('style');
     ss.textContent = '.score-table .score-picker{display:none !important;}' +
-                     '.score-table .score-pill{display:inline-block !important;}';
+                     '.score-table .score-pill{display:inline-block !important;}' +
+                     /* Empty photo frames: hide the editor's "drop photo" hint and show a
+                        clean framed placeholder, matching the editor layout and the PDF. */
+                     '.photo:not(.has-image)::before{content:"" !important;}' +
+                     '.photo-pair.is-empty-pair .photo{outline:0.5pt dashed #9aa6ba;outline-offset:-1pt;background:#f4f6fa !important;min-height:45mm;}';
     const head = cloned.querySelector('head');
     (head || cloned).appendChild(ss);
   })();
@@ -15485,11 +15516,13 @@ async function exportToCustomer() {
     const selectedText = subjectSel.options[subjectSel.selectedIndex]
       ? subjectSel.options[subjectSel.selectedIndex].text
       : (subjectSel.value || '');
-    const span = document.createElement('span');
-    span.id = 'subjectType';
-    span.style.cssText = 'font-size:12pt;color:var(--navy);font-family:inherit;font-weight:600;flex-shrink:0;';
-    span.textContent = selectedText;
-    subjectSel.parentNode.replaceChild(span, subjectSel);
+    // The visible report-type label is shown by #subjectTypeText (kept in sync
+    // by updateSubject). The old <select> is now redundant and was duplicating
+    // the label in the customer file — make sure the text span is populated,
+    // then remove the select.
+    const stt = cloned.querySelector('#subjectTypeText');
+    if(stt && !stt.textContent.trim()) stt.textContent = selectedText;
+    subjectSel.remove();
   }
 
 
@@ -15713,23 +15746,14 @@ async function exportToCustomer() {
     const pairs = [...pairsContainer.querySelectorAll('.photo-pair')];
     const hasRealPhoto = pairs.some(pairHasPhoto);
     if(hasRealPhoto) {
-      // Keep populated pairs; remove any empty placeholder pairs alongside them.
+      // Populated section: drop only the spare empty placeholder pairs.
       pairs.forEach(p => { if(!pairHasPhoto(p)) p.remove(); });
       return;
     }
-    // No real photos — remove the preceding "Photos:" label, the pairs
-    // container, and any orphaned schematic-add button (already stripped
-    // by .no-print, but belt-and-braces).
-    let prev = pairsContainer.previousElementSibling;
-    while(prev && !(prev.classList && prev.classList.contains('label'))) {
-      const stepBack = prev.previousElementSibling;
-      if(prev.classList && prev.classList.contains('hc-add-schematic-btn')) prev.remove();
-      prev = stepBack;
-    }
-    if(prev && prev.classList.contains('label') && /photos\s*:?/i.test(prev.textContent.trim())) {
-      prev.remove();
-    }
-    pairsContainer.remove();
+    // No real photos — keep the "Photos:" label and the empty frames, marking
+    // them as placeholders so the customer file shows the same layout as the
+    // editor and the PDF (previously the whole block was removed, leaving a gap).
+    pairs.forEach(p => p.classList.add('is-empty-pair'));
   });
 
   // 8d. Same treatment for continuation sections (same sid, no
@@ -16337,6 +16361,42 @@ function _handleMobilePhotoImport(input) {
   reader.readAsText(f);
 }
 
+// Hide chapter-level placeholder content (empty Comments boxes, empty photo
+// frames, stray "Photos:"/"Comments:" labels, unnamed subchapter widgets) that
+// sits between a chapter title and its first NAMED subchapter, so subchaptered
+// chapters start cleanly at their first subchapter after a mobile import.
+// Only empty/placeholder items are hidden — anything holding a real photo or
+// real text is kept. Reversible (display:none + a marker class).
+function _tidySubchapteredChapters() {
+  document.querySelectorAll('.section[data-sid] .section-body').forEach(body => {
+    const named = [...body.querySelectorAll('.subch-label-bar[data-name]')]
+      .filter(lb => (lb.dataset.name || '').trim());
+    if(!named.length) return;                                   // not a subchaptered chapter
+    const firstMarker = named[0].closest('.extra-text-box') || named[0].closest('.subch-wrap') || named[0];
+    for(const el of [...body.children]) {
+      if(el === firstMarker || (el.contains && el.contains(firstMarker))) break;  // reached first subchapter
+      if(!el.classList) continue;
+      const cl = el.classList;
+      // Keep anything that holds a real photo.
+      if(el.querySelector && el.querySelector('.photo.has-image, .vessel-large.has-image')) continue;
+      // Keep a field (or a box containing a field) that has real typed text.
+      if(cl.contains('field') && (el.textContent || '').replace(/\u00a0/g, ' ').trim()) continue;
+      if(el.querySelectorAll && [...el.querySelectorAll('.field')]
+           .some(fn => (fn.textContent || '').replace(/\u00a0/g, ' ').trim())) continue;
+      // Otherwise it's placeholder noise before the first subchapter → hide it.
+      if(cl.contains('label') || cl.contains('photo-section-label') || cl.contains('add-pair-row') ||
+         cl.contains('hc-add-schematic-btn') || cl.contains('stat-add-block-btn') ||
+         cl.contains('photo-pairs') || cl.contains('photo-pair') || cl.contains('field') ||
+         cl.contains('subch-comment-box') ||
+         (cl.contains('subch-wrap') && !el.querySelector('.subch-label-bar[data-name]')) ||
+         (cl.contains('extra-text-box') && !el.querySelector('.subch-label-bar[data-name]'))) {
+        el.style.display = 'none';
+        el.classList.add('chapter-findings-hidden');
+      }
+    }
+  });
+}
+
 function _applyMobileBundle(bundle) {
   // 1. Header fields (only fill empty ones, so we never overwrite existing work)
   const h = bundle.header || {};
@@ -16767,6 +16827,13 @@ function _applyMobileBundle(bundle) {
         const emptyOnly2 = bundle.structure.filter(sc => !((photos[sc.id]||[]).length));
         requestAnimationFrame(() => { try { _restoreSubchaptersFromStructure(emptyOnly2); } catch(e){} });
       }
+      // After everything settles, hide any chapter-level placeholder content
+      // (empty Comments boxes, empty photo frames, stray labels) that ended up
+      // between a chapter title and its first subchapter, so a subchaptered
+      // chapter starts cleanly at its first subchapter.
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        try { _tidySubchapteredChapters(); } catch(e){}
+      }));
       if(typeof buildTOC === 'function') requestAnimationFrame(() => buildTOC());
       alert('Imported ' + totalAdded + ' photo' + (totalAdded===1?'':'s') + ' from the mobile app.');
     }));
