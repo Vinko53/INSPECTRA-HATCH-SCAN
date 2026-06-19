@@ -334,6 +334,10 @@ var coverPhoto = { photo:null, caption:'' };
 // Which subchapters are expanded (key = chapterId + "::" + subIndex). Persists
 // across re-renders so collapsing/expanding survives edits.
 var _openSubs = {};
+// Which chapter is currently expanded (its dataset id, or '__cover__'). Persists
+// across re-renders so deleting a photo (which re-renders) doesn't snap the open
+// chapter shut and force the user to reopen it.
+var _openChapter = null;
 
 // When chapters are imported from the desktop, the report type is fixed by
 // the desktop and must not be changed on the phone.
@@ -500,6 +504,7 @@ function render(){
     var block=document.createElement('div');
     block.className='chapter';
     block.dataset.id='__cover__';
+    if(_openChapter === '__cover__') block.classList.add('open');
     var head=document.createElement('div');
     head.className='chapter-head';
     head.innerHTML='<span class="ch-num">0</span>'+
@@ -510,7 +515,8 @@ function render(){
       var wasOpen=block.classList.contains('open');
       var all=document.querySelectorAll('.chapter');
       for(var i=0;i<all.length;i++) all[i].classList.remove('open');
-      if(!wasOpen){ block.classList.add('open'); block.scrollIntoView({behavior:'smooth',block:'start'}); }
+      if(!wasOpen){ block.classList.add('open'); _openChapter='__cover__'; block.scrollIntoView({behavior:'smooth',block:'start'}); }
+      else { _openChapter=null; }
     };
     block.appendChild(head);
     var body=document.createElement('div');
@@ -535,6 +541,7 @@ function render(){
     var block=document.createElement('div');
     block.className='chapter';
     block.dataset.id=ch.id;
+    if(_openChapter === ch.id) block.classList.add('open');
     var head=document.createElement('div');
     head.className='chapter-head';
     var subCount = (ch.subchapters && ch.subchapters.length) ? ch.subchapters.length : 0;
@@ -563,7 +570,10 @@ function render(){
       }
       if(!wasOpen) {
         block.classList.add('open');
+        _openChapter = block.dataset.id;
         block.scrollIntoView({ behavior:'smooth', block:'start' });
+      } else {
+        _openChapter = null;
       }
     };
     block.appendChild(head);
