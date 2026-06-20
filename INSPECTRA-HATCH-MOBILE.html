@@ -642,11 +642,15 @@ function render(){
 
 // Live report size (MB) and total photo count, shown top-left of the header.
 function updateMeter(){
+  // Count the actual stored size of each photo (its base64 data-URL length),
+  // not the decoded JPEG size — that's what gets written to the transfer file
+  // and what the desktop reports, so the two figures now agree. (base64 is
+  // ~33% larger than the decoded image, which is why this used to read low.)
   var bytes=0, count=0;
-  if(coverPhoto && coverPhoto.photo){ bytes+=bytesOfDataURL(coverPhoto.photo); count++; }
+  if(coverPhoto && coverPhoto.photo){ bytes+=coverPhoto.photo.length; count++; }
   for(var cid in store){ if(!store.hasOwnProperty(cid)) continue;
     var arr=store[cid]||[];
-    for(var i=0;i<arr.length;i++){ if(arr[i].photo){ bytes+=bytesOfDataURL(arr[i].photo); count++; } }
+    for(var i=0;i<arr.length;i++){ if(arr[i].photo){ bytes+=arr[i].photo.length; count++; } }
   }
   var mb=bytes/(1024*1024);
   var sizeEl=document.getElementById('meterSize');
@@ -763,7 +767,7 @@ function makeTile(cid, idx, it){
     if(tile._lpFired){ tile._lpFired=false; return; }   // swallow click after a long-press
     if(ev.target.classList.contains('del')){ store[cid][idx].photo=null; render(); return; }
     if(ev.target.classList.contains('lib')){ capture(cid, idx, 'library'); return; }
-    capture(cid, idx, 'camera');
+    _instantCamera(cid, idx);
   });
   tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   tile.addEventListener('selectstart', function(ev){ ev.preventDefault(); });
@@ -827,7 +831,7 @@ function makeCoverTile(){
   tile.addEventListener('click', function(ev){
     if(ev.target.classList.contains('del')){ coverPhoto.photo=null; render(); return; }
     if(ev.target.classList.contains('lib')){ capture('__cover__',0,'library'); return; }
-    capture('__cover__',0,'camera');
+    _instantCamera('__cover__', 0);
   });
   tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   tile.style.webkitTouchCallout='none';
