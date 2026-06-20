@@ -278,6 +278,40 @@
   .remove-pair-btn{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:#c0392b;color:#fff;border:2px solid #fff;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;opacity:0;transition:opacity .15s;box-shadow:0 1px 4px rgba(0,0,0,.25);}
   .photo-pair:hover .remove-pair-btn{opacity:1;}
   @media print{.remove-pair-btn{display:none!important;}}
+  /* Inside a named subchapter the bar already carries "✕ Remove subchapter";
+     hide the redundant Comments-row remove button so nothing at that position
+     can delete the whole subchapter by surprise. (It still shows for plain,
+     standalone text boxes, where it removes just that text box.) */
+  .extra-text-box:has(.subch-label-bar[data-name]) .extra-rm{display:none!important;}
+  /* Floating "Custom phrases" panel */
+  .cp-panel{ position:fixed; top:96px; right:16px; width:330px; max-height:74vh; z-index:9000;
+    background:#fff; border:1px solid #c7d0de; border-radius:10px; box-shadow:0 10px 34px rgba(15,30,60,.28);
+    display:flex; flex-direction:column; font-family:inherit; overflow:hidden; }
+  .cp-head{ display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:var(--navy); color:#fff; cursor:move; }
+  .cp-title{ font-weight:700; font-size:10.5pt; letter-spacing:.02em; }
+  .cp-close{ background:rgba(255,255,255,.16); border:none; color:#fff; width:24px; height:24px; border-radius:5px; cursor:pointer; font-size:12px; }
+  .cp-close:hover{ background:rgba(255,255,255,.32); }
+  .cp-tools{ display:flex; gap:6px; padding:8px 10px 4px; }
+  .cp-btn{ font-family:inherit; font-size:8.5pt; padding:6px 10px; border-radius:6px; border:1px solid #c7d0de; background:#f4f6fa; color:var(--navy); cursor:pointer; font-weight:600; }
+  .cp-btn.cp-import{ flex:1; background:#eaf1fb; border-color:#9cb6dd; }
+  .cp-btn:hover{ filter:brightness(.97); }
+  .cp-search{ margin:4px 10px 6px; padding:7px 10px; border:1px solid #c7d0de; border-radius:6px; font-family:inherit; font-size:9pt; }
+  .cp-status{ margin:0 10px 4px; font-size:8pt; color:#1a7a4a; background:#e9f6ee; border-radius:5px; padding:4px 8px; }
+  .cp-list{ flex:1; overflow-y:auto; padding:2px 8px 6px; display:flex; flex-direction:column; gap:4px; min-height:60px; }
+  .cp-item{ text-align:left; font-family:inherit; font-size:9pt; line-height:1.35; color:#1a2540; background:#fff; border:1px solid #e6eaf2; border-radius:6px; padding:7px 9px; cursor:pointer; white-space:normal; word-break:break-word; }
+  .cp-item:hover{ background:#eef4fc; border-color:#9cb6dd; }
+  .cp-group{ border:1px solid #e6eaf2; border-radius:7px; overflow:hidden; }
+  .cp-grp-head{ width:100%; display:flex; align-items:center; gap:8px; text-align:left; font-family:inherit; font-size:9pt; font-weight:700; color:#1f3a68; background:#eef2f8; border:none; padding:8px 10px; cursor:pointer; }
+  .cp-grp-head:hover{ background:#e3eaf5; }
+  .cp-grp-caret{ font-size:8px; transition:transform .15s; color:#5a6a85; }
+  .cp-group.open .cp-grp-caret{ transform:rotate(90deg); }
+  .cp-grp-title{ flex:1; white-space:normal; word-break:break-word; }
+  .cp-grp-count{ font-size:7.5pt; font-weight:700; color:#fff; background:#9cb6dd; border-radius:999px; padding:1px 7px; flex-shrink:0; }
+  .cp-grp-body{ display:none; flex-direction:column; gap:4px; padding:6px; background:#fafbfd; }
+  .cp-group.open .cp-grp-body{ display:flex; }
+  .cp-empty{ color:#7a869a; font-size:8.5pt; text-align:center; padding:18px 12px; line-height:1.55; }
+  .cp-foot{ padding:6px 12px; border-top:1px solid #eef2f8; font-size:7.5pt; color:#9aa3b2; }
+  @media print{ .cp-panel{ display:none !important; } }
   .photo{aspect-ratio:7/5;background:var(--photo-bg);border:1px solid var(--line-soft);display:flex;align-items:center;justify-content:center;color:#9aa3b2;font-size:9pt;position:relative;cursor:pointer;background-size:cover;background-position:center;overflow:hidden;grid-row:1;}
   .photo::before{content:"📷  Drop photo/video or double-click to add";pointer-events:none;}
   .photo.has-image::before{content:"";}
@@ -3176,6 +3210,8 @@
     <div class="fmt-dd-menu" style="display:none;min-width:150px;">
       <button type="button" data-phrase="Findings:">Findings:</button>
       <button type="button" data-phrase="Recommendations:">Recommendations:</button>
+      <div style="border-top:1px solid #e6eaf2;margin:4px 6px;"></div>
+      <button type="button" data-phrase-open-custom="1">&#9733;&nbsp;Custom phrases&hellip;</button>
     </div>
   </div>
   <span class="fmt-div"></span>
@@ -4075,7 +4111,7 @@ function _buildSubchWidget(sid) {
   const labelEl = document.createElement('div');
   labelEl.className = 'subch-label';
   const rmBtn = document.createElement('button');
-  rmBtn.type = 'button'; rmBtn.className = 'subch-rm no-print'; rmBtn.textContent = '✕ Remove';
+  rmBtn.type = 'button'; rmBtn.className = 'subch-rm no-print'; rmBtn.textContent = '✕ Remove subchapter'; rmBtn.title = 'Remove this entire subchapter and everything in it';
   labelBar.appendChild(labelEl); labelBar.appendChild(rmBtn);
 
   function showTrigger() {
@@ -4675,7 +4711,7 @@ function makePairEl() {
   const p = document.createElement('div');
   p.className = 'photo-pair';
   p.innerHTML =
-    '<button class="remove-pair-btn no-print" title="Remove this pair" onclick="removePair(this)">&#x2715;</button>'
+    '<button class="remove-pair-btn no-print" title="Remove this photo pair" onclick="removePair(this)">&#x2715;</button>'
     + '<div class="photo"></div>'
     + '<div class="photo"></div>'
     + '<div class="caption" contenteditable="true"></div>'
@@ -8066,6 +8102,314 @@ function ctxInsertPhrase(phrase) {
   field.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+/* ── Custom phrases ─────────────────────────────────────────────────────
+   A floating panel of reusable phrases for captions and comment boxes.
+   Phrases are imported from a Word (.docx) or plain-text file; each
+   paragraph/line becomes one phrase. Importing REPLACES the current set, so
+   loading a new vessel's phrases clears the previous ones. Click a phrase to
+   drop it into the caption/comment box you were editing. */
+let _customPhraseGroups = [];   // [{ title:'1- Bearing pads', phrases:[...] }, ...]
+let _customPhrasesLabel = '';
+let _openPhraseGroup = -1;      // index of the expanded chapter (-1 = all collapsed)
+let _phraseTargetField = null;
+let _phraseTargetRange = null;
+
+// Split imported lines into chapters. A line like "1- Bearing pads" (a number
+// followed by a dash) is treated as a CHAPTER heading, not a selectable phrase;
+// the lines under it become that chapter's phrases. Lines before the first
+// heading fall into a "General" group. Duplicates within a chapter are dropped.
+function _groupPhrases(lines){
+  var groups = [], cur = null, seen = null;
+  var headRe = /^\s*\d+\s*[-–—]\s*(.+\S)\s*$/;
+  (lines||[]).forEach(function(raw){
+    var t = (raw||'').trim();
+    if(!t) return;
+    if(headRe.test(t)){
+      cur = { title: t, phrases: [] }; seen = {}; groups.push(cur);
+    } else {
+      if(!cur){ cur = { title: '', phrases: [] }; seen = {}; groups.push(cur); }
+      var k = t.toLowerCase();
+      if(!seen[k]){ seen[k] = 1; cur.phrases.push(t); }
+    }
+  });
+  return groups.filter(function(g){ return g.phrases.length || g.title; });
+}
+function _totalPhraseCount(){
+  var n = 0; _customPhraseGroups.forEach(function(g){ n += g.phrases.length; }); return n;
+}
+
+// Remember the caption/comment field (and caret) being edited, so a phrase
+// clicked in the panel lands exactly where the user was typing.
+document.addEventListener('selectionchange', function(){
+  var sel = window.getSelection();
+  if(!sel || sel.rangeCount === 0) return;
+  var node = sel.anchorNode;
+  var el = node ? (node.nodeType === 1 ? node : node.parentElement) : null;
+  var field = el && el.closest ? el.closest('#pagesRoot .field, #pagesRoot .caption, #pagesRoot .joined-caption') : null;
+  if(field && field.isContentEditable){
+    _phraseTargetField = field;
+    try { _phraseTargetRange = sel.getRangeAt(0).cloneRange(); } catch(e){}
+  }
+});
+
+function _cpStatus(msg){
+  var s = document.getElementById('cpStatus');
+  if(!s) return;
+  s.textContent = msg || '';
+  s.style.display = msg ? 'block' : 'none';
+  if(msg){ clearTimeout(_cpStatus._t); _cpStatus._t = setTimeout(function(){ if(s) s.style.display='none'; }, 3500); }
+}
+async function _loadCustomPhrases(){
+  try {
+    var data = await _storeGet('hcCustomPhrases');
+    if(data){
+      if(Array.isArray(data.groups)) _customPhraseGroups = data.groups;
+      else if(Array.isArray(data.phrases)) _customPhraseGroups = _groupPhrases(data.phrases);
+      _customPhrasesLabel = data.label || '';
+    }
+  } catch(e){}
+  _openPhraseGroup = (_customPhraseGroups.length === 1) ? 0 : -1;
+  _renderCustomPhraseList();
+}
+async function _saveCustomPhrases(){
+  try { await _storeSet('hcCustomPhrases', { groups: _customPhraseGroups, label: _customPhrasesLabel }); } catch(e){}
+}
+function _xmlDecode(s){
+  return (s||'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+}
+async function _inflateRaw(bytes){
+  if(typeof DecompressionStream === 'undefined') throw new Error('DecompressionStream unsupported');
+  var ds = new DecompressionStream('deflate-raw');
+  var stream = new Blob([bytes]).stream().pipeThrough(ds);
+  var ab = await new Response(stream).arrayBuffer();
+  return new Uint8Array(ab);
+}
+// Minimal ZIP reader: pull one entry's bytes out of a .docx (which is a ZIP).
+async function _unzipEntryText(buf, targetName){
+  var dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  var eocd = -1;
+  for(var i = buf.length - 22; i >= 0; i--){ if(dv.getUint32(i, true) === 0x06054b50){ eocd = i; break; } }
+  if(eocd < 0) return null;
+  var cdOffset = dv.getUint32(eocd + 16, true);
+  var cdCount = dv.getUint16(eocd + 10, true);
+  var p = cdOffset;
+  for(var n = 0; n < cdCount; n++){
+    if(dv.getUint32(p, true) !== 0x02014b50) break;
+    var method = dv.getUint16(p + 10, true);
+    var compSize = dv.getUint32(p + 20, true);
+    var nameLen = dv.getUint16(p + 28, true);
+    var extraLen = dv.getUint16(p + 30, true);
+    var commentLen = dv.getUint16(p + 32, true);
+    var lhOffset = dv.getUint32(p + 42, true);
+    var fname = new TextDecoder().decode(buf.subarray(p + 46, p + 46 + nameLen));
+    if(fname === targetName){
+      if(dv.getUint32(lhOffset, true) !== 0x04034b50) return null;
+      var lhNameLen = dv.getUint16(lhOffset + 26, true);
+      var lhExtraLen = dv.getUint16(lhOffset + 28, true);
+      var dataStart = lhOffset + 30 + lhNameLen + lhExtraLen;
+      var compData = buf.subarray(dataStart, dataStart + compSize);
+      var bytes;
+      if(method === 0) bytes = compData;
+      else if(method === 8) bytes = await _inflateRaw(compData);
+      else return null;
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  return null;
+}
+async function _phrasesFromDocx(file){
+  var buf = new Uint8Array(await file.arrayBuffer());
+  var xml = await _unzipEntryText(buf, 'word/document.xml');
+  if(!xml) return [];
+  var out = [], pRe = /<w:p\b[\s\S]*?<\/w:p>/g, m;
+  while((m = pRe.exec(xml))){
+    var block = m[0].replace(/<w:tab\b[^>]*\/?>/g,' ').replace(/<w:br\b[^>]*\/?>/g,' ');
+    var tRe = /<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g, t, s = '';
+    while((t = tRe.exec(block))) s += t[1];
+    s = _xmlDecode(s.replace(/<[^>]+>/g,'')).replace(/\s+/g,' ').trim();
+    if(s) out.push(s);
+  }
+  return out;
+}
+function _phrasesFromText(text){
+  return (text||'').split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean);
+}
+async function _importCustomPhrasesFile(){
+  var file = null;
+  if(window.showOpenFilePicker){
+    try {
+      var handles = await window.showOpenFilePicker({ multiple:false, types:[{ description:'Word or text file', accept:{ 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx'], 'text/plain':['.txt'] } }] });
+      file = handles[0] ? await handles[0].getFile() : null;
+    } catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  if(!file){
+    file = await new Promise(function(res){
+      var inp = document.createElement('input'); inp.type='file'; inp.accept='.docx,.txt';
+      inp.onchange = function(){ res(inp.files && inp.files[0] ? inp.files[0] : null); };
+      inp.click();
+    });
+    if(!file) return;
+  }
+  _cpStatus('Reading file…');
+  var phrases = [];
+  try {
+    if(/\.docx$/i.test(file.name)) phrases = await _phrasesFromDocx(file);
+    else phrases = _phrasesFromText(await file.text());
+  } catch(e){ console.warn('Phrase import failed', e); }
+  var groups = _groupPhrases(phrases);
+  var total = 0; groups.forEach(function(g){ total += g.phrases.length; });
+  if(!total){
+    _cpStatus('No phrases found in that file.');
+    if(/\.docx$/i.test(file.name) && typeof DecompressionStream === 'undefined')
+      alert('This browser cannot read .docx here. Please save the phrases as a .txt file (one phrase per line) and import that.');
+    return;
+  }
+  _customPhraseGroups = groups;            // REPLACE — per-vessel
+  _customPhrasesLabel = file.name || '';
+  _openPhraseGroup = (groups.length === 1) ? 0 : -1;
+  await _saveCustomPhrases();
+  _renderCustomPhraseList();
+  var chCount = groups.filter(function(g){ return g.title; }).length;
+  _cpStatus('Imported ' + total + ' phrase' + (total>1?'s':'') + (chCount?(' in ' + chCount + ' chapter' + (chCount>1?'s':'')):'') + ' (replaced previous).');
+}
+async function _clearCustomPhrases(){
+  var n = _totalPhraseCount();
+  if(!n) return;
+  if(!confirm('Remove all ' + n + ' custom phrases?')) return;
+  _customPhraseGroups = []; _customPhrasesLabel = ''; _openPhraseGroup = -1;
+  try { await _storeDel('hcCustomPhrases'); } catch(e){}
+  _renderCustomPhraseList();
+  _cpStatus('Cleared.');
+}
+function _insertCustomPhrase(text){
+  var field = _phraseTargetField;
+  if(!field || !field.isContentEditable || !document.body.contains(field)){
+    _cpStatus('Click into a caption or comment box first, then pick a phrase.');
+    return;
+  }
+  field.focus();
+  var sel = window.getSelection();
+  sel.removeAllRanges();
+  if(_phraseTargetRange && field.contains(_phraseTargetRange.startContainer)){
+    sel.addRange(_phraseTargetRange);
+  } else {
+    var r = document.createRange(); r.selectNodeContents(field); r.collapse(false); sel.addRange(r);
+  }
+  document.execCommand('insertText', false, text);
+  try { _phraseTargetRange = sel.getRangeAt(0).cloneRange(); } catch(e){}
+  field.dispatchEvent(new Event('input', { bubbles: true }));
+  _cpStatus('Inserted.');
+}
+function _renderCustomPhraseList(){
+  var list = document.getElementById('cpList'); if(!list) return;
+  var qEl = document.getElementById('cpSearch');
+  var q = (qEl ? qEl.value : '').toLowerCase().trim();
+  list.innerHTML = '';
+  var total = _totalPhraseCount();
+  if(!total && !_customPhraseGroups.length){
+    list.innerHTML = '<div class="cp-empty">No custom phrases yet.<br>Use <b>Import from Word…</b> to load this vessel\'s phrases.<br><span style="opacity:.7">Tip: mark chapters in Word like “1- Bearing pads”; the lines under each become its phrases.</span></div>';
+    var f0 = document.getElementById('cpFoot'); if(f0) f0.textContent = '';
+    return;
+  }
+  var anyShown = false;
+  _customPhraseGroups.forEach(function(g, gi){
+    var titleMatch = q && g.title && g.title.toLowerCase().indexOf(q) >= 0;
+    var matches = g.phrases.filter(function(ph){ return !q || ph.toLowerCase().indexOf(q) >= 0; });
+    if(q && !titleMatch && !matches.length) return;          // hide non-matching chapters while searching
+    var shown = (q && !titleMatch) ? matches : g.phrases;
+    anyShown = true;
+    var open = q ? true : (gi === _openPhraseGroup);          // searching expands every matching chapter
+    var grp = document.createElement('div');
+    grp.className = 'cp-group' + (open ? ' open' : '');
+    var head = document.createElement('button');
+    head.type = 'button'; head.className = 'cp-grp-head';
+    var caret = document.createElement('span'); caret.className = 'cp-grp-caret'; caret.textContent = '▶';
+    var ttl = document.createElement('span'); ttl.className = 'cp-grp-title'; ttl.textContent = g.title || 'General';
+    var cnt = document.createElement('span'); cnt.className = 'cp-grp-count'; cnt.textContent = g.phrases.length;
+    head.appendChild(caret); head.appendChild(ttl); head.appendChild(cnt);
+    head.addEventListener('click', function(){
+      _openPhraseGroup = (_openPhraseGroup === gi) ? -1 : gi;  // accordion: open one, collapse the rest
+      _renderCustomPhraseList();
+    });
+    grp.appendChild(head);
+    var body = document.createElement('div'); body.className = 'cp-grp-body';
+    shown.forEach(function(ph){
+      var b = document.createElement('button');
+      b.type='button'; b.className='cp-item'; b.textContent = ph; b.title='Insert this phrase';
+      b.addEventListener('click', function(){ _insertCustomPhrase(ph); });
+      body.appendChild(b);
+    });
+    grp.appendChild(body);
+    list.appendChild(grp);
+  });
+  if(!anyShown){
+    var d = document.createElement('div'); d.className = 'cp-empty';
+    d.textContent = 'No phrases match “' + q + '”.';
+    list.appendChild(d);
+  }
+  var foot = document.getElementById('cpFoot');
+  if(foot){
+    var chCount = _customPhraseGroups.filter(function(g){ return g.title; }).length;
+    foot.textContent = total
+      ? (total + ' phrase' + (total>1?'s':'') + (chCount?(' · ' + chCount + ' chapter' + (chCount>1?'s':'')):'') + (_customPhrasesLabel ? ' · ' + _customPhrasesLabel : ''))
+      : '';
+  }
+}
+function _cpMakeDraggable(panel, handle){
+  var down = false, ox = 0, oy = 0;
+  handle.addEventListener('mousedown', function(e){
+    if(e.target.closest('.cp-close')) return;
+    down = true;
+    var r = panel.getBoundingClientRect();
+    ox = e.clientX - r.left; oy = e.clientY - r.top;
+    panel.style.right = 'auto'; panel.style.left = r.left + 'px'; panel.style.top = r.top + 'px';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', function(e){
+    if(!down) return;
+    var x = Math.max(4, Math.min(window.innerWidth - 80, e.clientX - ox));
+    var y = Math.max(4, Math.min(window.innerHeight - 40, e.clientY - oy));
+    panel.style.left = x + 'px'; panel.style.top = y + 'px';
+  });
+  document.addEventListener('mouseup', function(){ down = false; });
+}
+function _buildCustomPhrasePanel(){
+  if(document.getElementById('customPhrasePanel')) return;
+  var p = document.createElement('div');
+  p.id = 'customPhrasePanel'; p.className = 'cp-panel'; p.style.display = 'none';
+  p.innerHTML =
+    '<div class="cp-head" id="cpHead">'
+      + '<span class="cp-title">Custom phrases</span>'
+      + '<button type="button" class="cp-close" title="Close">✕</button>'
+    + '</div>'
+    + '<div class="cp-tools">'
+      + '<button type="button" class="cp-btn cp-import">⤓ Import from Word…</button>'
+      + '<button type="button" class="cp-btn cp-clear" title="Remove all phrases">Clear</button>'
+    + '</div>'
+    + '<input type="text" id="cpSearch" class="cp-search" placeholder="Search phrases…">'
+    + '<div class="cp-status" id="cpStatus" style="display:none;"></div>'
+    + '<div class="cp-list" id="cpList"></div>'
+    + '<div class="cp-foot" id="cpFoot"></div>';
+  document.body.appendChild(p);
+  p.querySelector('.cp-close').addEventListener('click', closeCustomPhrasePanel);
+  p.querySelector('.cp-import').addEventListener('click', _importCustomPhrasesFile);
+  p.querySelector('.cp-clear').addEventListener('click', _clearCustomPhrases);
+  p.querySelector('#cpSearch').addEventListener('input', _renderCustomPhraseList);
+  _cpMakeDraggable(p, p.querySelector('#cpHead'));
+}
+function openCustomPhrasePanel(){
+  _buildCustomPhrasePanel();
+  var p = document.getElementById('customPhrasePanel');
+  if(p) p.style.display = 'flex';
+  _renderCustomPhraseList();
+}
+function closeCustomPhrasePanel(){
+  var p = document.getElementById('customPhrasePanel');
+  if(p) p.style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', function(){ _buildCustomPhrasePanel(); _loadCustomPhrases(); });
+
 
 
 // ── Right-click → Rotate photo ────────────────────────────────────────────
@@ -9361,8 +9705,9 @@ function addInlineFrame(btn) {
   lbl.textContent = 'Comments:';
   const rmBtn = document.createElement('button');
   rmBtn.type = 'button';
-  rmBtn.className = 'no-print';
-  rmBtn.textContent = '✕ Remove';
+  rmBtn.className = 'no-print extra-rm';
+  rmBtn.textContent = '✕ Remove text box';
+  rmBtn.title = 'Remove this text box';
   rmBtn.style.cssText = 'font-size:7.5pt;background:none;border:1px solid #c0392b;color:#c0392b;border-radius:3px;padding:1px 7px;cursor:pointer;font-family:inherit;';
   rmBtn.addEventListener('click', () => {
     // If this text box is a named subchapter unit, remove the WHOLE subchapter
@@ -19397,6 +19742,8 @@ document.addEventListener('change', e => {
       const sw = e.target.closest('.fmt-sw[data-hl]');
       if(sw){ if(typeof ctxHighlight === 'function') ctxHighlight(sw.dataset.hl); return; }
 
+      const cphr = e.target.closest('[data-phrase-open-custom]');
+      if(cphr){ if(typeof openCustomPhrasePanel === 'function') openCustomPhrasePanel(); closeMenus(); return; }
       const phrase = e.target.closest('[data-phrase]');
       if(phrase){
         const field = activeField();
