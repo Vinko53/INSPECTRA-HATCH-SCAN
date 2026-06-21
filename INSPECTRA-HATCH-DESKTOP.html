@@ -297,11 +297,11 @@
   .cp-btn:hover{ filter:brightness(.97); }
   .cp-search{ margin:4px 10px 6px; padding:7px 10px; border:1px solid #c7d0de; border-radius:6px; font-family:inherit; font-size:9pt; }
   .cp-status{ margin:0 10px 4px; font-size:8pt; color:#1a7a4a; background:#e9f6ee; border-radius:5px; padding:4px 8px; }
-  .cp-list{ flex:1; overflow-y:auto; padding:2px 8px 6px; display:flex; flex-direction:column; gap:4px; min-height:60px; }
+  .cp-list{ flex:1; min-height:0; overflow-y:auto; padding:2px 8px 6px; display:flex; flex-direction:column; gap:4px; }
   .cp-item{ text-align:left; font-family:inherit; font-size:9pt; line-height:1.35; color:#1a2540; background:#fff; border:1px solid #e6eaf2; border-radius:6px; padding:7px 9px; cursor:pointer; white-space:normal; word-break:break-word; }
   .cp-item:hover{ background:#eef4fc; border-color:#9cb6dd; }
-  .cp-group{ border:1px solid #e6eaf2; border-radius:7px; overflow:hidden; }
-  .cp-grp-head{ width:100%; display:flex; align-items:center; gap:8px; text-align:left; font-family:inherit; font-size:9pt; font-weight:700; color:#1f3a68; background:#eef2f8; border:none; padding:8px 10px; cursor:pointer; }
+  .cp-group{ border:1px solid #e6eaf2; border-left:3px solid #2c5599; border-radius:7px; overflow:hidden; flex:0 0 auto; }
+  .cp-grp-head{ width:100%; display:flex; align-items:center; gap:8px; text-align:left; font-family:inherit; font-size:9pt; font-weight:700; color:#1f3a68; background:#e6edfa; border:none; padding:8px 10px; cursor:pointer; letter-spacing:.01em; }
   .cp-grp-head:hover{ background:#e3eaf5; }
   .cp-grp-caret{ font-size:8px; transition:transform .15s; color:#5a6a85; }
   .cp-group.open .cp-grp-caret{ transform:rotate(90deg); }
@@ -309,6 +309,40 @@
   .cp-grp-count{ font-size:7.5pt; font-weight:700; color:#fff; background:#9cb6dd; border-radius:999px; padding:1px 7px; flex-shrink:0; }
   .cp-grp-body{ display:none; flex-direction:column; gap:4px; padding:6px; background:#fafbfd; }
   .cp-group.open .cp-grp-body{ display:flex; }
+  /* Custom text split-screen dock (left side) */
+  .ct-dock{ position:fixed; left:0; top:var(--ctext-top,96px); bottom:0; width:var(--ctext-w,400px); z-index:60;
+    background:#fff; border-right:2px solid #c7d0de; box-shadow:4px 0 20px rgba(15,30,60,.14);
+    display:none; flex-direction:column; font-family:inherit; overflow:hidden; }
+  body.ctext-mode .ct-dock{ display:flex; }
+  body.ctext-mode #pagesRoot{
+    position:fixed; top:var(--ctext-top,96px); left:var(--ctext-w,400px); right:0; bottom:0;
+    margin:0; padding-left:0; overflow:auto; -webkit-overflow-scrolling:touch;
+  }
+  .ct-head{ display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:var(--navy); color:#fff; font-weight:700; font-size:11pt; }
+  .ct-close{ background:rgba(255,255,255,.16); border:none; color:#fff; width:26px; height:26px; border-radius:5px; cursor:pointer; font-size:13px; }
+  .ct-close:hover{ background:rgba(255,255,255,.32); }
+  .ct-tools{ display:flex; gap:6px; padding:9px 12px 5px; }
+  .ct-btn{ font-family:inherit; font-size:9pt; padding:7px 11px; border-radius:6px; border:1px solid #c7d0de; background:#f4f6fa; color:var(--navy); cursor:pointer; font-weight:600; }
+  .ct-btn.ct-import{ flex:1; background:#eaf1fb; border-color:#9cb6dd; }
+  .ct-btn:hover{ filter:brightness(.97); }
+  .ct-search{ margin:4px 12px 7px; padding:8px 11px; border:1px solid #c7d0de; border-radius:6px; font-family:inherit; font-size:9.5pt; }
+  .ct-status{ margin:0 12px 5px; font-size:8.5pt; color:#1a7a4a; background:#e9f6ee; border-radius:5px; padding:5px 9px; }
+  .ct-list{ flex:1; min-height:0; overflow-y:auto; padding:2px 10px 10px; display:flex; flex-direction:column; gap:6px; }
+  .ct-group{ border:1px solid #e6eaf2; border-left:3px solid #2c5599; border-radius:8px; overflow:hidden; flex:0 0 auto; }
+  .ct-grp-head{ width:100%; display:flex; align-items:center; gap:8px; text-align:left; font-family:inherit; font-size:9.5pt; font-weight:700; color:#1f3a68; background:#e6edfa; border:none; padding:9px 11px; cursor:pointer; letter-spacing:.01em; }
+  .ct-grp-head:hover{ background:#e3eaf5; }
+  .ct-grp-caret{ font-size:9px; transition:transform .15s; color:#5a6a85; }
+  .ct-group.open .ct-grp-caret{ transform:rotate(90deg); }
+  .ct-grp-title{ flex:1; white-space:normal; word-break:break-word; }
+  .ct-grp-count{ font-size:8pt; font-weight:700; color:#fff; background:#9cb6dd; border-radius:999px; padding:1px 8px; flex-shrink:0; }
+  .ct-grp-body{ display:none; flex-direction:column; gap:6px; padding:7px; background:#fafbfd; }
+  .ct-group.open .ct-grp-body{ display:flex; }
+  .ct-item{ text-align:left; font-family:inherit; font-size:9.5pt; line-height:1.5; color:#1a2540; background:#fff; border:1px solid #e6eaf2; border-radius:7px; padding:10px 12px; cursor:pointer; white-space:pre-wrap; word-break:break-word; }
+  .ct-item:hover{ background:#eef4fc; border-color:#9cb6dd; }
+  .ct-empty{ color:#7a869a; font-size:9pt; text-align:center; padding:22px 14px; line-height:1.55; }
+  .ct-foot{ padding:7px 14px; border-top:1px solid #eef2f8; font-size:8pt; color:#9aa3b2; }
+  .ct-resizer{ position:absolute; top:0; right:0; width:10px; height:100%; cursor:ew-resize; z-index:2; }
+  @media print{ .ct-dock{ display:none !important; } body.ctext-mode #pagesRoot{ position:static !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; overflow:visible !important; } }
   .cp-empty{ color:#7a869a; font-size:8.5pt; text-align:center; padding:18px 12px; line-height:1.55; }
   .cp-foot{ padding:6px 12px; border-top:1px solid #eef2f8; font-size:7.5pt; color:#9aa3b2; }
   @media print{ .cp-panel{ display:none !important; } }
@@ -3212,6 +3246,7 @@
       <button type="button" data-phrase="Recommendations:">Recommendations:</button>
       <div style="border-top:1px solid #e6eaf2;margin:4px 6px;"></div>
       <button type="button" data-phrase-open-custom="1">&#9733;&nbsp;Custom phrases&hellip;</button>
+      <button type="button" data-phrase-open-ctext="1">&#9646;&nbsp;Custom text&hellip;</button>
     </div>
   </div>
   <span class="fmt-div"></span>
@@ -7368,6 +7403,27 @@ function _clearCellSel(){
 }
 function _cellTableOf(cell){ return cell ? cell.closest('table') : null; }
 
+// With a block of table cells selected (Excel-style), Delete/Backspace clears
+// the text in every selected cell at once, instead of editing just one cell.
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Delete' && e.key !== 'Backspace') return;
+  const sel = document.querySelectorAll('#pagesRoot .cell-sel');
+  if(!sel.length) return;
+  e.preventDefault();
+  sel.forEach(cell => {
+    const controls = cell.querySelectorAll('input, textarea, select');
+    if(controls.length){
+      controls.forEach(ctrl => {
+        if(ctrl.tagName === 'SELECT'){ ctrl.selectedIndex = 0; ctrl.dispatchEvent(new Event('change', { bubbles:true })); }
+        else { ctrl.value = ''; ctrl.dispatchEvent(new Event('input', { bubbles:true })); }
+      });
+    } else {
+      cell.textContent = '';
+    }
+    cell.dispatchEvent(new Event('input', { bubbles:true }));
+  });
+}, true);
+
 document.addEventListener('mousedown', e => {
   const cell = e.target.closest('td, th');
   const inReport = cell && cell.closest('#pagesRoot') && _cellTableOf(cell);
@@ -8152,12 +8208,24 @@ document.addEventListener('selectionchange', function(){
   }
 });
 
+function _cpSizeList(){
+  var panel = document.getElementById('customPhrasePanel');
+  var list = document.getElementById('cpList');
+  if(!panel || !list || panel.style.display === 'none') return;
+  var foot = document.getElementById('cpFoot');
+  var footH = foot ? foot.offsetHeight : 0;
+  var listTop = list.getBoundingClientRect().top;
+  var avail = panel.getBoundingClientRect().bottom - listTop - footH - 4;
+  list.style.maxHeight = Math.max(80, avail) + 'px';
+  list.style.overflowY = 'auto';
+}
 function _cpStatus(msg){
   var s = document.getElementById('cpStatus');
   if(!s) return;
   s.textContent = msg || '';
   s.style.display = msg ? 'block' : 'none';
-  if(msg){ clearTimeout(_cpStatus._t); _cpStatus._t = setTimeout(function(){ if(s) s.style.display='none'; }, 3500); }
+  _cpSizeList();
+  if(msg){ clearTimeout(_cpStatus._t); _cpStatus._t = setTimeout(function(){ if(s){ s.style.display='none'; _cpSizeList(); } }, 3500); }
 }
 async function _loadCustomPhrases(){
   try {
@@ -8355,6 +8423,7 @@ function _renderCustomPhraseList(){
       ? (total + ' phrase' + (total>1?'s':'') + (chCount?(' · ' + chCount + ' chapter' + (chCount>1?'s':'')):'') + (_customPhrasesLabel ? ' · ' + _customPhrasesLabel : ''))
       : '';
   }
+  requestAnimationFrame(_cpSizeList);
 }
 function _cpMakeDraggable(panel, handle){
   var down = false, ox = 0, oy = 0;
@@ -8396,6 +8465,16 @@ function _buildCustomPhrasePanel(){
   p.querySelector('.cp-import').addEventListener('click', _importCustomPhrasesFile);
   p.querySelector('.cp-clear').addEventListener('click', _clearCustomPhrases);
   p.querySelector('#cpSearch').addEventListener('input', _renderCustomPhraseList);
+  var cpListEl = p.querySelector('#cpList');
+  if(cpListEl){
+    cpListEl.addEventListener('wheel', function(e){
+      if(e.ctrlKey) return;
+      if(cpListEl.scrollHeight <= cpListEl.clientHeight) return;
+      cpListEl.scrollTop += e.deltaY;
+      e.preventDefault();
+    }, { passive:false });
+  }
+  window.addEventListener('resize', _cpSizeList);
   _cpMakeDraggable(p, p.querySelector('#cpHead'));
 }
 function openCustomPhrasePanel(){
@@ -8403,12 +8482,190 @@ function openCustomPhrasePanel(){
   var p = document.getElementById('customPhrasePanel');
   if(p) p.style.display = 'flex';
   _renderCustomPhraseList();
+  requestAnimationFrame(_cpSizeList);
 }
 function closeCustomPhrasePanel(){
   var p = document.getElementById('customPhrasePanel');
   if(p) p.style.display = 'none';
 }
 document.addEventListener('DOMContentLoaded', function(){ _buildCustomPhrasePanel(); _loadCustomPhrases(); });
+
+/* ── Custom text (split-screen dock) ───────────────────────────────────
+   Like custom phrases but for larger blocks of text, shown in a left dock
+   beside the report (a split screen) with room to read and pick. Same chapter
+   grouping ("1- Bearing pads" headings) and the same insert-into-the-focused
+   -field behaviour. Self-contained: a body class + a left dock + left padding
+   on the report; nothing else (including compare mode) is touched. */
+let _customTextGroups = [];
+let _customTextLabel = '';
+let _openTextGroup = -1;
+
+async function _loadCustomText(){
+  try {
+    var data = await _storeGet('hcCustomText');
+    if(data){
+      if(Array.isArray(data.groups)) _customTextGroups = data.groups;
+      else if(Array.isArray(data.phrases)) _customTextGroups = _groupPhrases(data.phrases);
+      _customTextLabel = data.label || '';
+    }
+  } catch(e){}
+  _openTextGroup = (_customTextGroups.length === 1) ? 0 : -1;
+  _renderCustomTextList();
+}
+async function _saveCustomText(){
+  try { await _storeSet('hcCustomText', { groups: _customTextGroups, label: _customTextLabel }); } catch(e){}
+}
+// Cap the list height to the viewport so it becomes a real scroll area.
+// (Edge can refuse to scroll a flex:1 child inside a fixed panel, so we set an
+// explicit max-height from the actual layout rather than relying on flexbox.)
+function _ctSizeList(){
+  var list = document.getElementById('ctList');
+  if(!list || !document.body.classList.contains('ctext-mode')) return;
+  var foot = document.getElementById('ctFoot');
+  var footH = foot ? foot.offsetHeight : 0;
+  var top = list.getBoundingClientRect().top;
+  list.style.maxHeight = Math.max(80, window.innerHeight - top - footH - 6) + 'px';
+  list.style.overflowY = 'auto';
+}
+function _ctStatus(msg){
+  var s = document.getElementById('ctStatus'); if(!s) return;
+  s.textContent = msg || ''; s.style.display = msg ? 'block' : 'none';
+  _ctSizeList();
+  if(msg){ clearTimeout(_ctStatus._t); _ctStatus._t = setTimeout(function(){ if(s){ s.style.display='none'; _ctSizeList(); } }, 3500); }
+}
+async function _importCustomTextFile(){
+  var file = null;
+  if(window.showOpenFilePicker){
+    try { var hs = await window.showOpenFilePicker({ multiple:false, types:[{ description:'Word or text file', accept:{ 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx'], 'text/plain':['.txt'] } }] }); file = hs[0] ? await hs[0].getFile() : null; }
+    catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  if(!file){
+    file = await new Promise(function(res){ var i=document.createElement('input'); i.type='file'; i.accept='.docx,.txt'; i.onchange=function(){ res(i.files&&i.files[0]?i.files[0]:null); }; i.click(); });
+    if(!file) return;
+  }
+  _ctStatus('Reading file…');
+  var lines = [];
+  try { if(/\.docx$/i.test(file.name)) lines = await _phrasesFromDocx(file); else lines = _phrasesFromText(await file.text()); }
+  catch(e){ console.warn('Custom text import failed', e); }
+  var groups = _groupPhrases(lines);
+  var total = 0; groups.forEach(function(g){ total += g.phrases.length; });
+  if(!total){
+    _ctStatus('No text found in that file.');
+    if(/\.docx$/i.test(file.name) && typeof DecompressionStream === 'undefined')
+      alert('This browser cannot read .docx here. Please save the text as a .txt file and import that.');
+    return;
+  }
+  _customTextGroups = groups; _customTextLabel = file.name || '';
+  _openTextGroup = (groups.length === 1) ? 0 : -1;
+  await _saveCustomText(); _renderCustomTextList();
+  var chCount = groups.filter(function(g){ return g.title; }).length;
+  _ctStatus('Imported ' + total + ' block' + (total>1?'s':'') + (chCount?(' in ' + chCount + ' chapter' + (chCount>1?'s':'')):'') + ' (replaced previous).');
+}
+async function _clearCustomText(){
+  var n = 0; _customTextGroups.forEach(function(g){ n += g.phrases.length; });
+  if(!n) return;
+  if(!confirm('Remove all imported custom text?')) return;
+  _customTextGroups = []; _customTextLabel = ''; _openTextGroup = -1;
+  try { await _storeDel('hcCustomText'); } catch(e){}
+  _renderCustomTextList(); _ctStatus('Cleared.');
+}
+function _renderCustomTextList(){
+  var list = document.getElementById('ctList'); if(!list) return;
+  var qEl = document.getElementById('ctSearch');
+  var q = (qEl ? qEl.value : '').toLowerCase().trim();
+  list.innerHTML = '';
+  var total = 0; _customTextGroups.forEach(function(g){ total += g.phrases.length; });
+  if(!total && !_customTextGroups.length){
+    list.innerHTML = '<div class="ct-empty">No custom text yet.<br>Use <b>Import from Word…</b> to load text for this vessel.<br><span style="opacity:.7">Mark chapters like “1- Bearing pads”; the paragraphs below each become text blocks.</span></div>';
+    var f0=document.getElementById('ctFoot'); if(f0) f0.textContent=''; return;
+  }
+  var anyShown = false;
+  _customTextGroups.forEach(function(g, gi){
+    var titleMatch = q && g.title && g.title.toLowerCase().indexOf(q) >= 0;
+    var matches = g.phrases.filter(function(ph){ return !q || ph.toLowerCase().indexOf(q) >= 0; });
+    if(q && !titleMatch && !matches.length) return;
+    var shown = (q && !titleMatch) ? matches : g.phrases;
+    anyShown = true;
+    var open = q ? true : (gi === _openTextGroup);
+    var grp = document.createElement('div'); grp.className = 'ct-group' + (open ? ' open' : '');
+    var head = document.createElement('button'); head.type='button'; head.className='ct-grp-head';
+    var caret=document.createElement('span'); caret.className='ct-grp-caret'; caret.textContent='▶';
+    var ttl=document.createElement('span'); ttl.className='ct-grp-title'; ttl.textContent=g.title||'General';
+    var cnt=document.createElement('span'); cnt.className='ct-grp-count'; cnt.textContent=g.phrases.length;
+    head.appendChild(caret); head.appendChild(ttl); head.appendChild(cnt);
+    head.addEventListener('click', function(){ _openTextGroup = (_openTextGroup===gi)?-1:gi; _renderCustomTextList(); });
+    grp.appendChild(head);
+    var body=document.createElement('div'); body.className='ct-grp-body';
+    shown.forEach(function(ph){
+      var b=document.createElement('button'); b.type='button'; b.className='ct-item'; b.textContent=ph; b.title='Insert this text';
+      b.addEventListener('click', function(){ _insertCustomPhrase(ph); });
+      body.appendChild(b);
+    });
+    grp.appendChild(body); list.appendChild(grp);
+  });
+  if(!anyShown){ var d=document.createElement('div'); d.className='ct-empty'; d.textContent='No text matches “'+q+'”.'; list.appendChild(d); }
+  var foot=document.getElementById('ctFoot');
+  if(foot){ var chCount=_customTextGroups.filter(function(g){return g.title;}).length;
+    foot.textContent = total ? (total+' block'+(total>1?'s':'')+(chCount?(' · '+chCount+' chapter'+(chCount>1?'s':'')):'')+(_customTextLabel?(' · '+_customTextLabel):'')) : ''; }
+  requestAnimationFrame(_ctSizeList);
+}
+function _ctMakeResizable(dock, handle){
+  var drag=false;
+  handle.addEventListener('mousedown', function(e){ drag=true; e.preventDefault(); document.body.style.userSelect='none'; });
+  document.addEventListener('mousemove', function(e){
+    if(!drag) return;
+    var w=Math.max(280, Math.min(720, e.clientX));
+    document.documentElement.style.setProperty('--ctext-w', w+'px');
+  });
+  document.addEventListener('mouseup', function(){ if(drag){ drag=false; document.body.style.userSelect=''; } });
+}
+function _buildCustomTextDock(){
+  if(document.getElementById('customTextDock')) return;
+  var d=document.createElement('div'); d.id='customTextDock'; d.className='ct-dock';
+  d.innerHTML =
+    '<div class="ct-head"><span>Custom text</span><button type="button" class="ct-close" title="Close">✕</button></div>'
+    + '<div class="ct-tools"><button type="button" class="ct-btn ct-import">⤓ Import from Word…</button><button type="button" class="ct-btn ct-clear" title="Remove all">Clear</button></div>'
+    + '<input type="text" id="ctSearch" class="ct-search" placeholder="Search text…">'
+    + '<div class="ct-status" id="ctStatus" style="display:none;"></div>'
+    + '<div class="ct-list" id="ctList"></div>'
+    + '<div class="ct-foot" id="ctFoot"></div>'
+    + '<div class="ct-resizer" title="Drag to resize"></div>';
+  document.body.appendChild(d);
+  d.querySelector('.ct-close').addEventListener('click', closeCustomTextDock);
+  d.querySelector('.ct-import').addEventListener('click', _importCustomTextFile);
+  d.querySelector('.ct-clear').addEventListener('click', _clearCustomText);
+  d.querySelector('#ctSearch').addEventListener('input', _renderCustomTextList);
+  // Guarantee the list scrolls on mouse wheel even if a layout quirk would
+  // otherwise swallow it (only when there is actually overflow to scroll).
+  var ctListEl = d.querySelector('#ctList');
+  if(ctListEl){
+    ctListEl.addEventListener('wheel', function(e){
+      if(e.ctrlKey) return;                                  // leave Ctrl+wheel for zoom
+      if(ctListEl.scrollHeight <= ctListEl.clientHeight) return;
+      ctListEl.scrollTop += e.deltaY;
+      e.preventDefault();
+    }, { passive:false });
+  }
+  _ctMakeResizable(d, d.querySelector('.ct-resizer'));
+  window.addEventListener('resize', _ctSizeList);
+}
+function openCustomTextDock(){
+  _buildCustomTextDock();
+  if(document.body.classList.contains('compare-mode') && typeof closeComparePanel==='function') closeComparePanel();
+  var tb=document.querySelector('.toolbar'), fb=document.getElementById('fmtBar');
+  var top=(tb?tb.offsetHeight:48)+(fb&&fb.offsetHeight>0?fb.offsetHeight:40);
+  document.documentElement.style.setProperty('--ctext-top', top+'px');
+  var cur=getComputedStyle(document.documentElement).getPropertyValue('--ctext-w').trim();
+  if(!cur) document.documentElement.style.setProperty('--ctext-w','400px');
+  document.body.classList.add('ctext-mode');
+  _renderCustomTextList();
+  requestAnimationFrame(_ctSizeList);
+}
+function closeCustomTextDock(){ document.body.classList.remove('ctext-mode'); }
+function toggleCustomTextDock(){
+  if(document.body.classList.contains('ctext-mode')) closeCustomTextDock(); else openCustomTextDock();
+}
+document.addEventListener('DOMContentLoaded', function(){ _buildCustomTextDock(); _loadCustomText(); });
 
 
 
@@ -15893,8 +16150,13 @@ async function exportToCustomer() {
     '.ctx-menu',
     '.draw-toolbar',
     '.hc-paint-toolbar',
+    '.cp-panel',
+    '.ct-dock',
     'input[type="file"]'
   ];
+  // Drop any split-screen / compare layout classes so the customer copy lays
+  // out normally even if a dock/panel was open when exporting.
+  try { cloned.querySelector('body') && cloned.querySelector('body').classList.remove('ctext-mode','compare-mode'); } catch(e){}
   REMOVE_SELECTORS.forEach(sel => {
     cloned.querySelectorAll(sel).forEach(el => el.remove());
   });
@@ -18449,6 +18711,8 @@ window.addEventListener('resize', () => {
 });
 
 function openComparePanel() {
+  // Don't let two split layouts fight — close the custom-text dock first.
+  if(document.body.classList.contains('ctext-mode') && typeof closeCustomTextDock === 'function') closeCustomTextDock();
   // Apply page zoom so 210mm pages fit the 50vw right panel
   _applyCompareZoom();
 
@@ -19744,6 +20008,8 @@ document.addEventListener('change', e => {
 
       const cphr = e.target.closest('[data-phrase-open-custom]');
       if(cphr){ if(typeof openCustomPhrasePanel === 'function') openCustomPhrasePanel(); closeMenus(); return; }
+      const ctxt = e.target.closest('[data-phrase-open-ctext]');
+      if(ctxt){ if(typeof toggleCustomTextDock === 'function') toggleCustomTextDock(); closeMenus(); return; }
       const phrase = e.target.closest('[data-phrase]');
       if(phrase){
         const field = activeField();
