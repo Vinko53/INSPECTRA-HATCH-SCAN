@@ -60,7 +60,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>HC Daily Report — Löffler International</title>
+<title>HC Daily report — Löffler International</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- PWA: installable with the full Löffler logo. Self-contained (manifest + icons as data URIs); no service worker / offline cache. -->
 <meta name="theme-color" content="#1f3a68">
@@ -166,6 +166,9 @@
   .vessel-caption-bar:empty::before{content:"Vessel / photo caption…";color:rgba(255,255,255,.45);font-style:italic;}
   .shipyard-field-wrap{display:flex;flex-direction:column;align-items:center;padding:9mm 0 0;}
   .shipyard-label{font-size:7.5pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);margin-bottom:1mm;}
+  .shipyard-label-select{border:none;background:transparent;-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center;cursor:pointer;outline:none;font-family:inherit;padding:1px 16px;border-radius:3px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='6'><path d='M0 0l4 5 4-5z' fill='%231f3a68'/></svg>");background-repeat:no-repeat;background-position:right 3px center;}
+  .shipyard-label-select:hover{background-color:rgba(31,58,104,.08);}
+  @media print{ .shipyard-label-select{background-image:none!important;padding:0!important;} }
   .shipyard-field{font-size:14pt;font-weight:600;color:var(--navy-deep);text-align:center;outline:none;min-width:60mm;max-width:100%;width:100%;box-sizing:border-box;min-height:7mm;border-bottom:1.5px solid var(--line-soft);padding:0 2mm;line-height:1.3;overflow-wrap:break-word;word-break:break-word;white-space:normal;}
   .shipyard-field:focus{border-bottom-color:var(--navy);background:#fffbe6;border-radius:2px 2px 0 0;}
   .shipyard-field[data-placeholder]:empty::before{content:attr(data-placeholder);color:#b0b8c8;font-style:italic;font-size:12pt;font-weight:400;}
@@ -470,7 +473,7 @@
     @page {
       size: A4;
       margin: 12mm 14mm 12mm 14mm;
-      @bottom-left   { content: "HC Daily Report"; font: 8pt 'Source Sans 3', Arial, sans-serif; color: #1f3a68; }
+      @bottom-left   { content: "HC Daily report"; font: 8pt 'Source Sans 3', Arial, sans-serif; color: #1f3a68; }
       @bottom-right  { content: "Page " counter(page) " of " counter(pages); font: 8pt 'Source Sans 3', Arial, sans-serif; color: #1f3a68; }
     }
     @page :first { @bottom-left { content: ""; } @bottom-right { content: ""; } }
@@ -1546,15 +1549,13 @@
     .page-footer { border-top-color: #000 !important; }
     /* Remove the shipyard / port name underline in the PDF — it sat directly
        above the footer divider and looked like a doubled line. */
-    .shipyard-field { border-bottom: none !important; }
+    /* Full-width underline under the shipyard / port value in the PDF, matching
+       the on-screen report (the earlier short centred rule looked stray). */
+    .shipyard-field { border-bottom: 0.6pt solid #6a7488 !important; }
     /* Push the Shipyard / Port block down so it isn't crowded against the
-       vessel photo, and finish the value with a short, centred rule (a
-       full-width underline doubled up with the footer divider — see above). */
+       vessel photo. */
     .shipyard-field-wrap { padding-top: 9mm !important; }
-    .shipyard-field-wrap::after {
-      content: ""; display: block; width: 46mm; height: 0.6pt;
-      background: #6a7488; margin: 2.5mm auto 0;
-    }
+    .shipyard-field-wrap::after { display: none !important; }
     /* Table-of-contents dotted leader lines → soft grey hairline (pure black
        dots read as heavy/dark in the PDF; a light grey dotted line is cleaner). */
     .toc-dots, .toc-sub-dots { border-bottom-color: #aab2c0 !important; border-bottom-width: 0.2pt !important; }
@@ -2202,6 +2203,7 @@
     border-radius: 4px; padding: 2px 6px; font-size: 9pt;
     cursor: pointer; line-height: 1;
     pointer-events: all;
+    opacity: 0; transition: opacity .15s;
   }
   @media print { .inline-img-draw-btn { display: none !important; }
     .inline-img-draw-svg { pointer-events: none !important; } }
@@ -2210,8 +2212,7 @@
     position: absolute; z-index: 15; pointer-events: all;
     opacity: 0; transition: opacity .15s;
   }
-  .inline-img-wrap:hover .inline-img-resize-handle,
-  .inline-img-wrap.selected .inline-img-resize-handle { opacity: 1; }
+  .inline-img-wrap:hover .inline-img-resize-handle { opacity: 1; }
   /* Bottom-right corner */
   .inline-img-resize-handle.se {
     bottom: 0; right: 0; width: 14px; height: 14px;
@@ -2224,7 +2225,7 @@
     top: 14px; right: 0; width: 6px;
     bottom: 14px;
     cursor: ew-resize;
-    background: rgba(31,58,104,.35);
+    background: transparent;
     border-radius: 0 2px 2px 0;
   }
   /* Left edge */
@@ -2232,14 +2233,14 @@
     top: 14px; left: 0; width: 6px;
     bottom: 14px;
     cursor: ew-resize;
-    background: rgba(31,58,104,.35);
+    background: transparent;
     border-radius: 2px 0 0 2px;
   }
   /* Bottom edge */
   .inline-img-resize-handle.s {
     bottom: 0; left: 14px; right: 14px; height: 6px;
     cursor: ns-resize;
-    background: rgba(31,58,104,.35);
+    background: transparent;
     border-radius: 0 0 2px 2px;
   }
   .inline-img-resize-handle:hover { background: rgba(31,58,104,.75) !important; }
@@ -2256,6 +2257,7 @@
     cursor: grab; display: flex; align-items: center; justify-content: center;
     z-index: 2; user-select: none; -webkit-user-select: none;
     touch-action: none;     /* prevents scroll/zoom gestures from hijacking the drag */
+    opacity: 0; transition: opacity .15s;
   }
   .inline-img-drag:active { cursor: grabbing; }
   /* Drop-target highlight on the receiving field while dragging */
@@ -2281,8 +2283,12 @@
     background: #c0392b; color: #fff; border: 2px solid #fff;
     font-size: 11px; line-height: 1; padding: 0;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    z-index: 2;
+    z-index: 2; opacity: 0; transition: opacity .15s;
   }
+  /* Reveal image controls only on hover, so an idle image shows no frame */
+  .inline-img-wrap:hover .inline-img-drag,
+  .inline-img-wrap:hover .inline-img-remove,
+  .inline-img-wrap:hover .inline-img-draw-btn { opacity: 1; }
   @media print {
     .inline-img-wrap { resize: none; border-color: transparent !important; box-shadow: none !important; }
     .inline-img-remove, .inline-img-drag { display: none !important; }
@@ -2455,6 +2461,11 @@
     content: attr(data-placeholder);
     color: #aaa; font-style: italic; font-weight: 400; pointer-events: none;
   }
+  /* Editable section headings ("Comments:", "Photos:", "Work progress:", …) */
+  .label-editable[contenteditable="true"]{ cursor:text; border-radius:3px; padding:0 3px; }
+  .label-editable[contenteditable="true"]:hover{ background:rgba(31,58,104,.07); }
+  .label-editable[contenteditable="true"]:focus{ background:#fffbe6; outline:none; }
+  .label-editable[contenteditable="true"]:empty::before{ content:attr(data-placeholder); color:#aaa; font-style:italic; font-weight:400; pointer-events:none; }
   .stat-block-remove {
     background: none; border: 1px solid #c0392b;
     color: #c0392b; border-radius: 3px;
@@ -3298,7 +3309,7 @@
       e-mail: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1c75727a735c7073797a7a70796e717d6e757279327879">[email&#160;protected]</a><br>Internet: www.loefflermarine.de
     </div>
   </div>
-  <div class="title-line" id="coverTitleLine"><span id="coverTitleText">Hatch Cover Daily Report from</span>&nbsp;<span class="date-mask" id="titleDateMask">
+  <div class="title-line" id="coverTitleLine"><span id="coverTitleText">Hatch Cover Daily report from</span>&nbsp;<span class="date-mask" id="titleDateMask">
       <input class="dm-seg" id="dmDD" maxlength="2" placeholder="DD" inputmode="numeric" oninput="dmInput(this,'dmMM',2)" onkeydown="dmKey(event,this,null,'dmMM')">.<input class="dm-seg" id="dmMM" maxlength="2" placeholder="MM" inputmode="numeric" oninput="dmInput(this,'dmYY',2)" onkeydown="dmKey(event,this,'dmDD','dmYY')">.<input class="dm-seg" id="dmYY" maxlength="4" placeholder="YYYY" inputmode="numeric" oninput="dmInput(this,null,4)" onkeydown="dmKey(event,this,'dmMM',null)" onblur="dmCommit()">
     </span><button class="cal-pick-btn no-print" title="Pick date from calendar" onclick="openCalPicker('dmDD','dmMM','dmYY',this)">📅</button><span id="coverTitleTo" style="display:none;">&nbsp;to&nbsp;<span class="date-mask">
       <input class="dm-seg" id="dmDD2" maxlength="2" placeholder="DD" inputmode="numeric" oninput="dmInput(this,'dmMM2',2)" onkeydown="dmKey(event,this,null,'dmMM2')">.<input class="dm-seg" id="dmMM2" maxlength="2" placeholder="MM" inputmode="numeric" oninput="dmInput(this,'dmYY2',2)" onkeydown="dmKey(event,this,'dmDD2','dmYY2')">.<input class="dm-seg" id="dmYY2" maxlength="4" placeholder="YYYY" inputmode="numeric" oninput="dmInput(this,null,4)" onkeydown="dmKey(event,this,'dmMM2',null)">
@@ -3316,8 +3327,14 @@
       <div class="vessel-caption-bar" contenteditable="true"></div>
     </div>
     <div class="shipyard-field-wrap">
-      <span class="shipyard-label">Shipyard / Port</span>
-      <div class="shipyard-field" contenteditable="true" data-placeholder="Enter shipyard name"></div>
+      <select class="shipyard-label shipyard-label-select" aria-label="Location type">
+        <option>Shipyard</option>
+        <option>Port</option>
+        <option>Technical berth</option>
+        <option>At sea</option>
+        <option>At anchorage</option>
+      </select>
+      <div class="shipyard-field" contenteditable="true" data-placeholder="Enter name"></div>
     </div>
   </div>
 
@@ -3344,12 +3361,12 @@
       <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f0f3f8;border-bottom:1px solid #d0d8e8;">
         <span style="font-size:8.5pt;color:var(--ink-soft);font-weight:600;">Report type:</span>
         <select id="chReportType" onchange="setReportType(this.value)" style="font-size:8.5pt;font-family:inherit;border:1.5px solid #1f3a68;border-radius:4px;padding:4px 10px;color:var(--navy);background:#fff;cursor:pointer;outline:none;">
-          <option value="initial">HC's Initial Repair Report</option>
-          <option value="daily">HC's Daily Service Report</option>
-          <option value="final">HC's Final Service Report</option>
-          <option value="predocking">HC's Pre-docking Inspection</option>
-          <option value="intermediate">HC's Control Inspection</option>
-          <option value="special">HC's Special Occasion Inspection</option>
+          <option value="initial">HC's Initial repair report</option>
+          <option value="daily">HC's Daily service report</option>
+          <option value="final">HC's Final service report</option>
+          <option value="predocking">HC's Pre-docking inspection</option>
+          <option value="intermediate">HC's Control inspection</option>
+          <option value="special">HC's Special occasion inspection</option>
         </select>
       </div>
       <div class="ch-modal-hint">
@@ -3383,7 +3400,7 @@
     </div>
   </div>
 
-  <div class="page-footer"><span class="doc">HC Daily Report</span><span class="pg-num"></span></div>
+  <div class="page-footer"><span class="doc">HC Daily report</span><span class="pg-num"></span></div>
 </div>
 
 <!-- PAGE 2: REPORT META -->
@@ -3482,12 +3499,12 @@
         <span class="rpt-key">Betreff / Subject</span>
         <div id="subjectEditRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <select id="subjectType" onchange="updateSubject()" style="font-size:12pt;border:1px solid var(--line-soft);border-radius:3px;padding:2px 6px;color:var(--navy);font-family:inherit;background:var(--bg-soft);cursor:pointer;outline:none;flex-shrink:0;display:none;">
-            <option value="initial">HC's Initial Repair Report</option>
-            <option value="daily">HC's Daily Service Report</option>
-            <option value="final">HC's Final Service Report</option>
-            <option value="predocking">HC's Pre-docking Inspection</option>
-            <option value="intermediate">HC's Control Inspection</option>
-            <option value="special">HC's Special Occasion Inspection</option>
+            <option value="initial">HC's Initial repair report</option>
+            <option value="daily">HC's Daily service report</option>
+            <option value="final">HC's Final service report</option>
+            <option value="predocking">HC's Pre-docking inspection</option>
+            <option value="intermediate">HC's Control inspection</option>
+            <option value="special">HC's Special occasion inspection</option>
           </select>
           <span id="subjectTypeText" style="font-size:12pt;color:var(--navy);font-weight:600;flex-shrink:0;"></span>
           <span style="font-size:12pt;color:var(--ink-soft);">of</span>
@@ -3508,7 +3525,7 @@
     <ul class="toc-list" id="tocList"></ul>
   </div>
 
-  <div class="page-footer"><span class="doc">HC Daily Report</span><span class="pg-num"></span></div>
+  <div class="page-footer"><span class="doc">HC Daily report</span><span class="pg-num"></span></div>
 </div>
 
 <!-- CONTENT PAGES: populated by JS flow engine -->
@@ -4617,6 +4634,47 @@ function initStore(sid, initialPairs) {
 // Add N photo pairs at once (N from the integrated count selector in the
 // button). Builds all pairs first, then reflows once, then scrolls to the
 // last new pair — avoids N separate reflows and view jumps.
+// Hide a photo section's label ("Work progress:" / "Observation photos:" /
+// "Photos:") whenever that section currently has no photo pairs, and show it
+// again as soon as a pair exists. Re-evaluated on every reflow, so it doesn't
+// matter whether the user removes the pair before or after adding a text box.
+function _tidyPhotoLabels(){
+  document.querySelectorAll('#pagesRoot .photo-pairs').forEach(function(pp){
+    var label = pp.previousElementSibling;
+    if(!label || !label.classList) return;
+    // The element immediately before a .photo-pairs is always its photo heading
+    // ("Photos:"/"Work progress:"); identify it by class so a rename is safe.
+    if(!(label.classList.contains('photo-section-label') || label.classList.contains('label'))) return;
+    label.style.display = pp.querySelector('.photo-pair') ? '' : 'none';
+  });
+}
+
+// Make every section heading label ("Comments:", "Photos:", "Work progress:",
+// "Legend:", …) editable — the same inline-edit treatment as table titles.
+// Runs after each reflow; labels already made editable are left untouched so
+// renames survive (the paginator re-parents nodes, it doesn't rewrite them).
+function _makeLabelsEditable(){
+  document.querySelectorAll('#pagesRoot .label, #pagesRoot .photo-section-label').forEach(function(lb){
+    if(lb.getAttribute('contenteditable') === 'true') return;
+    if(!lb.dataset.placeholder) lb.dataset.placeholder = (lb.textContent||'').trim() || 'Heading';
+    lb.setAttribute('contenteditable','true');
+    lb.setAttribute('spellcheck','false');
+    lb.classList.add('label-editable');
+  });
+}
+// Keep labels single-line and plain-text.
+document.addEventListener('keydown', function(e){
+  var lb = e.target && e.target.closest ? e.target.closest('.label-editable') : null;
+  if(lb && e.key === 'Enter'){ e.preventDefault(); lb.blur(); }
+});
+document.addEventListener('paste', function(e){
+  var lb = e.target && e.target.closest ? e.target.closest('.label-editable') : null;
+  if(!lb) return;
+  e.preventDefault();
+  var text = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\s+/g,' ').trim();
+  document.execCommand('insertText', false, text);
+});
+
 function addPairs(sid, btn) {
   let count = 1;
   if(btn) {
@@ -4827,12 +4885,12 @@ function makePageEl() {
   const _pgLabel = (() => {
     const sel = document.getElementById('subjectType');
     const v = sel ? sel.value : 'daily';
-    return v === 'final' ? 'HC Final Report'
-      : v === 'initial'      ? 'HC Initial Report'
-      : v === 'predocking'   ? 'HC Pre-docking Inspection'
-      : v === 'intermediate' ? 'HC Control Inspection'
-          : v === 'special'      ? 'HC Special Occasion Inspection'
-      : 'HC Daily Report';
+    return v === 'final' ? 'HC Final report'
+      : v === 'initial'      ? 'HC Initial report'
+      : v === 'predocking'   ? 'HC Pre-docking inspection'
+      : v === 'intermediate' ? 'HC Control inspection'
+          : v === 'special'      ? 'HC Special occasion inspection'
+      : 'HC Daily report';
   })();
   d.innerHTML = `
     <div class="ph">
@@ -5157,7 +5215,7 @@ function buildSection(def) {
     const _scoreBtn = (def.id === 'general' || def.id === 'disclaimer')
       ? `<button class="hc-add-schematic-btn no-print" onclick="addScoreTable(this)" style="margin-left:6px;display:none;">＋ Add score table</button>`
       : '';
-    const _photoSectionLabel = _hasDisclaimerChapter() ? 'Observation photos:' : 'Work progress:';
+    const _photoSectionLabel = _photoLabelText(def.id);
     // Repair Proposal chapter (predocking / intermediate / special reports) gets
     // an extra button to insert a customer-facing workscope table directly
     // below the text box.
@@ -5446,6 +5504,10 @@ function doReflow() {
           }
         }
       }
+      // Hide/show photo-section labels based on whether each section has pairs.
+      _tidyPhotoLabels();
+      // Make section heading labels inline-editable (idempotent; preserves renames).
+      _makeLabelsEditable();
       // Release the re-entrancy guard on the next tick — after any focusout
       // queued (via setTimeout 0) by the rebuild's own blur has run and been
       // skipped. This is what stops the endless reflow/scroll-snap loop.
@@ -6382,7 +6444,7 @@ function onSubjectNameInput(el) {
   // Update print display field
   const sel    = document.getElementById('subjectType');
   const dispEl = document.getElementById('subjectDisplay');
-  const typeLabel = sel ? sel.options[sel.selectedIndex].text : "HC's Daily Service Report";
+  const typeLabel = sel ? sel.options[sel.selectedIndex].text : "HC's Daily service report";
   const ship = el.textContent.trim() || 'SHIP NAME';
   if(dispEl) dispEl.textContent = typeLabel + ' of “' + ship + '”';
 }
@@ -6463,7 +6525,7 @@ function updateSubject() {
   const dispEl = document.getElementById('subjectDisplay');
   const ship   = document.querySelector('.ship-name-input')?.textContent?.trim() || '';
   const typeVal   = sel ? sel.value : 'daily';
-  const typeLabel = sel ? sel.options[sel.selectedIndex]?.text : "HC's Daily Service Report";
+  const typeLabel = sel ? sel.options[sel.selectedIndex]?.text : "HC's Daily service report";
 
   // Mirror the selected type to the read-only page-two label and the modal selector.
   const _stt = document.getElementById('subjectTypeText');
@@ -6472,9 +6534,9 @@ function updateSubject() {
   if(_crt && _crt.value !== typeVal) _crt.value = typeVal;
 
   // Short label used in page headers, footers, and the browser tab title
-  const _shortLabels = { final:'HC Final Report', initial:'HC Initial Report',
-    predocking:'HC Pre-docking Inspection', intermediate:'HC Control Inspection', special:'HC Special Occasion Inspection' };
-  const shortLabel = _shortLabels[typeVal] || 'HC Daily Report';
+  const _shortLabels = { final:'HC Final report', initial:'HC Initial report',
+    predocking:'HC Pre-docking inspection', intermediate:'HC Control inspection', special:'HC Special occasion inspection' };
+  const shortLabel = _shortLabels[typeVal] || 'HC Daily report';
 
   // Update every page footer .doc span
   (document.getElementById('pagesRoot') || document).querySelectorAll('.page-footer .doc').forEach(el => {
@@ -6482,7 +6544,7 @@ function updateSubject() {
   });
 
   // Update every content-page header report title (h3.report-title)
-  // Format: "HC Daily Report · SHIP NAME" -> "<shortLabel> · SHIP NAME"
+  // Format: "HC Daily report · SHIP NAME" -> "<shortLabel> · SHIP NAME"
   (document.getElementById('pagesRoot') || document).querySelectorAll('.report-title').forEach(el => {
     el.childNodes.forEach(n => {
       if(n.nodeType === 3) n.textContent = shortLabel + ' · ';
@@ -6494,13 +6556,13 @@ function updateSubject() {
   const coverTo   = document.getElementById('coverTitleTo');
   if(coverText) {
     const _coverTitles = {
-      final:        ['Hatch Cover Final Service Report from', ''],
-      initial:      ['Hatch Cover Initial Service Report from', 'none'],
-      predocking:   ['Hatch Cover Pre-docking Inspection from', 'none'],
-      intermediate: ['Hatch Cover Control Inspection from', 'none'],
-      special:      ['Hatch Cover Special Occasion Inspection from', 'none'],
+      final:        ['Hatch Cover Final service report from', ''],
+      initial:      ['Hatch Cover Initial service report from', 'none'],
+      predocking:   ['Hatch Cover Pre-docking inspection from', 'none'],
+      intermediate: ['Hatch Cover Control inspection from', 'none'],
+      special:      ['Hatch Cover Special occasion inspection from', 'none'],
     };
-    const _ct = _coverTitles[typeVal] || ['Hatch Cover Daily Report from', 'none'];
+    const _ct = _coverTitles[typeVal] || ['Hatch Cover Daily report from', 'none'];
     coverText.textContent = _ct[0];
     if(coverTo) coverTo.style.display = _ct[1];
   }
@@ -6631,10 +6693,25 @@ function updateSubject() {
   _syncPhotoSectionLabels();
 }
 
+// Decide the wording above a chapter's photo frames:
+//  • Disclaimer reports keep "Observation photos:".
+//  • Daily and final SERVICE reports use "Work progress:" — except the
+//    "General notes & remarks" and "Safety" chapters, which use "Photos:".
+//  • Every other report type uses "Photos:" everywhere.
+function _photoLabelText(sid){
+  if(_hasDisclaimerChapter()) return 'Observation photos:';
+  var rt = (document.getElementById('subjectType') && document.getElementById('subjectType').value) || 'daily';
+  var dailyOrFinal = (rt === 'daily' || rt === 'final');
+  if(dailyOrFinal && sid !== 'general' && sid !== 'safety') return 'Work progress:';
+  return 'Photos:';
+}
 function _syncPhotoSectionLabels() {
-  const label = _hasDisclaimerChapter() ? 'Observation photos:' : 'Work progress:';
   document.querySelectorAll('.photo-section-label').forEach(function(el) {
-    el.textContent = label;
+    var cur = (el.textContent||'').trim();
+    // Only refresh known default wording; leave any user-renamed label alone.
+    if(cur !== 'Work progress:' && cur !== 'Observation photos:' && cur !== 'Photos:') return;
+    var sec = el.closest('.section[data-sid]');
+    el.textContent = _photoLabelText(sec ? sec.dataset.sid : '');
   });
 }
 
@@ -7197,7 +7274,7 @@ function initBPraw(d, fn) {
   document.getElementById('bpViewer').style.display='';
   // Simplified: prompt user to use INSPECTRA export for full render
   const cv=document.getElementById('bpCanvas');
-  cv.innerHTML='<div style="padding:10px;font-size:9pt;color:#555;">Use <strong>INSPECTRA → Export Bays for HC Daily Report</strong> for pixel-perfect bay rendering.</div>';
+  cv.innerHTML='<div style="padding:10px;font-size:9pt;color:#555;">Use <strong>INSPECTRA → Export Bays for HC Daily report</strong> for pixel-perfect bay rendering.</div>';
   doReflow();
 }
 
@@ -8666,6 +8743,17 @@ function toggleCustomTextDock(){
   if(document.body.classList.contains('ctext-mode')) closeCustomTextDock(); else openCustomTextDock();
 }
 document.addEventListener('DOMContentLoaded', function(){ _buildCustomTextDock(); _loadCustomText(); });
+
+// Keep the cover "Shipyard / Port" dropdown's choice written into the DOM
+// (the selected attribute) so it round-trips through save/load and the
+// customer-export clone, not just the live selectedIndex.
+document.addEventListener('DOMContentLoaded', function(){
+  var sy = document.querySelector('.shipyard-label-select');
+  if(!sy) return;
+  var sync = function(){ for(var i=0;i<sy.options.length;i++){ if(sy.options[i].selected) sy.options[i].setAttribute('selected',''); else sy.options[i].removeAttribute('selected'); } };
+  sy.addEventListener('change', sync);
+  sync();
+});
 
 
 
@@ -15897,7 +15985,7 @@ async function saveAsReportJSON() {
       const handle = await window.showSaveFilePicker({
         suggestedName: filename,
         types: [{
-          description: 'HC Daily Report (JSON)',
+          description: 'HC Daily report (JSON)',
           accept: { 'application/json': ['.json'] }
         }]
       });
@@ -17455,7 +17543,7 @@ async function openReportJSON() {
       const _openOpts = {
         multiple: false,
         types: [{
-          description: 'HC Daily Report (JSON)',
+          description: 'HC Daily report (JSON)',
           accept: { 'application/json': ['.json'] }
         }]
       };
@@ -17481,7 +17569,7 @@ async function openReportJSON() {
   catch(err) { alert('Could not read JSON: ' + err.message); return; }
 
   if(!data || data.type !== 'hc-daily-report' || !Array.isArray(data.pages)) {
-    alert('Not a valid HC Daily Report JSON file.');
+    alert('Not a valid HC Daily report JSON file.');
     return;
   }
   if(!confirm('Loading this file will replace the current report. Continue?')) return;
@@ -17503,7 +17591,7 @@ function importReportJSON(input) {
     catch(err) { alert('Could not read JSON: ' + err.message); input.value = ''; return; }
 
     if(!data || data.type !== 'hc-daily-report' || !Array.isArray(data.pages)) {
-      alert('Not a valid HC Daily Report JSON file.');
+      alert('Not a valid HC Daily report JSON file.');
       input.value = '';
       return;
     }
