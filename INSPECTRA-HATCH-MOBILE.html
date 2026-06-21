@@ -767,7 +767,7 @@ function makeTile(cid, idx, it){
     if(tile._lpFired){ tile._lpFired=false; return; }   // swallow click after a long-press
     if(ev.target.classList.contains('del')){ store[cid][idx].photo=null; render(); return; }
     if(ev.target.classList.contains('lib')){ capture(cid, idx, 'library'); return; }
-    _instantCamera(cid, idx);
+    capture(cid, idx, 'camera');
   });
   tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   tile.addEventListener('selectstart', function(ev){ ev.preventDefault(); });
@@ -831,7 +831,7 @@ function makeCoverTile(){
   tile.addEventListener('click', function(ev){
     if(ev.target.classList.contains('del')){ coverPhoto.photo=null; render(); return; }
     if(ev.target.classList.contains('lib')){ capture('__cover__',0,'library'); return; }
-    _instantCamera('__cover__', 0);
+    capture('__cover__', 0, 'camera');
   });
   tile.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   tile.style.webkitTouchCallout='none';
