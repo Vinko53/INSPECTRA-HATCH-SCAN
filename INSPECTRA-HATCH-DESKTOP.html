@@ -166,9 +166,14 @@
   .vessel-caption-bar:empty::before{content:"Vessel / photo caption…";color:rgba(255,255,255,.45);font-style:italic;}
   .shipyard-field-wrap{display:flex;flex-direction:column;align-items:center;padding:9mm 0 0;}
   .shipyard-label{font-size:7.5pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);margin-bottom:1mm;}
-  .shipyard-label-select{border:none;background:transparent;-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center;cursor:pointer;outline:none;font-family:inherit;padding:1px 16px;border-radius:3px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='6'><path d='M0 0l4 5 4-5z' fill='%231f3a68'/></svg>");background-repeat:no-repeat;background-position:right 3px center;}
-  .shipyard-label-select:hover{background-color:rgba(31,58,104,.08);}
-  @media print{ .shipyard-label-select{background-image:none!important;padding:0!important;} }
+  .shipyard-loc-wrap{position:relative;display:inline-block;}
+  .shipyard-loc-btn{cursor:pointer;border-radius:3px;padding:1px 16px;display:inline-block;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='6'><path d='M0 0l4 5 4-5z' fill='%231f3a68'/></svg>");background-repeat:no-repeat;background-position:right 3px center;}
+  .shipyard-loc-btn:hover{background-color:rgba(31,58,104,.08);}
+  .shipyard-loc-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;background:#fff;border:1px solid #c7d0de;border-radius:8px;box-shadow:0 8px 26px rgba(15,30,60,.2);z-index:100;padding:4px;min-width:155px;}
+  .shipyard-loc-menu[hidden]{display:none;}
+  .shipyard-loc-opt{display:block;text-align:center;padding:7px 14px;font-size:9pt;font-weight:600;color:var(--navy);border-radius:5px;cursor:pointer;white-space:nowrap;}
+  .shipyard-loc-opt:hover{background:#eaf1fb;}
+  @media print{ .shipyard-loc-btn{background-image:none!important;padding:0!important;} }
   .shipyard-field{font-size:14pt;font-weight:600;color:var(--navy-deep);text-align:center;outline:none;min-width:60mm;max-width:100%;width:100%;box-sizing:border-box;min-height:7mm;border-bottom:1.5px solid var(--line-soft);padding:0 2mm;line-height:1.3;overflow-wrap:break-word;word-break:break-word;white-space:normal;}
   .shipyard-field:focus{border-bottom-color:var(--navy);background:#fffbe6;border-radius:2px 2px 0 0;}
   .shipyard-field[data-placeholder]:empty::before{content:attr(data-placeholder);color:#b0b8c8;font-style:italic;font-size:12pt;font-weight:400;}
@@ -3327,13 +3332,16 @@
       <div class="vessel-caption-bar" contenteditable="true"></div>
     </div>
     <div class="shipyard-field-wrap">
-      <select class="shipyard-label shipyard-label-select" aria-label="Location type">
-        <option>Shipyard</option>
-        <option>Port</option>
-        <option>Technical berth</option>
-        <option>At sea</option>
-        <option>At anchorage</option>
-      </select>
+      <span class="shipyard-loc-wrap">
+        <span class="shipyard-label shipyard-loc-btn">Shipyard</span>
+        <span class="shipyard-loc-menu no-print" role="listbox" hidden>
+          <span class="shipyard-loc-opt">Shipyard</span>
+          <span class="shipyard-loc-opt">Port</span>
+          <span class="shipyard-loc-opt">Technical berth</span>
+          <span class="shipyard-loc-opt">At sea</span>
+          <span class="shipyard-loc-opt">At anchorage</span>
+        </span>
+      </span>
       <div class="shipyard-field" contenteditable="true" data-placeholder="Enter name"></div>
     </div>
   </div>
@@ -8744,15 +8752,29 @@ function toggleCustomTextDock(){
 }
 document.addEventListener('DOMContentLoaded', function(){ _buildCustomTextDock(); _loadCustomText(); });
 
-// Keep the cover "Shipyard / Port" dropdown's choice written into the DOM
-// (the selected attribute) so it round-trips through save/load and the
-// customer-export clone, not just the live selectedIndex.
-document.addEventListener('DOMContentLoaded', function(){
-  var sy = document.querySelector('.shipyard-label-select');
-  if(!sy) return;
-  var sync = function(){ for(var i=0;i<sy.options.length;i++){ if(sy.options[i].selected) sy.options[i].setAttribute('selected',''); else sy.options[i].removeAttribute('selected'); } };
-  sy.addEventListener('change', sync);
-  sync();
+// Cover "Shipyard / Port" location-type dropdown. Delegated so it keeps working
+// after a report is loaded (which replaces the cover DOM). The chosen value is
+// just the button's text, so it persists through save/load and the export via
+// the serialized HTML; the menu is screen-only.
+document.addEventListener('click', function(e){
+  var opt = e.target.closest ? e.target.closest('.shipyard-loc-opt') : null;
+  if(opt){
+    e.stopPropagation();
+    var wrapO = opt.closest('.shipyard-loc-wrap');
+    if(wrapO){ wrapO.querySelector('.shipyard-loc-btn').textContent = opt.textContent;
+               wrapO.querySelector('.shipyard-loc-menu').hidden = true; }
+    return;
+  }
+  var btn = e.target.closest ? e.target.closest('.shipyard-loc-btn') : null;
+  if(btn){
+    e.stopPropagation();
+    var menu = btn.parentNode.querySelector('.shipyard-loc-menu');
+    var willOpen = menu.hidden;
+    document.querySelectorAll('.shipyard-loc-menu').forEach(function(m){ m.hidden = true; });
+    menu.hidden = !willOpen;
+    return;
+  }
+  document.querySelectorAll('.shipyard-loc-menu').forEach(function(m){ m.hidden = true; });
 });
 
 
@@ -15284,20 +15306,20 @@ const _HC_BULK_PANEL_TYPES = [
     generate: (grid, holdIdx) => {
       const f1 = _hcMakeRow('full');
       const c1 = f1.querySelector('.hc-cell');
-      if(c1) { c1.style.background='#dceaf7'; c1.style.textAlign='center'; }
+      if(c1) { c1.style.textAlign='center'; }
       grid.appendChild(f1);
       const f2 = _hcMakeRow('full');
       const c2 = f2.querySelector('.hc-cell');
-      if(c2) { c2.style.background='#e8f0fa'; c2.style.textAlign='center'; }
+      if(c2) { c2.style.textAlign='center'; }
       grid.appendChild(f2);
       _hcBulkHingeLine(grid);
       const a1 = _hcMakeRow('full');
       const ca1 = a1.querySelector('.hc-cell');
-      if(ca1) { ca1.style.background='#ddf0de'; ca1.style.textAlign='center'; }
+      if(ca1) { ca1.style.textAlign='center'; }
       grid.appendChild(a1);
       const a2 = _hcMakeRow('full');
       const ca2 = a2.querySelector('.hc-cell');
-      if(ca2) { ca2.style.background='#eaf3de'; ca2.style.textAlign='center'; }
+      if(ca2) { ca2.style.textAlign='center'; }
       grid.appendChild(a2);
     }
   },
@@ -15308,12 +15330,12 @@ const _HC_BULK_PANEL_TYPES = [
     generate: (grid, holdIdx) => {
       const fwd = _hcMakeRow('full');
       const cf = fwd.querySelector('.hc-cell');
-      if(cf) { cf.style.background='#e8f0fa'; }
+      if(cf) { }
       grid.appendChild(fwd);
       _hcBulkHingeLine(grid);
       const aft = _hcMakeRow('full');
       const ca = aft.querySelector('.hc-cell');
-      if(ca) { ca.style.background='#eaf3de'; }
+      if(ca) { }
       grid.appendChild(aft);
     }
   },
@@ -15332,7 +15354,7 @@ const _HC_BULK_PANEL_TYPES = [
       cP.className = 'hc-cell hc-ps';
       cP.contentEditable = 'true';
       cP.textContent = 'P (Port)';
-      cP.style.background = '#faeeda';
+      
       cP.style.borderColor = '#ba7517';
       cP.style.borderRight = '3px dashed #ba7517';
       cP.style.fontWeight = '600';
@@ -15343,7 +15365,7 @@ const _HC_BULK_PANEL_TYPES = [
       cS.className = 'hc-cell hc-ps';
       cS.contentEditable = 'true';
       cS.textContent = 'S (Stbd)';
-      cS.style.background = '#faeeda';
+      
       cS.style.borderColor = '#ba7517';
       cS.style.borderLeft = '3px dashed #ba7517';
       cS.style.fontWeight = '600';
@@ -15362,7 +15384,7 @@ const _HC_BULK_PANEL_TYPES = [
     generate: (grid, holdIdx) => {
       const row = _hcMakeRow('full');
       const c = row.querySelector('.hc-cell');
-      if(c) { c.style.background='#f0f0f5'; }
+      if(c) { }
       grid.appendChild(row);
     }
   },
