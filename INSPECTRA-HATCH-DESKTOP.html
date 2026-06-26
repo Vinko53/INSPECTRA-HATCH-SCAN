@@ -351,6 +351,110 @@
   .ct-foot{ padding:7px 14px; border-top:1px solid #eef2f8; font-size:8pt; color:#9aa3b2; }
   .ct-resizer{ position:absolute; top:0; right:0; width:10px; height:100%; cursor:ew-resize; z-index:2; }
   @media print{ .ct-dock{ display:none !important; } body.ctext-mode #pagesRoot{ position:static !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; overflow:visible !important; } }
+  /* Repair progress workspace */
+  .prog-overlay{ position:fixed; inset:0; z-index:9500; background:rgba(15,25,45,.5); display:none; align-items:stretch; justify-content:center; }
+  .prog-panel{ background:#f4f6fa; width:100%; max-width:1400px; margin:14px; border-radius:12px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .prog-head{ display:flex; align-items:center; justify-content:space-between; padding:11px 16px; background:linear-gradient(135deg,#1f3a68,#2c5599); color:#fff; }
+  .prog-title{ font-weight:700; font-size:12pt; }
+  .prog-head-right{ display:flex; align-items:center; gap:12px; }
+  .prog-global{ font-size:15pt; font-weight:800; background:rgba(255,255,255,.15); padding:2px 12px; border-radius:8px; }
+  .prog-mode{ display:flex; border:1px solid rgba(255,255,255,.5); border-radius:7px; overflow:hidden; }
+  .prog-mode-btn{ background:transparent; color:#dbe6f5; border:none; padding:5px 12px; font:inherit; font-size:8.5pt; cursor:pointer; }
+  .prog-mode-btn.active{ background:#fff; color:#1f3a68; font-weight:700; }
+  .prog-close{ background:rgba(255,255,255,.18); border:none; color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:13px; }
+  .prog-toolbar{ display:flex; align-items:center; gap:8px; padding:9px 16px; background:#fff; border-bottom:1px solid #e6eaf2; flex-wrap:wrap; }
+  .prog-btn{ font:inherit; font-size:9pt; font-weight:600; padding:6px 12px; border-radius:7px; border:1px solid #c7d0de; background:#f4f6fa; color:var(--navy); cursor:pointer; }
+  .prog-btn:hover{ background:#eaf1fb; }
+  .prog-setall{ font-size:8.5pt; color:#42506a; display:inline-flex; align-items:center; gap:5px; padding-left:6px; }
+  .prog-setall input{ font:inherit; font-size:8pt; padding:3px 4px; border:1px solid #c7d0de; border-radius:5px; }
+  .pdate{ display:inline-flex; align-items:center; gap:1px; position:relative; }
+  .pdate-txt{ width:80px; border:1px solid #d4dbe8; text-align:center; font:inherit; font-size:7.5pt; padding:4px 2px; background:#f5f8ff; color:#42506a; border-radius:4px; }
+  .pdate-cal{ border:none; background:transparent; cursor:pointer; font-size:12px; line-height:1; padding:0 2px; }
+  .pdate-native{ position:absolute; left:8px; bottom:1px; width:1px; height:1px; opacity:0; pointer-events:none; border:0; padding:0; margin:0; }
+  .prog-modal-row .pdate{ flex:1; }
+  .prog-modal-row .pdate-txt{ flex:1; width:auto; font-size:10pt; padding:7px 9px; border:1px solid #c7d0de; border-radius:7px; background:#fff; }
+  .prog-modal-row .pdate-cal{ font-size:15px; padding:0 6px; }
+  .prog-hint{ font-size:8pt; color:#9aa3b2; margin-left:auto; max-width:46%; }
+  .prog-body{ flex:1; overflow:auto; padding:14px 16px; }
+  .prog-grid-wrap{ overflow-x:auto; background:#fff; border:1px solid #e6eaf2; border-radius:8px; }
+  .prog-table{ border-collapse:collapse; font-size:8.5pt; }
+  .prog-table th,.prog-table td{ border:1px solid #e2e7ef; padding:0; }
+  .prog-th-item{ position:sticky; left:0; background:#1f3a68; color:#fff; padding:5px 8px; min-width:240px; text-align:left; z-index:3; }
+  .prog-th-w{ background:#1f3a68; color:#fff; padding:5px 6px; }
+  .prog-th-q{ background:#1f3a68; color:#fff; padding:5px 6px; }
+  .prog-th-pd{ background:#264a80; color:#dfe8f5; padding:5px 6px; font-size:7.5pt; font-weight:600; }
+  .prog-th-act{ background:#1f3a68; min-width:40px; }
+  .prog-th-day{ background:#2c5599; color:#fff; padding:3px 4px; white-space:nowrap; }
+  .prog-th-chg{ background:#b03a2e; color:#fff; padding:3px 4px; white-space:nowrap; font-size:7.5pt; }
+  .prog-chg-td{ padding:0; }
+  .prog-chg-cell{ min-width:42px; background:#fde3df; color:#a93226; font-weight:700; text-align:center; padding:4px 4px; font-size:8.5pt; }
+  .prog-chg-cell.prog-chg-empty{ background:#fbeeec; color:transparent; }
+  .prog-foot-chg{ background:#fbeeec; }
+  .prog-day-lbl{ font-size:7.5pt; }
+  .prog-day-rm{ color:#cdd9f0 !important; font-size:8px !important; margin-left:3px; opacity:0; }
+  .prog-th-day:hover .prog-day-rm{ opacity:.85; }
+  .prog-day-date{ border:none; background:transparent; color:#fff; font:inherit; font-size:7.5pt; width:86px; text-align:center; }
+  .prog-td-item{ position:sticky; left:0; background:#fff; z-index:2; }
+  .prog-name{ border:none; width:240px; font:inherit; font-size:8.5pt; padding:4px 8px; background:transparent; }
+  .prog-wt{ width:50px; border:none; text-align:center; font:inherit; font-size:8.5pt; padding:4px 2px; background:#f7f9fc; }
+  .prog-qty{ width:54px; border:none; text-align:center; font:inherit; font-size:8.5pt; padding:4px 2px; background:#eef4ff; font-weight:600; }
+  .prog-pdate{ width:96px; border:none; text-align:center; font:inherit; font-size:7.5pt; padding:4px 2px; background:#f5f8ff; color:#42506a; }
+  .prog-td-act{ white-space:nowrap; text-align:center; }
+  .prog-mini{ border:none; background:transparent; cursor:pointer; font-size:11px; padding:2px 3px; color:#8a93a3; }
+  .prog-mini.prog-del:hover{ color:#c0392b; }
+  .prog-mini.prog-cancel:hover{ color:#e08a1e; }
+  .prog-cell{ width:44px; border:none; text-align:center; font:inherit; font-size:8.5pt; padding:3px 0 0; background:transparent; color:inherit; }
+  .prog-cell:disabled{ color:#b0b8c8 !important; }
+  .prog-cell-pct{ font-size:6.5pt; line-height:1; text-align:center; padding:0 0 2px; opacity:.8; min-height:8px; }
+  .prog-cell-td.prog-over{ outline:2px solid #c0392b; outline-offset:-2px; }
+  .prog-cell-td.prog-over .prog-cell{ color:#c0392b !important; font-weight:700; }
+  .prog-warn{ background:#fdecea; border:1px solid #f5b7b1; color:#922b21; border-radius:7px; padding:8px 12px; font-size:9pt; margin-bottom:10px; }
+  .prog-row.prog-cancelled .prog-name{ text-decoration:line-through; color:#9aa3b2; }
+  .prog-foot-lbl{ position:sticky; left:0; background:#eef2f8; font-weight:700; color:#1f3a68; padding:4px 8px; text-align:left; z-index:2; white-space:nowrap; }
+  .prog-foot-global .prog-foot-lbl{ background:#dfe8f5; }
+  .prog-foot-global .prog-foot-cell{ font-weight:700; text-align:center; padding:4px 2px; }
+  .prog-foot-gain .prog-foot-cell{ text-align:center; padding:3px 2px; font-size:8pt; color:#3b7dd8; background:#f7f9fc; }
+  .prog-charts{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:14px; }
+  .prog-chart-card{ background:#fff; border:1px solid #e6eaf2; border-radius:8px; padding:10px 12px; }
+  .prog-chart-title{ font-size:9pt; font-weight:700; color:#1f3a68; margin-bottom:6px; }
+  .prog-svg{ width:100%; height:auto; max-height:260px; display:block; }
+  .prog-empty{ padding:28px; text-align:center; color:#7a869a; font-size:9.5pt; line-height:1.5; }
+  .prog-mini.prog-qchg{ font-weight:700; color:#2c5599; }
+  .prog-mini.prog-qchg:hover{ color:#1f3a68; }
+  .prog-stats-wrap{ margin-top:16px; background:#fff; border:1px solid #e6eaf2; border-radius:8px; padding:12px 14px; overflow-x:auto; }
+  .prog-stats-global{ font-size:10pt; color:#1f3a68; margin-bottom:10px; }
+  .prog-stats-global b{ font-size:13pt; color:#1f8a4c; }
+  .prog-stats-meth{ color:#9aa3b2; font-size:8.5pt; font-weight:400; }
+  .prog-stats-gch{ margin-top:4px; font-size:8.5pt; color:#5a6675; font-weight:400; }
+  .prog-stats{ border-collapse:collapse; width:100%; font-size:8.5pt; }
+  .prog-stats th,.prog-stats td{ border:1px solid #e2e7ef; padding:5px 8px; text-align:center; }
+  .prog-stats thead th{ background:#1f3a68; color:#fff; font-weight:600; }
+  .prog-stats tbody tr:nth-child(even){ background:#f7f9fc; }
+  .prog-stats tr.prog-cancelled td{ color:#9aa3b2; }
+  @media print{ .prog-overlay{ display:none !important; } }
+  .prog-inline{ margin:6px 0; border:1px solid #e6eaf2; border-radius:6px; padding:8px 10px; background:#fff; }
+  .prog-inline-bar{ display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; position:relative; }
+  .prog-inline-bar b{ color:#1f3a68; font-size:9.5pt; }
+  .prog-inline-hint{ color:#9aa3b2; font-size:8pt; }
+  .prog-inline-pick,.prog-inline-remove{ font:inherit; font-size:8.5pt; padding:3px 9px; border:1px solid #c7d0de; border-radius:6px; background:#f4f6fa; color:var(--navy); cursor:pointer; }
+  .prog-inline-pick:hover{ background:#eaf1fb; }
+  .prog-inline-remove{ margin-left:auto; color:#b03a2e; }
+  .prog-inline-panel{ position:absolute; top:100%; left:0; z-index:60; background:#fff; border:1px solid #c7d0de; border-radius:8px; box-shadow:0 8px 24px rgba(15,30,60,.18); padding:8px; min-width:200px; max-height:260px; overflow:auto; }
+  .prog-inline-opt{ display:block; font-size:9pt; padding:3px 4px; cursor:pointer; }
+  .prog-inline-opt:hover{ background:#eaf1fb; border-radius:4px; }
+  .prog-inline-actions{ margin-top:6px; text-align:right; }
+  .prog-inline-apply{ font:inherit; font-size:8.5pt; font-weight:600; padding:4px 12px; border:none; border-radius:6px; background:#1f3a68; color:#fff; cursor:pointer; }
+  .prog-modal{ position:absolute; inset:0; background:rgba(15,28,54,.45); display:flex; align-items:center; justify-content:center; z-index:120; }
+  .prog-modal-card{ background:#fff; border-radius:12px; padding:18px 20px; width:340px; max-width:90%; box-shadow:0 18px 50px rgba(10,22,48,.35); }
+  .prog-modal-title{ font-size:11pt; font-weight:700; color:#1f3a68; margin-bottom:4px; }
+  .prog-modal-sub{ font-size:9pt; color:#5a6675; margin-bottom:14px; }
+  .prog-modal-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .prog-modal-row label{ width:96px; font-size:9pt; color:#42506a; }
+  .prog-modal-row input{ flex:1; font:inherit; font-size:10pt; padding:7px 9px; border:1px solid #c7d0de; border-radius:7px; }
+  .prog-modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:6px; }
+  .prog-modal-actions button{ font:inherit; font-size:9.5pt; padding:7px 16px; border-radius:7px; cursor:pointer; }
+  .prog-modal-cancel{ background:#f1f3f7; border:1px solid #c7d0de; color:#42506a; }
+  .prog-modal-ok{ background:#1f3a68; border:1px solid #1f3a68; color:#fff; font-weight:600; }
   .cp-empty{ color:#7a869a; font-size:8.5pt; text-align:center; padding:18px 12px; line-height:1.55; }
   .cp-foot{ padding:6px 12px; border-top:1px solid #eef2f8; font-size:7.5pt; color:#9aa3b2; }
   @media print{ .cp-panel{ display:none !important; } }
@@ -3161,6 +3265,7 @@
   <span class="brand" style="font-size:11pt;font-weight:700;letter-spacing:.02em;color:#fff;white-space:nowrap;display:flex;flex-direction:column;line-height:1.2;align-items:center;text-shadow:0 1px 2px rgba(10,25,55,.4);">Löffler International<span style="font-weight:300;font-size:8pt;opacity:.85;letter-spacing:.01em;">reporting experts</span></span>
   <span class="hint" id="pageCount"></span>
   <button onclick="newReport()" title="Start a new empty report">&#128196; New report</button>
+  <button onclick="openProgress()" id="progressBtn" title="Repair progress tracker — daily units repaired per item, with charts">&#128202; Progress</button>
   <button onclick="openComparePanel()" id="comparePanelBtn" title="Open a second report side-by-side for comparison and copy-paste">&#9707; Compare…</button>
   <button id="dfOpenBtn" onclick="openReportJSON()" oncontextmenu="setDesignatedFolder('open'); return false;" title="Open a report — choose a JSON file from disk (right-click: set a fixed folder)">&#128194; Open…</button>
   <button id="saveReportBtn" onclick="saveReport()" title="Save — overwrite the file you're working on (Open or Save As a file first to set it)" style="background:#1a7a4a;color:#fff;border:1px solid #15643d;font-weight:600;">&#128190; Save</button>
@@ -4470,6 +4575,8 @@ const SECTIONS = [
        <div class="field" contenteditable="true" data-field-role="body" data-placeholder="Notes about on board spare parts…" lang="en-US" spellcheck="false"></div>
        <button class="hc-add-schematic-btn no-print" onclick="sparePartAddBlock(this)">＋ Spare parts list</button>
        <button class="hc-add-schematic-btn no-print" onclick="sparePartImportWord(this)" style="margin-left:4px;">📋 Import from Word</button>` },
+  { id:'progress', title:'Progress & statistics', noPhotos:true,
+     body:`<div class="prog-report-host" data-progress-host></div>` },
   { id:'sketch', title:'Working Sketch',
      body:`<!-- Sketch upload -->
       <div class="bp-bar no-print" style="flex-wrap:wrap;gap:5px;">
@@ -4542,6 +4649,8 @@ const BULK_SECTIONS = [
      body:`<div class="label">On board spare parts notes:</div>
        <div class="field" contenteditable="true" data-field-role="body" data-placeholder="Notes about on board spare parts…" lang="en-US" spellcheck="false"></div>
        <button class="hc-add-schematic-btn no-print" onclick="matAddBlock(this)">＋ Add spare parts list</button>` },
+  { id:'progress', title:'Progress & statistics', noPhotos:true,
+     body:`<div class="prog-report-host" data-progress-host></div>` },
   { id:'sketch', title:'Working Sketch',
      body:`<!-- Sketch upload -->
       <div class="bp-bar no-print" style="flex-wrap:wrap;gap:5px;">
@@ -4580,6 +4689,9 @@ function _hasDisclaimerChapter() {
 function _activeSections() {
   const base = _vesselType === 'bulk' ? BULK_SECTIONS : SECTIONS;
   let filtered = base;
+  // "Progress & statistics" belongs only to the HC Daily service report.
+  const _rt = (document.getElementById('subjectType') && document.getElementById('subjectType').value) || 'daily';
+  if(_rt !== 'daily') filtered = filtered.filter(s => s.id !== 'progress');
   if(_hasDisclaimerChapter()) {
     // Remove 'materials', keep 'spareParts' and 'repairProposal'
     filtered = filtered.filter(s => s.id !== 'materials');
@@ -5264,10 +5376,16 @@ function buildSection(def) {
     }
   }
   w.innerHTML = `<div class="section-head">${def.title}</div><div class="section-body">${body}</div>`;
+  // Populate the in-report progress chapter immediately so the paginator measures
+  // its real height (not an empty host).
+  if(def.id === 'progress' && typeof _progReportHTML === 'function'){
+    const _ph = w.querySelector('[data-progress-host]');
+    if(_ph) _ph.innerHTML = _progReportHTML();
+  }
   // Inject subchapter widget only into sections that use the standard comments/findings
   // structure — skip sketch, bay plan, materials, spare parts and any section
   // whose first label is inside a schematic block (not a direct comments label).
-  const _NO_SUBCH_SIDS = ['sketch','materials','spareParts','onboardSpareParts'];
+  const _NO_SUBCH_SIDS = ['sketch','materials','spareParts','onboardSpareParts','progress'];
   if(!_NO_SUBCH_SIDS.includes(def.id)) {
     const sb = w.querySelector('.section-body');
     if(sb) {
@@ -5377,6 +5495,11 @@ function doReflow() {
     _rfPending = false;
     _reflowing = true;
     _contentDirty = false; // this reflow accounts for all edits up to now
+    if(typeof _syncProgressChapter === 'function') _syncProgressChapter();
+    // Refresh the in-report progress chapter BEFORE measuring, so pagination
+    // sees its real height.
+    if(typeof _progFillReportSections === 'function') _progFillReportSections();
+    if(typeof _progFillInlineProgress === 'function') _progFillInlineProgress();
     // Safety net: if the rebuild below ever throws before the normal clear runs,
     // make sure the guard still releases so reflow isn't disabled for good. The
     // normal clear (next tick after the rebuild) fires almost immediately; this
@@ -6519,6 +6642,7 @@ function setReportType(val) {
   // Interior, Spare Parts, …) appear or disappear in the table immediately.
   const ov = document.getElementById('chOverlay');
   if(ov && ov.classList.contains('open')) {
+    if(typeof _syncProgressChapter === 'function') _syncProgressChapter();
     if(typeof _selChapterIdx !== 'undefined' && typeof chapterState !== 'undefined'
        && _selChapterIdx >= chapterState.length) _selChapterIdx = 0;
     if(typeof renderChapterList === 'function') renderChapterList();
@@ -7913,6 +8037,14 @@ function _maybeShowInsertMenu(e) {
     };
     insItems.appendChild(row);
   });
+  // Custom: insert a per-item progress block (select which items to show here).
+  {
+    const prow = document.createElement('div');
+    prow.className = 'ctx-item';
+    prow.innerHTML = '<span class="ctx-icon">📊</span> Add progress (select items)';
+    prow.onclick = function(){ menu.classList.remove('open'); if(typeof _progInsertInline==='function') _progInsertInline(anchor, secBody); };
+    insItems.appendChild(prow);
+  }
   insSec.style.display = 'block';
 
   _ctxPos(menu, e.clientX, e.clientY);
@@ -8776,6 +8908,609 @@ document.addEventListener('click', function(e){
   }
   document.querySelectorAll('.shipyard-loc-menu').forEach(function(m){ m.hidden = true; });
 });
+
+/* ── Repair progress tracker ────────────────────────────────────────────
+   Weighted daily %-complete per item with frozen, forward-only history.
+   Adding/cancelling an item only affects calculations from that day on; past
+   days keep what they showed. Four views: heatmap grid, S-curve, daily-gain
+   bars and per-item bars. Travels with the report (saved in its JSON). */
+function _progDefault(){ return { mode:'mandays', days:[], items:[], done:{} }; }
+var _progress = _progDefault();
+var _progSeq = 1;
+
+function _progNormalize(p){
+  p = p || {};
+  var o = _progDefault();
+  o.mode = (p.mode === 'difficulty') ? 'difficulty' : 'mandays';
+  var oldDays = Array.isArray(p.days) ? p.days.slice() : [];
+  o.days = oldDays.slice();
+  // Migration: very old files stored direct % in p.pct; treat as "done out of 100".
+  var legacyPct = (!p.done && p.pct && typeof p.pct==='object') ? p.pct : null;
+  // Older files keyed day data and scope markers by column index; map those to dates.
+  function idxToDate(k){ var s=String(k); if(/^\d+$/.test(s)){ var i=+s; return (i>=0&&i<oldDays.length)?oldDays[i]:null; } return s; }
+  o.items = Array.isArray(p.items) ? p.items.map(function(it){
+    var cancelledDate = it.cancelledDate || '';
+    if(!cancelledDate && typeof it.cancelledIdx==='number' && it.cancelledIdx>=0){ var cd=idxToDate(it.cancelledIdx); if(cd) cancelledDate=cd; }
+    var initQty = (it.qty!=null ? (+it.qty||0) : (legacyPct?100:1));
+    var qtyHist;
+    if(Array.isArray(it.qtyHist) && it.qtyHist.length){
+      qtyHist = it.qtyHist.map(function(e){ return { date:(e.date||''), qty:+e.qty||0 }; })
+        .sort(function(a,b){ return (a.date||'')<(b.date||'')?-1:((a.date||'')>(b.date||'')?1:0); });
+      if(qtyHist[0].date!=='') qtyHist.unshift({ date:'', qty:qtyHist[0].qty });
+    } else { qtyHist = [{ date:'', qty:initQty }]; }
+    return { id: it.id || ('it'+(_progSeq++)), name: it.name||'',
+             qtyHist: qtyHist,
+             mandays: +it.mandays||0,
+             difficulty: Math.max(1,Math.min(5,+it.difficulty||1)),
+             startDate: it.startDate||'', endDate: it.endDate||'',
+             cancelledDate: cancelledDate,
+             cancelMode: (it.cancelMode==='credit')?'credit':'descope' };
+  }) : [];
+  var srcDone = (p.done && typeof p.done==='object') ? p.done : (legacyPct || {});
+  o.done = {};
+  Object.keys(srcDone).forEach(function(id){ var m=srcDone[id]; if(!m||typeof m!=='object') return; var out={};
+    Object.keys(m).forEach(function(k){ var dk=idxToDate(k); if(dk!=null && typeof m[k]==='number') out[dk]=m[k]; }); o.done[id]=out; });
+  o.items.forEach(function(it){ var mm=/(\d+)$/.exec(it.id); if(mm){ _progSeq=Math.max(_progSeq,(+mm[1])+1); } });
+  _progSyncPlanDaysInto(o);
+  return o;
+}
+function _progFind(id){ return _progress.items.find(function(x){ return x.id===id; }); }
+// Quantity can change over time. qtyHist is [{date,qty}] sorted; date '' = initial.
+function _progQtyInit(it){ return (it.qtyHist&&it.qtyHist.length)?it.qtyHist[0].qty:0; }
+function _progQtyAt(it,dateStr){ var hist=it.qtyHist||[]; var q=hist.length?hist[0].qty:0; for(var i=0;i<hist.length;i++){ var ed=hist[i].date; if(ed===''||ed<=dateStr) q=hist[i].qty; else break; } return q; }
+function _progQtyToday(it){ return _progress.days.length?_progQtyAt(it,_progress.days[_progress.days.length-1]):_progQtyInit(it); }
+function _progDateNum(s){ if(!s) return null; var d=new Date(s+'T00:00:00'); return isNaN(d)?null:d.getTime(); }
+function _progDateStr(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function _progAddDaysStr(s,n){ var d=new Date(s+'T00:00:00'); if(isNaN(d)) return s; d.setDate(d.getDate()+n); return _progDateStr(d); }
+// Build every calendar day spanned by the items' plan start→end and merge into
+// the day list (never removes existing or manually-added days); keep sorted/unique.
+function _progSyncPlanDaysInto(o){
+  var set={}; o.days.forEach(function(d){ if(d) set[d]=1; });
+  o.items.forEach(function(it){
+    if(it.startDate && it.endDate){ var cur=new Date(it.startDate+'T00:00:00'), end=new Date(it.endDate+'T00:00:00');
+      if(!isNaN(cur)&&!isNaN(end)&&cur<=end){ var guard=0; while(cur<=end && guard<4000){ set[_progDateStr(cur)]=1; cur.setDate(cur.getDate()+1); guard++; } } }
+    else if(it.startDate){ set[it.startDate]=1; }
+    else if(it.endDate){ set[it.endDate]=1; }
+  });
+  o.days = Object.keys(set).sort();
+}
+function _progSyncPlanDays(){ _progSyncPlanDaysInto(_progress); }
+// Cumulative quantity completed on/before a date (carries the last entry forward).
+// Daily entry = units repaired THAT day (independent per day). Cumulative completed
+// is the running sum of those daily amounts.
+function _progDayCount(it,dateStr){ var m=_progress.done[it.id]||{}; return (typeof m[dateStr]==='number')?m[dateStr]:0; }
+function _progCumDoneAt(it,dateStr){ var m=_progress.done[it.id]||{}; var v=0; for(var i=0;i<_progress.days.length;i++){ var d=_progress.days[i]; if(d>dateStr) break; if(typeof m[d]==='number') v+=m[d]; } return v; }
+function _progRawPct(it,dateStr){ var q=_progQtyAt(it,dateStr); if(q<=0) return 0; return Math.max(0,Math.min(100,_progCumDoneAt(it,dateStr)/q*100)); }
+// First date where the cumulative repaired exceeds the quantity (or null).
+function _progItemOverDate(it){ for(var i=0;i<_progress.days.length;i++){ var d=_progress.days[i]; if(_progActive(it,d) && _progCumDoneAt(it,d) > _progQtyAt(it,d)) return d; } return null; }
+function _progCellOver(it,dateStr){ return _progActive(it,dateStr) && _progCumDoneAt(it,dateStr) > _progQtyAt(it,dateStr); }
+// An item counts toward the global from its plan start date (or from the start of
+// the timeline if it has none), until a descope cancellation.
+function _progActive(it,dateStr){
+  if(it.startDate && dateStr < it.startDate) return false;
+  if(it.cancelledDate && dateStr >= it.cancelledDate) return it.cancelMode==='credit';
+  return true;
+}
+function _progPctAt(it,dateStr){
+  if(it.cancelledDate && dateStr >= it.cancelledDate && it.cancelMode==='credit') return _progRawPct(it,it.cancelledDate);
+  return _progRawPct(it,dateStr);
+}
+// Effective repaired & quantity for an item on a date (freezes a credited-cancel).
+function _progEffDoneQty(it,dateStr){
+  if(it.cancelledDate && dateStr>=it.cancelledDate && it.cancelMode==='credit'){ return { done:_progCumDoneAt(it,it.cancelledDate), qty:_progQtyAt(it,it.cancelledDate) }; }
+  return { done:_progCumDoneAt(it,dateStr), qty:_progQtyAt(it,dateStr) };
+}
+// Natural global progress = total units repaired / total units to repair.
+function _progGlobalAt(dateStr){ var done=0,total=0; _progress.items.forEach(function(it){ if(!_progActive(it,dateStr)) return; var dq=_progEffDoneQty(it,dateStr); total+=dq.qty; done+=Math.min(dq.done,dq.qty); }); return total>0?Math.min(100,done/total*100):0; }
+function _progGainAt(i){ var days=_progress.days; if(!days.length) return 0; if(i<=0) return _progGlobalAt(days[0]); return _progGlobalAt(days[i])-_progGlobalAt(days[i-1]); }
+// Planned (target) progress from each item's start→end dates: linear 0→100%.
+function _progPlannedPctItem(it,dateStr){
+  var s=_progDateNum(it.startDate), e=_progDateNum(it.endDate), d=_progDateNum(dateStr);
+  if(s==null||e==null||d==null||e<=s) return null;
+  if(d<=s) return 0; if(d>=e) return 100; return (d-s)/(e-s)*100;
+}
+function _progPlannedGlobalAt(i){
+  var dateStr=_progress.days[i]; if(!dateStr) return null;
+  var done=0,total=0,any=false;
+  _progress.items.forEach(function(it){
+    if(!_progActive(it,dateStr)) return;
+    var pp=_progPlannedPctItem(it,dateStr); if(pp==null) return;
+    var q=_progEffDoneQty(it,dateStr).qty; total+=q; done+=pp/100*q; any=true;
+  });
+  return (any&&total>0)?done/total*100:null;
+}
+function _progHasPlan(){ return _progress.items.some(function(it){ return it.startDate && it.endDate; }); }
+function _progHeat(p){ p=Math.max(0,Math.min(100,p)); var t=p/100;
+  var r=Math.round(245+(46-245)*t), g=Math.round(247+(158-247)*t), b=Math.round(250+(91-250)*t);
+  return 'rgb('+r+','+g+','+b+')'; }
+function _progHeatText(p){ return p>=55?'#fff':'#33414f'; }
+function _progAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function _progFmtDate(s){ if(!s) return ''; var d=new Date(s+'T00:00:00'); if(isNaN(d)) return s; return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2); }
+function _progNextDate(){
+  if(!_progress.days.length){ return _progDateStr(new Date()); }
+  var last=new Date(_progress.days[_progress.days.length-1]+'T00:00:00');
+  last.setDate(last.getDate()+1); return _progDateStr(last);
+}
+
+function _progAddItem(){
+  if(!_progress.days.length) _progress.days.push(_progNextDate());
+  var first=_progress.days[0], last=_progress.days[_progress.days.length-1];
+  _progress.items.push({ id:'it'+(_progSeq++), name:'', qtyHist:[{date:'',qty:1}], mandays:1, difficulty:3, startDate:first, endDate:last, cancelledDate:'', cancelMode:'descope' });
+  _progRender();
+}
+// Record a dated quantity change (e.g. extra units discovered, or scope reduced).
+function _progChangeQty(id){
+  var it=_progFind(id); if(!it) return;
+  var ov=document.getElementById('progressOverlay'); if(!ov) return;
+  var cur=_progQtyToday(it);
+  var defDate=_progress.days.length?_progress.days[_progress.days.length-1]:_progNextDate();
+  var old=ov.querySelector('.prog-modal'); if(old) old.remove();
+  var m=document.createElement('div'); m.className='prog-modal';
+  m.innerHTML='<div class="prog-modal-card">'
+    +'<div class="prog-modal-title">Quantity change — '+_progAttr(it.name||'item')+'</div>'
+    +'<div class="prog-modal-sub">Current total: <b>'+cur+'</b>. Enter how many to <b>add</b> (e.g. 10) or <b>remove</b> (e.g. −5).</div>'
+    +'<div class="prog-modal-row"><label>Change</label><input type="number" step="1" class="prog-modal-delta" value="0"></div>'
+    +'<div class="prog-modal-row"><label>Effective from</label>'+_progDateField('prog-modal-date', defDate, '')+'</div>'
+    +'<div class="prog-modal-actions"><button type="button" class="prog-modal-cancel">Cancel</button><button type="button" class="prog-modal-ok">Apply</button></div>'
+    +'</div>';
+  ov.appendChild(m);
+  var di=m.querySelector('.prog-modal-delta'); if(di){ di.focus(); di.select(); }
+  function close(){ m.remove(); }
+  m.addEventListener('click', function(e){ if(e.target===m) close(); });
+  m.querySelector('.prog-modal-cancel').onclick=close;
+  m.querySelector('.prog-modal-ok').onclick=function(){
+    var delta=+m.querySelector('.prog-modal-delta').value;
+    var dt=_progYMD(m.querySelector('.prog-modal-date').value);
+    if(isNaN(delta)||delta===0){ alert('Enter a number, e.g. 10 to add or -5 to remove.'); return; }
+    if(!dt){ alert('Pick a valid date (dd-mm-yyyy).'); return; }
+    var base=_progQtyInit(it);
+    (it.qtyHist||[]).forEach(function(e){ if(e.date===''||e.date<dt) base=e.qty; });
+    var nv=Math.max(0, base+delta);
+    if(!it.qtyHist) it.qtyHist=[{date:'',qty:0}];
+    var found=false; for(var i=0;i<it.qtyHist.length;i++){ if(it.qtyHist[i].date===dt){ it.qtyHist[i].qty=nv; found=true; break; } }
+    if(!found) it.qtyHist.push({date:dt, qty:nv});
+    it.qtyHist.sort(function(a,b){ return (a.date||'')<(b.date||'')?-1:((a.date||'')>(b.date||'')?1:0); });
+    if(_progress.days.indexOf(dt)<0){ _progress.days.push(dt); _progress.days.sort(); }
+    close();
+    _progRender();
+  };
+}
+// Date display/parse helpers — UI uses DD-MM-YYYY, data stays YYYY-MM-DD.
+function _progDMY(ymd){ ymd=(ymd||'').trim(); var m=ymd.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m?(m[3]+'-'+m[2]+'-'+m[1]):''; }
+function _progYMD(str){ str=(str||'').trim(); if(!str) return ''; var m=str.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/); if(m){ var d=+m[1],mo=+m[2],y=+m[3]; if(mo<1||mo>12||d<1||d>31) return null; return y+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2); } var m2=str.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m2?str:null; }
+// A date field: DD-MM-YYYY text + 📅 button that opens the native calendar picker.
+function _progDateField(cls, ymd, dataAttrs){
+  return '<span class="pdate">'
+    +'<input type="text" class="pdate-txt '+(cls||'')+'" '+(dataAttrs||'')+' value="'+_progDMY(ymd)+'" placeholder="dd-mm-yyyy" maxlength="10" inputmode="numeric" autocomplete="off">'
+    +'<button type="button" class="pdate-cal" tabindex="-1" title="Pick from calendar">📅</button>'
+    +'<input type="date" class="pdate-native" tabindex="-1" value="'+(ymd||'')+'">'
+    +'</span>';
+}
+// Every calendar day from s to e inclusive.
+function _progDayRange(s,e){ var out=[],c=new Date(s+'T00:00:00'),end=new Date(e+'T00:00:00'); if(isNaN(c)||isNaN(end)) return out; var g=0; while(c<=end && g<4000){ out.push(_progDateStr(c)); c.setDate(c.getDate()+1); g++; } return out; }
+// Set the same plan start/end on every item at once (most jobs share one window).
+function _progApplyDatesAll(){
+  var ov=document.getElementById('progressOverlay'); if(!ov) return;
+  var si=ov.querySelector('.prog-all-start'), ei=ov.querySelector('.prog-all-end');
+  var s=si?_progYMD(si.value):'', e=ei?_progYMD(ei.value):'';
+  if(!s||!e){ alert('Pick both a start and an end date (dd-mm-yyyy).'); return; }
+  if(e<s){ alert('End date must be on or after the start date.'); return; }
+  if(!_progress.items.length){ alert('Add an item first.'); return; }
+  _progress.items.forEach(function(it){ it.startDate=s; it.endDate=e; });
+  // Rebuild the columns to exactly the chosen window (trim any leftover days).
+  _progress.days=_progDayRange(s,e);
+  _progRender();
+}
+function _progAddDay(){
+  var prevLast=_progress.days.length?_progress.days[_progress.days.length-1]:'';
+  var nd=_progNextDate(); if(_progress.days.indexOf(nd)<0) _progress.days.push(nd); _progress.days.sort();
+  var first=_progress.days[0], last=_progress.days[_progress.days.length-1];
+  // Keep plan dates tracking the timeline: fill empties, and extend any end that
+  // was sitting on the previous last day (a deliberately earlier end is left alone).
+  _progress.items.forEach(function(it){
+    if(!it.startDate) it.startDate=first;
+    if(!it.endDate || it.endDate===prevLast) it.endDate=last;
+  });
+  _progRender();
+}
+function _progRemoveDay(dateStr){ _progress.days=_progress.days.filter(function(d){return d!==dateStr;}); Object.keys(_progress.done).forEach(function(id){ if(_progress.done[id]) delete _progress.done[id][dateStr]; }); _progRender(); }
+function _progDelItem(id){ _progress.items=_progress.items.filter(function(it){return it.id!==id;}); delete _progress.done[id]; _progRender(); }
+function _progCancelItem(id){
+  var it=_progFind(id); if(!it) return;
+  if(it.cancelledDate){ it.cancelledDate=''; _progRender(); return; }
+  var credit = confirm('Cancel "'+(it.name||'this item')+'" from the latest day.\n\nOK  = credit work already done (item stays counted at its current %).\nCancel = descope it entirely (drops out of the job from that day).');
+  it.cancelledDate = _progress.days.length ? _progress.days[_progress.days.length-1] : _progNextDate();
+  it.cancelMode = credit ? 'credit' : 'descope';
+  _progRender();
+}
+
+function _progRender(){
+  var ov=document.getElementById('progressOverlay'); if(!ov) return;
+  if(_progress.days.length){
+    var si=ov.querySelector('.prog-all-start'), ei=ov.querySelector('.prog-all-end');
+    if(si && !si.value) si.value=_progDMY(_progress.days[0]);
+    if(ei && !ei.value) ei.value=_progDMY(_progress.days[_progress.days.length-1]);
+  }
+  _progRenderGrid();
+  _progRefreshComputed();
+}
+function _progRefreshComputed(){
+  var g = _progress.days.length ? _progGlobalAt(_progress.days[_progress.days.length-1]) : 0;
+  var gf=document.querySelector('.prog-global'); if(gf) gf.textContent = Math.round(g)+'%';
+  var gr=document.getElementById('progGlobalRow'); if(gr) gr.innerHTML=_progGlobalRowHTML();
+  var hasDays=_progress.days.length;
+  var latest=hasDays?_progFmtDate(_progress.days[_progress.days.length-1]):'';
+  var bars=document.getElementById('progBars'); if(bars) bars.innerHTML = hasDays?('<div class="prog-chart-card"><div class="prog-chart-title">Items — latest day ('+latest+')</div>'+_progItemBarsSVG()+'</div>'):'';
+  var st=document.getElementById('progStats'); if(st) st.innerHTML=_progStatsTableHTML();
+  var sc=document.getElementById('progSCurve'); if(sc) sc.innerHTML = hasDays?('<div class="prog-chart-card"><div class="prog-chart-title">Overall progress (S-curve)</div>'+_progSCurveSVG()+'</div>'):'';
+  _progUpdateWarn();
+  if(typeof _progFillReportSections === 'function') _progFillReportSections();
+  if(typeof _progFillInlineProgress === 'function') _progFillInlineProgress();
+}
+// Dates on which any item's quantity changed (a real ± change, not the initial).
+function _progChangeDates(){ var s={}; _progress.items.forEach(function(it){ (it.qtyHist||[]).forEach(function(e){ if(e.date) s[e.date]=1; }); }); return s; }
+// Column list: a red "± change" column is inserted right before any day that had a change.
+function _progColumns(){ var chg=_progChangeDates(), cols=[]; _progress.days.forEach(function(d){ if(chg[d]) cols.push({t:'chg',d:d}); cols.push({t:'day',d:d}); }); return cols; }
+// The +/- amount an item's quantity changed on a given date (null if it didn't change then).
+function _progQtyDeltaOn(it,d){ var h=it.qtyHist||[]; for(var i=1;i<h.length;i++){ if(h[i].date===d) return h[i].qty - h[i-1].qty; } return null; }
+function _progRenderGrid(){
+  var wrap=document.getElementById('progGridWrap'); if(!wrap) return;
+  if(!_progress.items.length){
+    wrap.innerHTML='<div class="prog-empty">No items yet. Click <b>＋ Add item</b>, set its <b>quantity</b> (total to repair) and plan dates, then each day enter the <b>units repaired that day</b>. The % is figured out for you.</div>';
+    return;
+  }
+  var cols=_progColumns();
+  var h='<table class="prog-table"><thead><tr>';
+  h+='<th class="prog-th-item">Item</th><th class="prog-th-q" title="Total quantity to repair">Qty</th><th class="prog-th-pd" title="Projected start of repair">Plan start</th><th class="prog-th-pd" title="Estimated last day of repair">Plan end</th><th class="prog-th-act"></th>';
+  cols.forEach(function(c){
+    if(c.t==='chg') h+='<th class="prog-th-chg" title="Quantity change on '+c.d+'">± '+_progFmtDate(c.d)+'</th>';
+    else h+='<th class="prog-th-day" title="'+c.d+'"><span class="prog-day-lbl">'+_progFmtDate(c.d)+'</span><button class="prog-mini prog-day-rm" data-date="'+c.d+'" title="Remove this day">✕</button></th>';
+  });
+  h+='</tr></thead><tbody>';
+  _progress.items.forEach(function(it){
+    var cancelled = !!it.cancelledDate;
+    h+='<tr class="prog-row'+(cancelled?' prog-cancelled':'')+'">';
+    h+='<td class="prog-td-item"><input class="prog-name" data-item="'+it.id+'" value="'+_progAttr(it.name)+'" placeholder="Repair item…"></td>';
+    h+='<td class="prog-td-q"><input type="number" min="0" step="1" class="prog-qty" data-item="'+it.id+'" value="'+_progQtyInit(it)+'" title="Initial quantity (use ± to add/remove from a date)"></td>';
+    h+='<td class="prog-td-pd">'+_progDateField('prog-start', it.startDate, 'data-item="'+it.id+'" title="Projected start of repair"')+'</td>';
+    h+='<td class="prog-td-pd">'+_progDateField('prog-end', it.endDate, 'data-item="'+it.id+'" title="Estimated last day of repair"')+'</td>';
+    h+='<td class="prog-td-act"><button class="prog-mini prog-qchg" data-item="'+it.id+'" title="Add / remove quantity from a date">±</button><button class="prog-mini prog-cancel" data-item="'+it.id+'" title="'+(cancelled?'Un-cancel':'Cancel / descope')+'">'+(cancelled?'↺':'⊘')+'</button><button class="prog-mini prog-del" data-item="'+it.id+'" title="Delete item">✕</button></td>';
+    cols.forEach(function(c){
+      var dt=c.d;
+      if(c.t==='chg'){
+        var delta=_progQtyDeltaOn(it,dt);
+        var txt=(delta==null)?'':((delta>0?'+':'')+delta);
+        h+='<td class="prog-chg-td"><div class="prog-chg-cell'+(delta==null?' prog-chg-empty':'')+'" title="'+(delta==null?'':('quantity '+(delta>0?'+':'')+delta+' on '+dt+' → new total '+_progQtyAt(it,dt))) +'">'+txt+'</div></td>';
+        return;
+      }
+      var preStart=(it.startDate && dt < it.startDate);
+      var day=(_progress.done[it.id]&&typeof _progress.done[it.id][dt]==='number')?_progress.done[it.id][dt]:'';
+      var cum=_progCumDoneAt(it,dt), qd=_progQtyAt(it,dt), pct=_progPctAt(it,dt), act=_progActive(it,dt);
+      var over=_progCellOver(it,dt);
+      var bg=preStart?'#eceff3':(act?_progHeat(pct):'#e6e8ec');
+      var disabled=(preStart||(it.cancelledDate&&dt>=it.cancelledDate))?'disabled':'';
+      var pctTxt=(act&&cum>0)?(Math.round(pct)+'%'):'';
+      h+='<td class="prog-cell-td'+(over?' prog-over':'')+'" style="background:'+bg+';color:'+_progHeatText(pct)+';"><input type="number" min="0" step="1" class="prog-cell" data-item="'+it.id+'" data-date="'+dt+'" value="'+day+'" '+disabled+' title="repaired this day: '+(day===''?0:day)+' · total '+cum+'/'+qd+' ('+Math.round(pct)+'%)"><div class="prog-cell-pct">'+pctTxt+'</div></td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody><tfoot>';
+  h+='<tr id="progGlobalRow" class="prog-foot-global">'+_progGlobalRowHTML()+'</tr>';
+  h+='</tfoot></table>';
+  wrap.innerHTML=h;
+}
+// Recolour one item's day cells + refresh carried placeholders without rebuilding
+// the grid (keeps the cell you're typing in focused).
+function _progRetintRow(id){
+  var it=_progFind(id); if(!it) return;
+  var wrap=document.getElementById('progGridWrap'); if(!wrap) return;
+  wrap.querySelectorAll('.prog-cell[data-item="'+id+'"]').forEach(function(inp){
+    var dt=inp.dataset.date, pct=_progPctAt(it,dt), cum=_progCumDoneAt(it,dt), qd=_progQtyAt(it,dt), day=_progDayCount(it,dt), act=_progActive(it,dt);
+    var td=inp.closest('.prog-cell-td');
+    if(td){ td.style.background=_progHeat(pct); td.style.color=_progHeatText(pct); td.classList.toggle('prog-over', _progCellOver(it,dt));
+      var pd=td.querySelector('.prog-cell-pct'); if(pd) pd.textContent=(act&&cum>0)?(Math.round(pct)+'%'):''; }
+    inp.title='repaired this day: '+day+' · total '+cum+'/'+qd+' ('+Math.round(pct)+'%)';
+  });
+}
+function _progGlobalRowHTML(){
+  var h='<td class="prog-foot-lbl" colspan="5">Global progress</td>';
+  _progColumns().forEach(function(c){ if(c.t==='chg'){ h+='<td class="prog-foot-chg"></td>'; return; } var g=Math.round(_progGlobalAt(c.d)); h+='<td class="prog-foot-cell" style="background:'+_progHeat(g)+';color:'+_progHeatText(g)+';">'+g+'%</td>'; });
+  return h;
+}
+function _progGainRowHTML(){
+  var h='<td class="prog-foot-lbl" colspan="5">Gain / day</td>';
+  _progColumns().forEach(function(c){ if(c.t==='chg'){ h+='<td class="prog-foot-chg"></td>'; return; } var di=_progress.days.indexOf(c.d); var v=Math.round(_progGainAt(di)*10)/10; h+='<td class="prog-foot-cell prog-gain-cell">'+(v>0?'+':'')+v+'</td>'; });
+  return h;
+}
+function _progChartsHTML(){
+  if(!_progress.days.length) return '';
+  return '<div class="prog-chart-card"><div class="prog-chart-title">Overall progress (S-curve)</div>'+_progSCurveSVG()+'</div>'
+       + '<div class="prog-chart-card"><div class="prog-chart-title">Items — latest day ('+_progFmtDate(_progress.days[_progress.days.length-1])+')</div>'+_progItemBarsSVG()+'</div>'
+       + '<div class="prog-chart-card"><div class="prog-chart-title">Daily gain</div>'+_progGainBarsSVG()+'</div>';
+}
+function _progSCurveSVG(){
+  var n=_progress.days.length, W=760,H=240,pl=38,pr=14,pt=14,pb=28, plotW=W-pl-pr, plotH=H-pt-pb;
+  var pts=[]; for(var i=0;i<n;i++){ var x=pl+(n<=1?plotW/2:plotW*i/(n-1)); var y=pt+plotH-(_progGlobalAt(_progress.days[i])/100)*plotH; pts.push([x,y]); }
+  var grid=''; [0,25,50,75,100].forEach(function(v){ var y=pt+plotH-(v/100)*plotH; grid+='<line x1="'+pl+'" y1="'+y+'" x2="'+(W-pr)+'" y2="'+y+'" stroke="#e6eaf2"/><text x="'+(pl-6)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="#8a93a3">'+v+'%</text>'; });
+  var xl='', step=Math.max(1,Math.ceil(n/8)); for(var j=0;j<n;j+=step){ var xx=pl+(n<=1?plotW/2:plotW*j/(n-1)); xl+='<text x="'+xx+'" y="'+(H-8)+'" text-anchor="middle" font-size="8" fill="#8a93a3">'+_progFmtDate(_progress.days[j])+'</text>'; }
+  var poly=pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
+  var area=''; if(pts.length){ area='M'+pts[0][0].toFixed(1)+','+(pt+plotH)+' L'+pts.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' L')+' L'+pts[pts.length-1][0].toFixed(1)+','+(pt+plotH)+' Z'; }
+  var dots=pts.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.5" fill="#1f8a4c"/>';}).join('');
+  // Planned (target) dashed line from per-item start/end dates, if any are set.
+  var plan='', legend='';
+  if(_progHasPlan()){
+    var pp=[]; for(var pi=0;pi<n;pi++){ var v=_progPlannedGlobalAt(pi); if(v==null){ pp.push(null); continue; } var px=pl+(n<=1?plotW/2:plotW*pi/(n-1)); var py=pt+plotH-(v/100)*plotH; pp.push(px.toFixed(1)+','+py.toFixed(1)); }
+    var seg=pp.filter(function(x){return x;}).join(' ');
+    if(seg) plan='<polyline points="'+seg+'" fill="none" stroke="#9aa3b2" stroke-width="1.6" stroke-dasharray="5 4"/>';
+    legend='<rect x="'+(W-pr-150)+'" y="6" width="150" height="14" fill="#fff" opacity="0"/>'
+      +'<line x1="'+(W-pr-148)+'" y1="13" x2="'+(W-pr-128)+'" y2="13" stroke="#1f8a4c" stroke-width="2"/><text x="'+(W-pr-124)+'" y="16" font-size="8" fill="#6a7488">Actual</text>'
+      +'<line x1="'+(W-pr-78)+'" y1="13" x2="'+(W-pr-58)+'" y2="13" stroke="#9aa3b2" stroke-width="1.6" stroke-dasharray="5 4"/><text x="'+(W-pr-54)+'" y="16" font-size="8" fill="#6a7488">Plan</text>';
+  }
+  return '<svg viewBox="0 0 '+W+' '+H+'" class="prog-svg" preserveAspectRatio="xMidYMid meet">'+grid+'<path d="'+area+'" fill="rgba(46,158,91,.14)"/>'+plan+'<polyline points="'+poly+'" fill="none" stroke="#1f8a4c" stroke-width="2"/>'+dots+xl+legend+'</svg>';
+}
+function _progGainBarsSVG(){
+  var n=_progress.days.length, W=760,H=160,pl=30,pr=14,pt=10,pb=10, plotW=W-pl-pr, plotH=H-pt-pb;
+  var max=1; for(var i=0;i<n;i++){ max=Math.max(max,_progGainAt(i)); }
+  var gap=plotW/Math.max(1,n), bw=gap*0.7, bars='';
+  for(var k=0;k<n;k++){ var v=Math.max(0,_progGainAt(k)); var hgt=(v/max)*plotH; var x=pl+gap*k+(gap-bw)/2; var y=pt+plotH-hgt;
+    bars+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hgt.toFixed(1)+'" fill="#3b7dd8" rx="1"/>';
+    if(v>0&&n<=24) bars+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(y-2).toFixed(1)+'" text-anchor="middle" font-size="7.5" fill="#3b7dd8">+'+Math.round(v)+'</text>'; }
+  return '<svg viewBox="0 0 '+W+' '+H+'" class="prog-svg" preserveAspectRatio="xMidYMid meet"><line x1="'+pl+'" y1="'+(pt+plotH)+'" x2="'+(W-pr)+'" y2="'+(pt+plotH)+'" stroke="#cdd5e2"/>'+bars+'</svg>';
+}
+function _progItemBarsSVG(){
+  if(!_progress.days.length) return '<div class="prog-empty">No items active yet.</div>';
+  var d=_progress.days[_progress.days.length-1];
+  var rows=_progress.items.filter(function(it){ return !it.startDate || it.startDate<=d; });
+  if(!rows.length) return '<div class="prog-empty">No items started yet.</div>';
+  var W=760, rowH=22, pad=8, labelW=180, barX=labelW+10, pctW=60, barW=W-barX-pctW-pad, H=pad*2+rows.length*rowH, s='';
+  rows.forEach(function(it,i){ var y=pad+i*rowH, p=_progPctAt(it,d), done=_progCumDoneAt(it,d), cancelled=(it.cancelledDate&&d>=it.cancelledDate);
+    var nm=it.name||'(unnamed)'; if(nm.length>30) nm=nm.slice(0,29)+'…';
+    s+='<text x="'+pad+'" y="'+(y+rowH/2+3)+'" font-size="9.5" fill="'+(cancelled?'#9aa3b2':'#33414f')+'">'+_progAttr(nm)+(cancelled?' (canc.)':'')+'</text>';
+    s+='<rect x="'+barX+'" y="'+(y+3)+'" width="'+barW+'" height="'+(rowH-8)+'" fill="#eef1f6" rx="2"/>';
+    s+='<rect x="'+barX+'" y="'+(y+3)+'" width="'+(barW*p/100).toFixed(1)+'" height="'+(rowH-8)+'" fill="'+(cancelled?'#b9c2cf':_progHeat(p))+'" rx="2"/>';
+    s+='<text x="'+(W-pad)+'" y="'+(y+rowH/2+3)+'" text-anchor="end" font-size="9" fill="#5a6675">'+Math.round(p)+'% · '+done+'/'+_progQtyAt(it,d)+'</text>'; });
+  return '<svg viewBox="0 0 '+W+' '+H+'" class="prog-svg" preserveAspectRatio="xMidYMid meet" style="max-height:none;">'+s+'</svg>';
+}
+function _progUpdateWarn(){
+  var el=document.getElementById('progWarn'); if(!el) return;
+  var over=[]; _progress.items.forEach(function(it){ if(_progItemOverDate(it)) over.push(it.name||'(unnamed)'); });
+  if(over.length){ el.style.display=''; el.innerHTML='⚠ Repaired count exceeds the quantity to repair for: <b>'+over.map(_progAttr).join(', ')+'</b>. Reduce the daily entries or increase the quantity.'; }
+  else { el.style.display='none'; el.innerHTML=''; }
+}
+function _progStatsTableHTML(){
+  if(!_progress.items.length) return '';
+  var today=_progress.days.length?_progress.days[_progress.days.length-1]:'';
+  var gToday=today?Math.round(_progGlobalAt(today)):0;
+  var allCh={}; _progress.items.forEach(function(it){ (it.qtyHist||[]).forEach(function(e){ if(e.date) allCh[e.date]=1; }); });
+  var chDates=Object.keys(allCh).sort();
+  var gch=chDates.length?chDates.map(function(d){ return _progFmtDate(d)+' → '+Math.round(_progGlobalAt(d))+'%'; }).join('  ·  '):'';
+  var sum='<div class="prog-stats-global">Cumulative global progress (all items): <b>'+gToday+'%</b> on '+(_progFmtDate(today)||'—')+' <span class="prog-stats-meth">(total repaired ÷ total quantity)</span>'
+    +(gch?'<div class="prog-stats-gch">Global at quantity-change dates:&nbsp; '+gch+'</div>':'')+'</div>';
+  var h='<table class="prog-stats"><thead><tr><th style="text-align:left">Item</th><th>Initial qty</th><th style="text-align:left">Quantity changes — date: old→new (% before→after)</th><th>Current qty</th><th>Repaired</th><th>To go</th><th>% today</th></tr></thead><tbody>';
+  _progress.items.forEach(function(it){
+    var init=_progQtyInit(it), curq=_progQtyToday(it), rep=today?_progCumDoneAt(it,today):0, togo=Math.max(0,curq-rep), todayPct=today?Math.round(_progPctAt(it,today)):0;
+    var over=!!_progItemOverDate(it);
+    var hist=it.qtyHist||[], parts=[];
+    for(var k=1;k<hist.length;k++){ var e=hist[k]; var oldQ=hist[k-1].qty, newQ=e.qty; var dn=_progCumDoneAt(it,e.date);
+      var pO=oldQ>0?Math.min(100,Math.round(dn/oldQ*100)):0, pN=newQ>0?Math.min(100,Math.round(dn/newQ*100)):0;
+      parts.push(_progFmtDate(e.date)+': '+oldQ+'→'+newQ+' ('+pO+'%→'+pN+'%)'); }
+    var chTxt=parts.length?parts.join('<br>'):'—';
+    h+='<tr'+(it.cancelledDate?' class="prog-cancelled"':'')+'><td style="text-align:left">'+_progAttr(it.name||'(unnamed)')+(it.cancelledDate?' (canc.)':'')+'</td><td>'+init+'</td><td style="text-align:left;font-size:8pt">'+chTxt+'</td><td>'+curq+'</td><td'+(over?' style="color:#c0392b;font-weight:700"':'')+'>'+rep+(over?' ⚠':'')+'</td><td>'+togo+'</td><td style="background:'+_progHeat(todayPct)+';color:'+_progHeatText(todayPct)+';font-weight:700">'+todayPct+'%</td></tr>';
+  });
+  h+='</tbody></table>';
+  return sum+h;
+}
+// Render the progress module's content for the in-report "Progress & statistics"
+// chapter. Self-contained (scoped <style>) so it also survives the customer export.
+function _progReportHTML(){
+  if(!_progress.items.length) return '<div style="padding:6mm;color:#7a869a;font-size:9pt;text-align:center;">No progress data yet. Open the Progress tracker (📊 Progress in the toolbar) to add items.</div>';
+  var today=_progress.days.length?_progress.days[_progress.days.length-1]:'';
+  var css='<style>'
+    +'.prx{font-size:9pt;color:#1a2540;}'
+    +'.prx h4{font-size:10pt;color:#1f3a68;margin:4mm 0 1.5mm;font-weight:700;}'
+    +'.prx table{border-collapse:collapse;width:100%;font-size:7.5pt;margin-bottom:2mm;}'
+    +'.prx td,.prx th{border:1px solid #cdd5e2;padding:2px 4px;text-align:center;}.prx th{background:#1f3a68;color:#fff;}'
+    +'.prx svg{width:100%;height:auto;border:1px solid #e6eaf2;border-radius:4px;}'
+    +'.prx .prog-stats-global{font-size:9pt;color:#1f3a68;margin-bottom:2mm;}.prx .prog-stats-global b{font-size:12pt;color:#1f8a4c;}'
+    +'.prx .prog-stats-meth{color:#9aa3b2;font-size:8pt;font-weight:400;}.prx .prog-stats-gch{margin-top:1mm;font-size:8pt;color:#5a6675;font-weight:400;}'
+    +'.prx .detail-block{margin:0 0 3mm;page-break-inside:avoid;}.prx .detail-range{font-size:8pt;color:#6a7488;margin:0 0 1mm;font-weight:600;}.prx .prog-detail{table-layout:fixed;width:auto;}.prx{-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    +'</style>';
+  var h=css+'<div class="prx">';
+  h+='<h4>Items — latest day'+(today?(' ('+_progFmtDate(today)+')'):'')+'</h4>'+_progItemBarsSVG();
+  h+='<h4>Statistics &amp; quantity changes</h4>'+_progStatsTableHTML();
+  h+='<h4>Progress by day</h4>'+_progPrintTable();
+  h+='<h4>Overall progress (S-curve)</h4>'+_progSCurveSVG();
+  h+='</div>';
+  return h;
+}
+function _progFillReportSections(){
+  var hosts=document.querySelectorAll('[data-progress-host]'); if(!hosts.length) return;
+  var html=_progReportHTML();
+  hosts.forEach(function(host){ host.innerHTML=html; });
+}
+// ── Per-chapter inline progress block (shows selected item(s) only) ──────────
+function _progInsertInline(anchor, secBody){
+  if(!secBody) return;
+  var block=document.createElement('div');
+  block.className='prog-inline';
+  block.setAttribute('data-progress-items','');
+  block.innerHTML='<div class="prog-inline-bar no-print">'
+    +'<b>Repair progress</b><span class="prog-inline-hint">— choose which item(s) to show</span>'
+    +'<button type="button" class="prog-inline-pick">Select items…</button>'
+    +'<button type="button" class="prog-inline-remove" title="Remove this progress block">✕ Remove</button>'
+    +'<div class="prog-inline-panel" hidden></div>'
+    +'</div><div class="prog-inline-body" data-progress-inline-host></div>';
+  var ref=(anchor && anchor.parentNode===secBody) ? anchor.nextSibling : secBody.firstChild;
+  secBody.insertBefore(block, ref);
+  _progFillInlineOne(block);
+  if(typeof doReflow==='function') doReflow();
+}
+function _progFillInlineOne(block){
+  var host=block.querySelector('[data-progress-inline-host]'); if(!host) return;
+  var ids=(block.getAttribute('data-progress-items')||'').split(',').filter(Boolean);
+  host.innerHTML=_progInlineHTML(ids);
+}
+function _progFillInlineProgress(){ document.querySelectorAll('.prog-inline').forEach(function(b){ _progFillInlineOne(b); }); }
+function _progInlineHTML(ids){
+  var sel=_progress.items.filter(function(it){ return ids.indexOf(it.id)>=0; });
+  if(!sel.length) return '<div style="padding:10px;color:#7a869a;font-size:9pt;text-align:center;">No item selected — click <b>Select items…</b> to choose which repair item(s) to show here.</div>';
+  var days=_progress.days, today=days.length?days[days.length-1]:'';
+  var css='<style>'
+    +'.pxi{font-size:9pt;color:#1a2540;}'
+    +'.pxi table{border-collapse:collapse;width:100%;font-size:7.5pt;margin:0 0 3mm;}'
+    +'.pxi td,.pxi th{border:1px solid #cdd5e2;padding:2px 4px;text-align:center;}.pxi th{background:#1f3a68;color:#fff;}'
+    +'.pxi .nm{text-align:left;}'
+    +'.pxi .it{margin:0 0 3mm;page-break-inside:avoid;}'
+    +'.pxi .it-h{font-size:9pt;font-weight:700;color:#1f3a68;margin:0 0 1.2mm;}'
+    +'.pxi .it-h span{font-weight:400;color:#5a6675;font-size:8pt;}'
+    +'.pxi .days{display:flex;flex-wrap:wrap;gap:2px;}'
+    +'.pxi .d{width:34px;border:1px solid #d4dbe8;border-radius:3px;padding:1px 0;text-align:center;line-height:1.15;}'
+    +'.pxi .d .dt{font-size:6pt;color:#42506a;}'
+    +'.pxi .d .nu{font-size:8pt;font-weight:700;}'
+    +'.pxi .d .pc{font-size:6pt;}'
+    +'</style>';
+  var h=css+'<div class="pxi">';
+  h+='<table><thead><tr><th class="nm">Item</th><th>Qty</th><th>Repaired</th><th>To go</th><th>% today</th></tr></thead><tbody>';
+  sel.forEach(function(it){ var q=_progQtyToday(it), rep=today?_progCumDoneAt(it,today):0, pct=today?Math.round(_progPctAt(it,today)):0;
+    h+='<tr><td class="nm">'+_progAttr(it.name||'(unnamed)')+(it.cancelledDate?' (canc.)':'')+'</td><td>'+q+'</td><td>'+rep+'</td><td>'+Math.max(0,q-rep)+'</td><td style="background:'+_progHeat(pct)+';color:'+_progHeatText(pct)+';font-weight:700">'+pct+'%</td></tr>'; });
+  h+='</tbody></table>';
+  // Per item: every day as a small cell that wraps to the next row when out of width.
+  if(days.length){
+    sel.forEach(function(it){
+      var q=_progQtyToday(it);
+      h+='<div class="it"><div class="it-h">'+_progAttr(it.name||'(unnamed)')+' <span>(qty '+q+')</span></div><div class="days">';
+      days.forEach(function(dt){
+        var preStart=(it.startDate&&dt<it.startDate), p=_progPctAt(it,dt), day=_progDayCount(it,dt), cum=_progCumDoneAt(it,dt), act=_progActive(it,dt);
+        var bg=preStart?'#fff':_progHeat(p), fg=preStart?'#c4ccda':_progHeatText(p);
+        h+='<div class="d" style="background:'+bg+';color:'+fg+'"><div class="dt">'+_progFmtDate(dt)+'</div><div class="nu">'+(preStart?'–':(day||'&nbsp;'))+'</div><div class="pc">'+((act&&cum>0)?(Math.round(p)+'%'):'&nbsp;')+'</div></div>';
+      });
+      h+='</div></div>';
+    });
+  }
+  h+='</div>';
+  return h;
+}
+function _progInlinePick(block){
+  if(!block) return;
+  var panel=block.querySelector('.prog-inline-panel'); if(!panel) return;
+  if(!panel.hidden){ panel.hidden=true; return; }
+  if(!_progress.items.length){ panel.innerHTML='<div style="padding:8px;color:#7a869a;">No progress items yet — add them in the 📊 Progress tracker first.</div>'; panel.hidden=false; return; }
+  var sel=(block.getAttribute('data-progress-items')||'').split(',').filter(Boolean);
+  var h='';
+  _progress.items.forEach(function(it){ h+='<label class="prog-inline-opt"><input type="checkbox" value="'+it.id+'" '+(sel.indexOf(it.id)>=0?'checked':'')+'> '+_progAttr(it.name||'(unnamed)')+'</label>'; });
+  h+='<div class="prog-inline-actions"><button type="button" class="prog-inline-apply">Apply</button></div>';
+  panel.innerHTML=h; panel.hidden=false;
+}
+function _progInlineApply(block){
+  if(!block) return;
+  var panel=block.querySelector('.prog-inline-panel'); if(!panel) return;
+  var ids=[].slice.call(panel.querySelectorAll('input[type=checkbox]:checked')).map(function(c){ return c.value; });
+  block.setAttribute('data-progress-items', ids.join(','));
+  panel.hidden=true;
+  _progFillInlineOne(block);
+  if(typeof doReflow==='function') doReflow();
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest) return;
+  var pick=e.target.closest('.prog-inline-pick'); if(pick){ e.preventDefault(); _progInlinePick(pick.closest('.prog-inline')); return; }
+  var apply=e.target.closest('.prog-inline-apply'); if(apply){ e.preventDefault(); _progInlineApply(apply.closest('.prog-inline')); return; }
+  var rm=e.target.closest('.prog-inline-remove'); if(rm){ e.preventDefault(); var b=rm.closest('.prog-inline'); if(b){ b.remove(); if(typeof doReflow==='function') doReflow(); } return; }
+});
+function _progBuildOverlay(){
+  if(document.getElementById('progressOverlay')) return;
+  var ov=document.createElement('div'); ov.id='progressOverlay'; ov.className='prog-overlay'; ov.style.display='none';
+  ov.innerHTML =
+    '<div class="prog-panel">'
+    + '<div class="prog-head"><span class="prog-title">Repair progress</span>'
+      + '<div class="prog-head-right">'
+        + '<span class="prog-global">0%</span>'
+        + '<button class="prog-close" title="Close">✕</button>'
+      + '</div>'
+    + '</div>'
+    + '<div class="prog-toolbar">'
+      + '<button class="prog-btn prog-add-item">＋ Add item</button>'
+      + '<button class="prog-btn prog-add-day">＋ Add day</button>'
+      + '<span class="prog-setall">Same dates for all: '+_progDateField('prog-all-start','','')+' → '+_progDateField('prog-all-end','','')+' <button class="prog-btn prog-all-apply">Apply</button></span>'
+      + '<button class="prog-btn prog-print">⎙ Print / PDF</button>'
+      + '<span class="prog-hint">Set each item\'s quantity + plan start/end (columns fill from the plan). In each day cell enter the units repaired THAT day — the total can\'t exceed the quantity (you\'ll be warned). Use ± to add/remove quantity from a date; ＋ Add day to extend.</span>'
+    + '</div>'
+    + '<div class="prog-body"><div class="prog-warn" id="progWarn" style="display:none"></div><div class="prog-grid-wrap" id="progGridWrap"></div><div class="prog-charts" id="progBars"></div><div class="prog-stats-wrap" id="progStats"></div><div class="prog-charts" id="progSCurve"></div></div>'
+    + '</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', _progClick);
+  ov.addEventListener('input', _progInput);
+  ov.addEventListener('change', _progChange);
+}
+function _progClick(e){
+  var t=e.target;
+  var cal=t.closest('.pdate-cal'); if(cal){ var pp=cal.parentNode, nat=pp&&pp.querySelector('.pdate-native'), txt=pp&&pp.querySelector('.pdate-txt'); if(nat){ var v=_progYMD(txt?txt.value:''); if(v) nat.value=v; try{ nat.showPicker(); }catch(err){ try{ nat.focus(); nat.click(); }catch(e2){} } } return; }
+  if(t.closest('.prog-close')){ closeProgress(); return; }
+  if(t.closest('.prog-add-item')){ _progAddItem(); return; }
+  if(t.closest('.prog-add-day')){ _progAddDay(); return; }
+  if(t.closest('.prog-all-apply')){ _progApplyDatesAll(); return; }
+  if(t.closest('.prog-print')){ _progPrint(); return; }
+  var rd=t.closest('.prog-day-rm'); if(rd){ if(confirm('Remove the day '+_progFmtDate(rd.dataset.date)+' and its entries?')) _progRemoveDay(rd.dataset.date); return; }
+  var qc=t.closest('.prog-qchg'); if(qc){ _progChangeQty(qc.dataset.item); return; }
+  var cb=t.closest('.prog-cancel'); if(cb){ _progCancelItem(cb.dataset.item); return; }
+  var db=t.closest('.prog-del'); if(db){ if(confirm('Delete this item completely?')) _progDelItem(db.dataset.item); return; }
+}
+function _progInput(e){
+  var t=e.target;
+  if(t.classList.contains('prog-cell')){
+    var id=t.dataset.item, dt=t.dataset.date, v=(t.value===''?null:Math.max(0,+t.value));
+    if(!_progress.done[id]) _progress.done[id]={};
+    if(v===null) delete _progress.done[id][dt]; else _progress.done[id][dt]=v;
+    _progRetintRow(id);
+    _progRefreshComputed(); return;
+  }
+  if(t.classList.contains('prog-qty')){ var itq=_progFind(t.dataset.item); if(itq){ if(!itq.qtyHist||!itq.qtyHist.length) itq.qtyHist=[{date:'',qty:0}]; itq.qtyHist[0].qty=+t.value||0; } _progRetintRow(t.dataset.item); _progRefreshComputed(); return; }
+  if(t.classList.contains('prog-name')){ var it3=_progFind(t.dataset.item); if(it3) it3.name=t.value; }
+}
+function _progChange(e){
+  var t=e.target;
+  // Calendar picker chose a date → reflect it in the DD-MM-YYYY text field.
+  if(t.classList.contains('pdate-native')){ var pp=t.parentNode, tx=pp&&pp.querySelector('.pdate-txt'); if(tx){ tx.value=_progDMY(t.value); tx.dispatchEvent(new Event('change',{bubbles:true})); } return; }
+  // Setting a plan start/end repopulates the day columns across the span.
+  if(t.classList.contains('prog-start')){ var vS=_progYMD(t.value); if(vS===null) return; var its=_progFind(t.dataset.item); if(its) its.startDate=vS; _progSyncPlanDays(); _progRender(); return; }
+  if(t.classList.contains('prog-end')){ var vE=_progYMD(t.value); if(vE===null) return; var ite=_progFind(t.dataset.item); if(ite) ite.endDate=vE; _progSyncPlanDays(); _progRender(); return; }
+}
+function openProgress(){ _progBuildOverlay(); var ov=document.getElementById('progressOverlay'); if(ov) ov.style.display='flex'; _progRender(); }
+function closeProgress(){ var ov=document.getElementById('progressOverlay'); if(ov) ov.style.display='none'; if(document.querySelector('[data-progress-host]') && typeof doReflow==='function') doReflow(); }
+function _progPrint(){
+  var w=window.open('','_blank'); if(!w){ alert('Allow pop-ups to print / save the progress sheet as PDF.'); return; }
+  var g=_progress.days.length?Math.round(_progGlobalAt(_progress.days[_progress.days.length-1])):0;
+  var range=_progress.days.length?(_progFmtDate(_progress.days[0])+' – '+_progFmtDate(_progress.days[_progress.days.length-1])):'';
+  var doc='<!doctype html><html><head><meta charset="utf-8"><title>Repair progress</title><style>'
+    +'body{font-family:Arial,Helvetica,sans-serif;color:#1a2540;margin:16mm 12mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;}h1{font-size:15pt;color:#1f3a68;margin:0 0 1mm;}'
+    +'.sub{color:#6a7488;font-size:9pt;margin-bottom:5mm;}.gbig{font-size:30pt;font-weight:800;color:#1f8a4c;}.glbl{font-size:9pt;color:#6a7488;}'
+    +'.card{margin:6mm 0;page-break-inside:avoid;}.ctitle{font-size:10pt;font-weight:700;color:#1f3a68;margin-bottom:2mm;}'
+    +'svg{width:100%;height:auto;border:1px solid #e6eaf2;border-radius:4px;}table{border-collapse:collapse;width:100%;font-size:7.5pt;}'
+    +'td,th{border:1px solid #cdd5e2;padding:2px 4px;text-align:center;}th{background:#1f3a68;color:#fff;}'
+    +'.detail-block{page-break-inside:avoid;margin:0 0 4mm;}.detail-range{font-size:8pt;color:#6a7488;margin:0 0 1mm;font-weight:600;}.prog-detail{table-layout:fixed;width:auto;}'
+    +'.prog-stats-global{font-size:9pt;color:#1f3a68;margin-bottom:2mm;}.prog-stats-global b{font-size:11pt;color:#1f8a4c;}.prog-stats-meth{color:#9aa3b2;font-size:8pt;font-weight:400;}.prog-stats-gch{margin-top:1mm;font-size:8pt;color:#5a6675;font-weight:400;}</style></head><body>'
+    +'<h1>Repair progress</h1><div class="sub">'+range+'</div>'
+    +'<div><span class="gbig">'+g+'%</span> <span class="glbl">overall (total repaired ÷ total quantity)</span></div>'
+    +'<div class="card"><div class="ctitle">Items — latest day</div>'+_progItemBarsSVG()+'</div>'
+    +'<div class="card"><div class="ctitle">Statistics &amp; quantity changes</div>'+_progStatsTableHTML()+'</div>'
+    +'<div class="card"><div class="ctitle">Detail (completed per day)</div>'+_progPrintTable()+'</div>'
+    +'<div class="card"><div class="ctitle">Overall progress (S-curve)</div>'+_progSCurveSVG()+'</div></body></html>';
+  w.document.open(); w.document.write(doc); w.document.close(); w.focus(); setTimeout(function(){ try{w.print();}catch(e){} },500);
+}
+function _progPrintTable(){
+  var days=_progress.days; if(!days.length) return '';
+  var CHUNK=14, out='';
+  for(var s=0;s<days.length;s+=CHUNK){
+    var slice=days.slice(s,s+CHUNK);
+    out+='<div class="detail-block"><div class="detail-range">'+_progFmtDate(slice[0])+' – '+_progFmtDate(slice[slice.length-1])+'</div>';
+    out+='<table class="prog-detail"><thead><tr><th style="text-align:left;width:80px">Item</th><th style="width:26px">Qty</th>';
+    slice.forEach(function(dt){ out+='<th style="width:40px">'+_progFmtDate(dt)+'</th>'; }); out+='</tr></thead><tbody>';
+    _progress.items.forEach(function(it){ out+='<tr><td style="text-align:left">'+_progAttr(it.name||'')+(it.cancelledDate?' (canc.)':'')+'</td><td>'+_progQtyToday(it)+'</td>';
+      slice.forEach(function(dt){ var preStart=(it.startDate&&dt<it.startDate), p=_progPctAt(it,dt), day=_progDayCount(it,dt), cum=_progCumDoneAt(it,dt), act=_progActive(it,dt); var inner=preStart?'–':((day||'')+((act&&cum>0)?'<div style="font-size:6pt;opacity:.8;line-height:1.1;">'+Math.round(p)+'%</div>':'')); out+='<td style="background:'+(preStart?'#fff':_progHeat(p))+';color:'+(preStart?'#ccc':_progHeatText(p))+'">'+inner+'</td>'; }); out+='</tr>'; });
+    out+='</tbody><tfoot><tr><td style="text-align:left;font-weight:700">Global %</td><td></td>';
+    slice.forEach(function(dt){ var g=Math.round(_progGlobalAt(dt)); out+='<td style="background:'+_progHeat(g)+';color:'+_progHeatText(g)+';font-weight:700">'+g+'%</td>'; }); out+='</tr></tfoot></table></div>';
+  }
+  return out;
+}
 
 
 
@@ -13579,6 +14314,7 @@ let chapterState = [];
 let _selChapterIdx = 0; // which chapter's subchapters are shown in the right pane
 
 function openChManager() {
+  if(typeof _syncProgressChapter === 'function') _syncProgressChapter();
   renderChapterList();
   updateChStatus();
   _chUpdateVesselButtons();
@@ -13650,6 +14386,22 @@ function executeChapters() {
   }));
 }
 
+// Keep the "Progress & statistics" chapter present only on the daily report,
+// and ensure it appears even on chapter lists saved before the feature existed.
+function _syncProgressChapter(){
+  if(typeof chapterState==='undefined' || !chapterState) return;
+  var rt=(document.getElementById('subjectType')&&document.getElementById('subjectType').value)||'daily';
+  var i=chapterState.findIndex(function(c){return c.id==='progress';});
+  if(rt==='daily'){
+    if(i<0){
+      var at=chapterState.findIndex(function(c){return c.id==='sketch';});
+      if(at<0) at=chapterState.length;
+      chapterState.splice(at,0,{ id:'progress', title:'Progress & statistics', enabled:true });
+    }
+  } else if(i>=0){
+    chapterState.splice(i,1);
+  }
+}
 function initChapterManager() {
   // Build initial state from SECTIONS
   chapterState = _activeSections().map(s => ({
@@ -14693,6 +15445,7 @@ function buildReportPayload() {
     })(),
     scoreData: (typeof _scoreData !== 'undefined') ? JSON.parse(JSON.stringify(_scoreData)) : {},
     reportTimes: (typeof _reportTimes !== 'undefined') ? JSON.parse(JSON.stringify(_reportTimes)) : {},
+    progress: (typeof _progress !== 'undefined') ? JSON.parse(JSON.stringify(_progress)) : undefined,
     pages
   };
 
@@ -17642,6 +18395,9 @@ function applyImportedReport(data) {
   if(data.reportTimes && typeof data.reportTimes === 'object') {
     _reportTimes = Object.assign({}, _reportTimes, data.reportTimes);
   }
+  // Restore repair-progress tracker data (per project), or clear it.
+  _progress = data.progress ? _progNormalize(data.progress) : _progDefault();
+  if(typeof _progRender === 'function' && document.getElementById('progressOverlay')) _progRender();
   // Restore the report's current language so future translations use the
   // correct source language (defaults to English for older saved files).
   _reportLang = (data.reportLang === 'zh' || data.reportLang === 'de' || data.reportLang === 'en')
